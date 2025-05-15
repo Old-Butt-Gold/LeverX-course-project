@@ -4,6 +4,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{15082686-E85
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EER.API", "src\EER.API\EER.API.csproj", "{C4792ADB-B63A-429E-A28E-2DECC834980C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EER.Domain", "src\EER.Domain\EER.Domain.csproj", "{8875642D-F495-4657-B2E9-661FFF528DF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,8 +16,13 @@ Global
 		{C4792ADB-B63A-429E-A28E-2DECC834980C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4792ADB-B63A-429E-A28E-2DECC834980C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4792ADB-B63A-429E-A28E-2DECC834980C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8875642D-F495-4657-B2E9-661FFF528DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8875642D-F495-4657-B2E9-661FFF528DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8875642D-F495-4657-B2E9-661FFF528DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8875642D-F495-4657-B2E9-661FFF528DF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C4792ADB-B63A-429E-A28E-2DECC834980C} = {15082686-E85F-4F4E-BBA1-3054EF31E45E}
+		{8875642D-F495-4657-B2E9-661FFF528DF9} = {15082686-E85F-4F4E-BBA1-3054EF31E45E}
 	EndGlobalSection
 EndGlobal
