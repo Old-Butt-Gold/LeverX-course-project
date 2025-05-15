@@ -4,6 +4,11 @@ namespace EER.Domain.Exceptions;
 
 public abstract class DomainValidationException : DomainException
 {
-    public DomainValidationException(string message) 
-        : base(message, HttpStatusCode.BadRequest) { }
+    public IReadOnlyDictionary<string, string[]> Errors { get; }
+
+    public DomainValidationException(IReadOnlyDictionary<string, string[]> errors)
+        : base("One or more validation errors occurred", HttpStatusCode.BadRequest)
+    {
+        Errors = errors;
+    }
 }

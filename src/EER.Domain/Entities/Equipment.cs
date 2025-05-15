@@ -37,12 +37,13 @@ public class Equipment : BaseAuditEntity<long>
         AvailableQuantity += quantity;
     }
     
+    // needs to be calculated on the database side later
     public bool IsAvailableBetween(DateTime start, DateTime end)
     {
         var overlappingRentals = Rentals
             .Where(r => !(end < r.StartDate || start > r.EndDate))
             .Sum(r => r.Quantity);
     
-        return AvailableQuantity - overlappingRentals > 0;
+        return AvailableQuantity - overlappingRentals >= 0;
     }
 }
