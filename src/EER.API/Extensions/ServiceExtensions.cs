@@ -32,8 +32,10 @@ public static class ServiceExtensions
             
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Type = SecuritySchemeType.ApiKey,
-                Description = "Enter 'Bearer' [space] and then your token in the text input below.\n\nExample: \"Bearer <token>\"",
+                Type = SecuritySchemeType.Http,
+                Description = "JWT Authorization header using the Bearer scheme.\n\n" +
+                              "Enter 'Bearer' [space] and then your token.\n\n" +
+                              "Example: \"Bearer 12345abcdef\"",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
                 Scheme = "Bearer",

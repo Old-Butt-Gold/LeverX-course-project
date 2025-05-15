@@ -12,6 +12,12 @@ public class RentalsController : ControllerBase
     private static long _idCounter;
 
     // GET: api/rentals
+    /// <summary>
+    /// Retrieves all rentals.
+    /// </summary>
+    /// <returns>A list of all rentals.</returns>
+    /// <response code="200">Returns the list of rentals.</response>
+    [ProducesResponseType(typeof(IEnumerable<Rental>), StatusCodes.Status200OK)]
     [HttpGet]
     public IActionResult GetAll()
     {
@@ -19,6 +25,15 @@ public class RentalsController : ControllerBase
     }
 
     // GET: api/rentals/1
+    /// <summary>
+    /// Retrieves a specific rental by ID.
+    /// </summary>
+    /// <param name="id">The ID of the rental to retrieve.</param>
+    /// <returns>The requested rental if found.</returns>
+    /// <response code="200">Returns the requested rental.</response>
+    /// <response code="404">If the rental with the specified ID is not found.</response>
+    [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
@@ -28,6 +43,14 @@ public class RentalsController : ControllerBase
     }
 
     // POST: api/rentals
+    /// <summary>
+    /// Creates a new rental.
+    /// </summary>
+    /// <param name="rental">The rental to create.</param>
+    /// <returns>The created rental.</returns>
+    /// <response code="201">Returns the created rental ID.</response>
+    [ProducesResponseType(typeof(Rental), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpPost]
     public IActionResult Create(Rental rental)
     {
@@ -38,12 +61,22 @@ public class RentalsController : ControllerBase
     }
 
     // PUT: api/rentals/1
+    /// <summary>
+    /// Updates the status of an existing rental by ID.
+    /// </summary>
+    /// <param name="id">The ID of the rental to update.</param>
+    /// <param name="updatedRental">The rental object containing the new status.</param>
+    /// <returns>The updated rental.</returns>
+    /// <response code="200">Returns the updated rental.</response>
+    /// <response code="404">If the rental with the specified ID is not found.</response>
+    [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Rental updatedRental)
     {
         if (!_rentals.TryGetValue(id, out var rental))
         {
-            return NoContent();
+            return NotFound();
         }
 
         rental.Status = updatedRental.Status;
@@ -51,6 +84,15 @@ public class RentalsController : ControllerBase
     }
 
     // DELETE: api/rentals/1
+    /// <summary>
+    /// Deletes a specific rental by ID.
+    /// </summary>
+    /// <param name="id">The ID of the rental to delete.</param>
+    /// <returns>No content if successful.</returns>
+    /// <response code="204">The rental was successfully deleted.</response>
+    /// <response code="404">If the rental with the specified ID is not found.</response>
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
