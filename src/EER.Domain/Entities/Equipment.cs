@@ -11,7 +11,7 @@ public class Equipment : BaseEntity<long>
     
     public bool IsAvailable => AvailableQuantity > 0;
     
-    public int AvailableQuantity { get; private set; } 
+    public int AvailableQuantity { get; set; } 
     
     public string Location { get; set; }
     
