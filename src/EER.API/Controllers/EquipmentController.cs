@@ -26,6 +26,16 @@ public class EquipmentController : ControllerBase
             : NotFound();
     }
 
+    // GET: api/equipment/category/1
+    [HttpGet("category/{categoryId:int}")]
+    public IActionResult GetByCategory(int categoryId)
+    {
+        var items = _equipment.Values
+            .Where(e => e.CategoryId == categoryId);
+        
+        return Ok(items);
+    }
+
     // POST: api/equipment
     [HttpPost]
     public IActionResult Create(Equipment equipment)
