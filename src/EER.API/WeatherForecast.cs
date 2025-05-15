@@ -1,4 +1,4 @@
-namespace WebApplication1;
+namespace EER.API;
 
 public class WeatherForecast
 {
