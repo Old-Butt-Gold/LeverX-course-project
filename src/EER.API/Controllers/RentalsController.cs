@@ -1,14 +1,15 @@
 ﻿using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class RentalsController : ControllerBase
+public sealed class RentalsController : ControllerBase
 {
-    private static readonly Dictionary<long, Rental> _rentals = new();
+    private static readonly Dictionary<long, Rental> _rentals = [];
     private static long _idCounter;
 
     // GET: api/rentals
@@ -17,11 +18,14 @@ public class RentalsController : ControllerBase
     /// </summary>
     /// <returns>A list of all rentals.</returns>
     /// <response code="200">Returns the list of rentals.</response>
-    [ProducesResponseType(typeof(IEnumerable<Rental>), StatusCodes.Status200OK)]
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(List<Rental>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_rentals.Values);
+        return Ok(_rentals.Values.ToList());
     }
 
     // GET: api/rentals/1
@@ -32,8 +36,11 @@ public class RentalsController : ControllerBase
     /// <returns>The requested rental if found.</returns>
     /// <response code="200">Returns the requested rental.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
@@ -49,8 +56,13 @@ public class RentalsController : ControllerBase
     /// <param name="rental">The rental to create.</param>
     /// <returns>The created rental.</returns>
     /// <response code="201">Returns the created rental ID.</response>
+    /// <response code="400">If the rental data is invalid.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Rental), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
     public IActionResult Create(Rental rental)
     {
@@ -69,8 +81,12 @@ public class RentalsController : ControllerBase
     /// <returns>The updated rental.</returns>
     /// <response code="200">Returns the updated rental.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Rental updatedRental)
     {
@@ -91,8 +107,11 @@ public class RentalsController : ControllerBase
     /// <returns>No content if successful.</returns>
     /// <response code="204">The rental was successfully deleted.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {

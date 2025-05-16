@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using System.Net.Mime;
 using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +6,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class EquipmentController : ControllerBase
+public sealed class EquipmentController : ControllerBase
 {
     private static readonly Dictionary<long, Equipment> _equipment = [];
     private static long _idCounter;
@@ -17,11 +17,14 @@ public class EquipmentController : ControllerBase
     /// </summary>
     /// <returns>A list of all equipment items.</returns>
     /// <response code="200">Returns the list of equipment items.</response>
-    [ProducesResponseType(typeof(IEnumerable<Equipment>), StatusCodes.Status200OK)]
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_equipment.Values);
+        return Ok(_equipment.Values.ToList());
     }
 
     // GET: api/equipment/1
@@ -32,8 +35,11 @@ public class EquipmentController : ControllerBase
     /// <returns>The requested equipment if found.</returns>
     /// <response code="200">Returns the requested equipment.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
@@ -50,15 +56,19 @@ public class EquipmentController : ControllerBase
     /// <returns>A list of equipment items in the specified category.</returns>
     /// <response code="200">Returns the list of equipment items in the category.</response>
     /// <response code="404">If no equipment is found for the specified category.</response>
-    [ProducesResponseType(typeof(IEnumerable<Equipment>), StatusCodes.Status200OK)]
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("category/{categoryId:int}")]
     public IActionResult GetByCategory(int categoryId)
     {
         var items = _equipment.Values
-            .Where(e => e.CategoryId == categoryId);
+            .Where(e => e.CategoryId == categoryId)
+            .ToList();
         
-        return items.Any() 
+        return items.Count > 0
             ? Ok(items) 
             : NotFound();
     }
@@ -70,8 +80,13 @@ public class EquipmentController : ControllerBase
     /// <param name="equipment">The equipment item to create.</param>
     /// <returns>The created equipment item.</returns>
     /// <response code="201">Returns the created equipment item ID.</response>
+    /// <response code="400">If the equipment data is invalid.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
     public IActionResult Create(Equipment equipment)
     {
@@ -90,8 +105,12 @@ public class EquipmentController : ControllerBase
     /// <returns>The updated equipment item.</returns>
     /// <response code="200">Returns the updated equipment item.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Equipment updatedEquipment)
     {
@@ -110,7 +129,7 @@ public class EquipmentController : ControllerBase
         return Ok(equipment);
     }
 
-    // DELETE: api/equipments/1
+    // DELETE: api/equipment/1
     /// <summary>
     /// Deletes a specific equipment item by ID.
     /// </summary>
@@ -118,8 +137,11 @@ public class EquipmentController : ControllerBase
     /// <returns>No content if successful.</returns>
     /// <response code="204">The equipment was successfully deleted.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
