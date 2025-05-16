@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using EER.API.SwaggerSchemaFilters;
 using Microsoft.OpenApi.Models;
 
 namespace EER.API.Extensions;
@@ -67,6 +68,8 @@ public static class ServiceExtensions
                     []
                 }
             });
+            
+            options.SchemaFilter<EnumSchemaFilter>();
         });
     }
 }
