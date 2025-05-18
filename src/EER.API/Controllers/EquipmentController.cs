@@ -91,6 +91,7 @@ public sealed class EquipmentController : ControllerBase
     public IActionResult Create(Equipment equipment)
     {
         equipment.Id = Interlocked.Increment(ref _idCounter);
+        equipment.CreatedAt = DateTime.UtcNow;
         equipment.UpdatedAt = DateTime.UtcNow;
         _equipment[equipment.Id] = equipment;
         return CreatedAtAction(nameof(GetById), new { id = equipment.Id }, equipment);
@@ -123,9 +124,12 @@ public sealed class EquipmentController : ControllerBase
         equipment.Location = updatedEquipment.Location;
         equipment.CategoryId = updatedEquipment.CategoryId;
         equipment.AvailableQuantity = updatedEquipment.AvailableQuantity;
+        equipment.TotalStock = updatedEquipment.TotalStock;
         equipment.Description = updatedEquipment.Description;
         equipment.PricePerDay = updatedEquipment.PricePerDay;
         equipment.UpdatedAt = DateTime.UtcNow;
+        equipment.AverageRating = updatedEquipment.AverageRating;
+        equipment.TotalReviews = updatedEquipment.TotalReviews;
         return Ok(equipment);
     }
 

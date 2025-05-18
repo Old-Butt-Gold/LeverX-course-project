@@ -10,6 +10,6 @@ public class Review : BaseEntity<long>
     public DateTime CreatedAt { get; set; }
 
     public Guid UserId { get; set; }
-    
+    public long EquipmentId { get; set; }
     public long RentalId { get; set; }
 }

@@ -66,8 +66,8 @@ public sealed class ReviewsController : ControllerBase
     public IActionResult Create(Review review)
     {
         review.Id = Interlocked.Increment(ref _idCounter);
-        review.UpdatedAt = DateTime.UtcNow;
         review.CreatedAt = DateTime.UtcNow;
+        review.UpdatedAt = DateTime.UtcNow;
         _reviews[review.Id] = review;
         return CreatedAtAction(nameof(GetById), new { id = review.Id }, review);
     }

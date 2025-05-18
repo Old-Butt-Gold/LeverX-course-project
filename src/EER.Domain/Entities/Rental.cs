@@ -9,6 +9,8 @@ public class Rental : BaseEntity<long>
     public DateTime EndDate { get; set; }
     public decimal TotalPrice { get; set; }
     public int Quantity { get; set; }
+    
+    public DateTime CreatedAt { get; set; }
     public RentalStatus Status { get; set; }
 
     public Guid UserId { get; set; }

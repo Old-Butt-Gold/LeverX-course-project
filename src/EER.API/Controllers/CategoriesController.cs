@@ -100,6 +100,7 @@ public sealed class CategoriesController : ControllerBase
         category.Description = updatedCategory.Description;
         category.IsActive = updatedCategory.IsActive;
         category.Slug = updatedCategory.Slug;
+        category.TotalEquipment = updatedCategory.TotalEquipment;
         
         return Ok(category);
     }

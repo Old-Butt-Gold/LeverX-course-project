@@ -68,6 +68,7 @@ public sealed class RentalsController : ControllerBase
     {
         rental.Id = Interlocked.Increment(ref _idCounter);
         rental.Status = RentalStatus.Pending;
+        rental.CreatedAt = DateTime.UtcNow;
         _rentals[rental.Id] = rental;
         return CreatedAtAction(nameof(GetById), new { id = rental.Id }, rental);
     }
