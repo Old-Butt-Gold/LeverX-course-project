@@ -13,7 +13,7 @@ public class Rental : BaseEntity<long>
     public DateTime CreatedAt { get; set; }
     public RentalStatus Status { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid CustomerId { get; set; }
 
     public long EquipmentId { get; set; }
 
