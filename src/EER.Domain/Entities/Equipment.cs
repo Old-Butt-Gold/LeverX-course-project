@@ -4,9 +4,9 @@ namespace EER.Domain.Entities;
 
 public class Equipment : BaseEntity<long>
 {
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public string Location { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public required string Location { get; set; }
     public decimal PricePerDay { get; set; }
 
     public DateTime CreatedAt { get; set; }

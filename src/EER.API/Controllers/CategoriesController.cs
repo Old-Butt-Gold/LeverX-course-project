@@ -8,7 +8,7 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class CategoriesController : ControllerBase
 {
-    private static readonly Dictionary<int, Category> _categories = [];
+    private static readonly Dictionary<int, Category> Categories = [];
     private static int _idCounter;
 
     // GET: api/categories
@@ -24,7 +24,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_categories.Values.ToList());
+        return Ok(Categories.Values.ToList());
     }
 
     // GET: api/categories/1
@@ -43,7 +43,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
-        return _categories.TryGetValue(id, out var category)
+        return Categories.TryGetValue(id, out var category)
             ? Ok(category)
             : NotFound();
     }
@@ -69,7 +69,7 @@ public sealed class CategoriesController : ControllerBase
     {
         category.Id = Interlocked.Increment(ref _idCounter);
         category.IsActive = true;
-        _categories[category.Id] = category;
+        Categories[category.Id] = category;
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
     }
 
@@ -91,7 +91,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpPut("{id:int}")]
     public IActionResult Update(int id, Category updatedCategory)
     {
-        if (!_categories.TryGetValue(id, out var category))
+        if (!Categories.TryGetValue(id, out var category))
         {
             return NotFound();
         }
@@ -121,7 +121,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        return !_categories.Remove(id)
+        return !Categories.Remove(id)
             ? NotFound()
             : NoContent();
     }
