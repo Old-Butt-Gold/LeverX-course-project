@@ -12,7 +12,7 @@ public class EnumSchemaFilter : ISchemaFilter
         {
             var enumValues = Enum.GetValues(context.Type);
             var underlyingType = Enum.GetUnderlyingType(context.Type);
-            
+
             schema.Description = "Possible values:";
             schema.Enum.Clear();
 

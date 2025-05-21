@@ -49,8 +49,8 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:guid}")]
     public IActionResult GetById(Guid id)
     {
-        return _users.TryGetValue(id, out var user) 
-            ? Ok(user) 
+        return _users.TryGetValue(id, out var user)
+            ? Ok(user)
             : NotFound();
     }
 
@@ -71,7 +71,7 @@ public sealed class UsersController : ControllerBase
     [HttpPost]
     public IActionResult Create(User user)
     {
-        user.Id = Guid.NewGuid(); 
+        user.Id = Guid.NewGuid();
         user.CreatedAt = DateTime.UtcNow;
         user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
         _users[user.Id] = user;
@@ -100,7 +100,7 @@ public sealed class UsersController : ControllerBase
         {
             return NotFound();
         }
-       
+
         user.Email = updatedUser.Email;
         user.FullName = updatedUser.FullName;
         user.PasswordHash = _passwordHasher.HashPassword(updatedUser, updatedUser.PasswordHash);
@@ -122,8 +122,8 @@ public sealed class UsersController : ControllerBase
     [HttpDelete("{id:guid}")]
     public IActionResult Delete(Guid id)
     {
-        return !_users.Remove(id) 
-            ? NotFound() 
+        return !_users.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

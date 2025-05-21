@@ -1,7 +1,7 @@
-﻿using EER.Domain.Entities;
+﻿using System.Net.Mime;
+using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
 
 namespace EER.API.Controllers;
 
@@ -44,8 +44,8 @@ public sealed class RentalsController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _rentals.TryGetValue(id, out var rental) 
-            ? Ok(rental) 
+        return _rentals.TryGetValue(id, out var rental)
+            ? Ok(rental)
             : NotFound();
     }
 
@@ -116,8 +116,8 @@ public sealed class RentalsController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_rentals.Remove(id) 
-            ? NotFound() 
+        return !_rentals.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

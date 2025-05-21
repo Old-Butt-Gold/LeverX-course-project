@@ -10,7 +10,7 @@ public sealed class CategoriesController : ControllerBase
 {
     private static readonly Dictionary<int, Category> _categories = [];
     private static int _idCounter;
-    
+
     // GET: api/categories
     /// <summary>
     /// Retrieves all categories.
@@ -47,7 +47,7 @@ public sealed class CategoriesController : ControllerBase
             ? Ok(category)
             : NotFound();
     }
-    
+
     // TODO later use <remarks> for example of DTO and implement BadRequest
 
     // POST: api/categories
@@ -101,7 +101,7 @@ public sealed class CategoriesController : ControllerBase
         category.IsActive = updatedCategory.IsActive;
         category.Slug = updatedCategory.Slug;
         category.TotalEquipment = updatedCategory.TotalEquipment;
-        
+
         return Ok(category);
     }
 
@@ -121,8 +121,8 @@ public sealed class CategoriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        return !_categories.Remove(id) 
-            ? NotFound() 
+        return !_categories.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

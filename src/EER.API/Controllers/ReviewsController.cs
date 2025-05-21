@@ -1,6 +1,6 @@
-﻿using EER.Domain.Entities;
+﻿using System.Net.Mime;
+using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
 
 namespace EER.API.Controllers;
 
@@ -43,8 +43,8 @@ public sealed class ReviewsController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _reviews.TryGetValue(id, out var review) 
-            ? Ok(review) 
+        return _reviews.TryGetValue(id, out var review)
+            ? Ok(review)
             : NotFound();
     }
 
@@ -94,7 +94,7 @@ public sealed class ReviewsController : ControllerBase
         {
             return NotFound();
         }
-        
+
         review.Rating = updatedReview.Rating;
         review.Comment = updatedReview.Comment;
         review.UpdatedAt = DateTime.UtcNow;
@@ -117,8 +117,8 @@ public sealed class ReviewsController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_reviews.Remove(id) 
-            ? NotFound() 
+        return !_reviews.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

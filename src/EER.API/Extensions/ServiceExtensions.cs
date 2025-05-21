@@ -16,32 +16,30 @@ public static class ServiceExtensions
                     .AllowAnyHeader());
         });
     }
-    
+
     public static void ConfigureSwaggerGen(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo()
-            {
-                Version = "v1",
-                Title = "Event Equipment Rental API",
-                Contact = new OpenApiContact
+            options.SwaggerDoc("v1",
+                new OpenApiInfo()
                 {
-                    Name = "Andrey",
-                    Url = new("https://github.com/Old-Butt-Gold"),
-                    Email = "andrey2004andrey2021@gmail.com",
-                },
-                License = new OpenApiLicense
-                {
-                    Name = "MIT License",
-                }
-            });
-            
+                    Version = "v1",
+                    Title = "Event Equipment Rental API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Andrey",
+                        Url = new("https://github.com/Old-Butt-Gold"),
+                        Email = "andrey2004andrey2021@gmail.com",
+                    },
+                    License = new OpenApiLicense { Name = "MIT License", }
+                });
+
             var basePath = AppContext.BaseDirectory;
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(basePath, xmlFile);
             options.IncludeXmlComments(xmlPath);
-            
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
@@ -53,22 +51,18 @@ public static class ServiceExtensions
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
             });
-            
+
             options.AddSecurityRequirement(new OpenApiSecurityRequirement()
             {
                 {
                     new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        },
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
                     },
                     []
                 }
             });
-            
+
             options.SchemaFilter<EnumSchemaFilter>();
         });
     }

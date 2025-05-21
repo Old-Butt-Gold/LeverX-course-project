@@ -43,8 +43,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _equipment.TryGetValue(id, out var item) 
-            ? Ok(item) 
+        return _equipment.TryGetValue(id, out var item)
+            ? Ok(item)
             : NotFound();
     }
 
@@ -67,9 +67,9 @@ public sealed class EquipmentController : ControllerBase
         var items = _equipment.Values
             .Where(e => e.CategoryId == categoryId)
             .ToList();
-        
+
         return items.Count > 0
-            ? Ok(items) 
+            ? Ok(items)
             : NotFound();
     }
 
@@ -149,8 +149,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_equipment.Remove(id) 
-            ? NotFound() 
+        return !_equipment.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }
