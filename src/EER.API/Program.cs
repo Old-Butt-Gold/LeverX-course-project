@@ -31,4 +31,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.ApplyMigrations(app.Services);
+
 app.Run();
