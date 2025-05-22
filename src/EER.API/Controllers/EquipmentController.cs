@@ -8,7 +8,7 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentController : ControllerBase
 {
-    private static readonly Dictionary<long, Equipment> _equipment = [];
+    private static readonly Dictionary<long, Equipment> Equipment = [];
     private static long _idCounter;
 
     // GET: api/equipment
@@ -24,7 +24,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_equipment.Values.ToList());
+        return Ok(Equipment.Values.ToList());
     }
 
     // GET: api/equipment/1
@@ -43,8 +43,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _equipment.TryGetValue(id, out var item) 
-            ? Ok(item) 
+        return Equipment.TryGetValue(id, out var item)
+            ? Ok(item)
             : NotFound();
     }
 
@@ -64,12 +64,12 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("category/{categoryId:int}")]
     public IActionResult GetByCategory(int categoryId)
     {
-        var items = _equipment.Values
+        var items = Equipment.Values
             .Where(e => e.CategoryId == categoryId)
             .ToList();
-        
+
         return items.Count > 0
-            ? Ok(items) 
+            ? Ok(items)
             : NotFound();
     }
 
@@ -93,7 +93,7 @@ public sealed class EquipmentController : ControllerBase
         equipment.Id = Interlocked.Increment(ref _idCounter);
         equipment.CreatedAt = DateTime.UtcNow;
         equipment.UpdatedAt = DateTime.UtcNow;
-        _equipment[equipment.Id] = equipment;
+        Equipment[equipment.Id] = equipment;
         return CreatedAtAction(nameof(GetById), new { id = equipment.Id }, equipment);
     }
 
@@ -115,7 +115,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Equipment updatedEquipment)
     {
-        if (!_equipment.TryGetValue(id, out var equipment))
+        if (!Equipment.TryGetValue(id, out var equipment))
         {
             return NotFound();
         }
@@ -149,8 +149,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_equipment.Remove(id) 
-            ? NotFound() 
+        return !Equipment.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

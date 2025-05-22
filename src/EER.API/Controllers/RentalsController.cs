@@ -1,7 +1,7 @@
-﻿using EER.Domain.Entities;
+﻿using System.Net.Mime;
+using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
 
 namespace EER.API.Controllers;
 
@@ -9,7 +9,7 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class RentalsController : ControllerBase
 {
-    private static readonly Dictionary<long, Rental> _rentals = [];
+    private static readonly Dictionary<long, Rental> Rentals = [];
     private static long _idCounter;
 
     // GET: api/rentals
@@ -25,7 +25,7 @@ public sealed class RentalsController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_rentals.Values.ToList());
+        return Ok(Rentals.Values.ToList());
     }
 
     // GET: api/rentals/1
@@ -44,8 +44,8 @@ public sealed class RentalsController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _rentals.TryGetValue(id, out var rental) 
-            ? Ok(rental) 
+        return Rentals.TryGetValue(id, out var rental)
+            ? Ok(rental)
             : NotFound();
     }
 
@@ -69,7 +69,7 @@ public sealed class RentalsController : ControllerBase
         rental.Id = Interlocked.Increment(ref _idCounter);
         rental.Status = RentalStatus.Pending;
         rental.CreatedAt = DateTime.UtcNow;
-        _rentals[rental.Id] = rental;
+        Rentals[rental.Id] = rental;
         return CreatedAtAction(nameof(GetById), new { id = rental.Id }, rental);
     }
 
@@ -91,7 +91,7 @@ public sealed class RentalsController : ControllerBase
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Rental updatedRental)
     {
-        if (!_rentals.TryGetValue(id, out var rental))
+        if (!Rentals.TryGetValue(id, out var rental))
         {
             return NotFound();
         }
@@ -116,8 +116,8 @@ public sealed class RentalsController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_rentals.Remove(id) 
-            ? NotFound() 
+        return !Rentals.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

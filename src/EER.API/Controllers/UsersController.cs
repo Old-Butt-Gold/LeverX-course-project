@@ -9,7 +9,7 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class UsersController : ControllerBase
 {
-    private static readonly Dictionary<Guid, User> _users = [];
+    private static readonly Dictionary<Guid, User> Users = [];
     private readonly IPasswordHasher<User> _passwordHasher;
 
     public UsersController(IPasswordHasher<User> passwordHasher)
@@ -30,7 +30,7 @@ public sealed class UsersController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_users.Values.ToList());
+        return Ok(Users.Values.ToList());
     }
 
     // GET: api/users/1
@@ -49,8 +49,8 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:guid}")]
     public IActionResult GetById(Guid id)
     {
-        return _users.TryGetValue(id, out var user) 
-            ? Ok(user) 
+        return Users.TryGetValue(id, out var user)
+            ? Ok(user)
             : NotFound();
     }
 
@@ -71,10 +71,10 @@ public sealed class UsersController : ControllerBase
     [HttpPost]
     public IActionResult Create(User user)
     {
-        user.Id = Guid.NewGuid(); 
+        user.Id = Guid.NewGuid();
         user.CreatedAt = DateTime.UtcNow;
         user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
-        _users[user.Id] = user;
+        Users[user.Id] = user;
         return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
     }
 
@@ -96,11 +96,11 @@ public sealed class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public IActionResult Update(Guid id, User updatedUser)
     {
-        if (!_users.TryGetValue(id, out var user))
+        if (!Users.TryGetValue(id, out var user))
         {
             return NotFound();
         }
-       
+
         user.Email = updatedUser.Email;
         user.FullName = updatedUser.FullName;
         user.PasswordHash = _passwordHasher.HashPassword(updatedUser, updatedUser.PasswordHash);
@@ -122,8 +122,8 @@ public sealed class UsersController : ControllerBase
     [HttpDelete("{id:guid}")]
     public IActionResult Delete(Guid id)
     {
-        return !_users.Remove(id) 
-            ? NotFound() 
+        return !Users.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }

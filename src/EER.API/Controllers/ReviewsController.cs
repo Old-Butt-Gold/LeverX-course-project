@@ -1,6 +1,6 @@
-﻿using EER.Domain.Entities;
+﻿using System.Net.Mime;
+using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
 
 namespace EER.API.Controllers;
 
@@ -8,7 +8,7 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class ReviewsController : ControllerBase
 {
-    private static readonly Dictionary<long, Review> _reviews = new();
+    private static readonly Dictionary<long, Review> Reviews = new();
     private static long _idCounter;
 
     // GET: api/reviews
@@ -24,7 +24,7 @@ public sealed class ReviewsController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_reviews.Values.ToList());
+        return Ok(Reviews.Values.ToList());
     }
 
     // GET: api/reviews/1
@@ -43,8 +43,8 @@ public sealed class ReviewsController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return _reviews.TryGetValue(id, out var review) 
-            ? Ok(review) 
+        return Reviews.TryGetValue(id, out var review)
+            ? Ok(review)
             : NotFound();
     }
 
@@ -68,7 +68,7 @@ public sealed class ReviewsController : ControllerBase
         review.Id = Interlocked.Increment(ref _idCounter);
         review.CreatedAt = DateTime.UtcNow;
         review.UpdatedAt = DateTime.UtcNow;
-        _reviews[review.Id] = review;
+        Reviews[review.Id] = review;
         return CreatedAtAction(nameof(GetById), new { id = review.Id }, review);
     }
 
@@ -90,11 +90,11 @@ public sealed class ReviewsController : ControllerBase
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, Review updatedReview)
     {
-        if (!_reviews.TryGetValue(id, out var review))
+        if (!Reviews.TryGetValue(id, out var review))
         {
             return NotFound();
         }
-        
+
         review.Rating = updatedReview.Rating;
         review.Comment = updatedReview.Comment;
         review.UpdatedAt = DateTime.UtcNow;
@@ -117,8 +117,8 @@ public sealed class ReviewsController : ControllerBase
     [HttpDelete("{id:long}")]
     public IActionResult Delete(long id)
     {
-        return !_reviews.Remove(id) 
-            ? NotFound() 
+        return !Reviews.Remove(id)
+            ? NotFound()
             : NoContent();
     }
 }
