@@ -63,7 +63,7 @@ internal sealed class MssqlMigrationService : IMigrationService
         foreach (var migrationFile in migrationFiles)
         {
             _logger.LogInformation("Applying migration: {MigrationId}", migrationFile.Key);
-            ApplyMigration(connection, migrationFile.Key,migrationFile.Value);
+            ApplyMigration(connection, migrationFile.Key, migrationFile.Value);
         }
     }
 
