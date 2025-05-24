@@ -4,20 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace EER.Persistence.Migrations;
 
-internal sealed class MssqlMigrationService : IMigrationService
+internal sealed class MssqlSqlMigrationService : ISqlMigrationService
 {
     private readonly string _connectionString;
     private readonly string _migrationsPath;
-    private readonly ILogger<MssqlMigrationService> _logger;
+    private readonly ILogger<MssqlSqlMigrationService> _logger;
 
-    public MssqlMigrationService(IConfiguration configuration, ILogger<MssqlMigrationService> logger)
+    public MssqlSqlMigrationService(IConfiguration configuration, ILogger<MssqlSqlMigrationService> logger)
     {
         _connectionString = configuration.GetConnectionString("MSConnection")!;
 
         if (_connectionString is null)
             throw new InvalidOperationException("Connection string not found to configure Migration Service");
 
-        var assemblyLocation = typeof(MssqlMigrationService).Assembly.Location;
+        var assemblyLocation = typeof(MssqlSqlMigrationService).Assembly.Location;
         var assemblyDirectory = Path.GetDirectoryName(assemblyLocation)!;
         _migrationsPath = Path.Combine(assemblyDirectory, "Migrations");
 

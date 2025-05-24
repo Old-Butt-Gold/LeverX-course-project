@@ -1,4 +1,5 @@
 ﻿using EER.API.Extensions;
+using EER.Persistence.Migrations.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers(config =>
     config.ReturnHttpNotAcceptable = true;
 }).AddXmlDataContractSerializerFormatters();
 
+builder.Services.ConfigureMigrationService();
 builder.Services.ConfigureCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();

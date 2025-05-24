@@ -6,6 +6,6 @@ public static class ServiceExtensions
 {
     public static void ConfigureMigrationService(this IServiceCollection servicesCollection)
     {
-        servicesCollection.AddSingleton<IMigrationService, MssqlMigrationService>();
+        servicesCollection.AddSingleton<ISqlMigrationService, MssqlSqlMigrationService>();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace EER.Persistence.Migrations;
 
-public interface IMigrationService
+public interface ISqlMigrationService
 {
     void ApplyMigrations();
 }
