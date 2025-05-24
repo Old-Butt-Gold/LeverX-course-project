@@ -1,0 +1,8 @@
+-- category document --
+{
+    _id: "int",
+    name: "string",
+    description: "string",
+    slug: "string",
+    totalEquipment: "int"
+}

@@ -1,0 +1,24 @@
+-- user document --
+{
+    _id: "UUID",
+    email: "string",
+    passwordHash: "string",
+    fullName: "string | null",
+    createdAt: "DateTime",
+    role: "enum('Customer', 'Owner', 'Admin')",
+    favorites: [
+        {
+            equipmentId: "int"
+            addedAt: "DateTime"
+        }
+    ],
+    offices: [
+        {
+            _id: "int",
+            address: "string",
+            city: "string",
+            country: "string",
+            isActive: "boolean"
+        }
+    ]
+}
