@@ -37,7 +37,7 @@ CREATE INDEX [IX_Office_City_Country] ON [Identity].[Office] ("City", "Country")
 GO
 
 CREATE TABLE [Identity].[Favorites] (
-  [EquipmentItemId] bigInt,
+  [EquipmentId] int,
   [UserId] uniqueIdentifier,
   [AddedAt] datetime2(0) NOT NULL DEFAULT GETUTCDATE(),
   PRIMARY KEY ([UserId], [EquipmentItemId])
@@ -201,7 +201,7 @@ GO
 ALTER TABLE [Identity].[Office] ADD FOREIGN KEY ([OwnerId]) REFERENCES [Identity].[User] ([Id])
 GO
 
-ALTER TABLE [Identity].[Favorites] ADD FOREIGN KEY ([EquipmentItemId]) REFERENCES [Supplies].[EquipmentItem] ([Id]) ON DELETE CASCADE
+ALTER TABLE [Identity].[Favorites] ADD FOREIGN KEY ([EquipmentId]) REFERENCES [Supplies].[Equipment] ([Id]) ON DELETE CASCADE
 GO
 
 ALTER TABLE [Identity].[Favorites] ADD FOREIGN KEY ([UserId]) REFERENCES [Identity].[User] ([Id])
