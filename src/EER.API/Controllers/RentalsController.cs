@@ -9,8 +9,8 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class RentalsController : ControllerBase
 {
-    private static readonly Dictionary<long, Rental> Rentals = [];
-    private static long _idCounter;
+    private static readonly Dictionary<int, Rental> Rentals = [];
+    private static int _idCounter;
 
     // GET: api/rentals
     /// <summary>
@@ -41,8 +41,8 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpGet("{id:long}")]
-    public IActionResult GetById(long id)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById(int id)
     {
         return Rentals.TryGetValue(id, out var rental)
             ? Ok(rental)
@@ -88,8 +88,8 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:long}")]
-    public IActionResult Update(long id, Rental updatedRental)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, Rental updatedRental)
     {
         if (!Rentals.TryGetValue(id, out var rental))
         {
@@ -113,8 +113,8 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
     {
         return !Rentals.Remove(id)
             ? NotFound()

@@ -3,19 +3,18 @@ using EER.Domain.Enums;
 
 namespace EER.Domain.Entities;
 
-public class Rental : BaseEntity<long>
+public class Rental : BaseEntity<int>
 {
+    public Guid CustomerId { get; set; }
+    public Guid OwnerId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public decimal TotalPrice { get; set; }
-    public int Quantity { get; set; }
-
-    public DateTime CreatedAt { get; set; }
     public RentalStatus Status { get; set; }
 
-    public Guid CustomerId { get; set; }
-
-    public long EquipmentId { get; set; }
-
-    public long? ReviewId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public Guid UpdatedBy { get; set; }
 }
+

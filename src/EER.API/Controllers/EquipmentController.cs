@@ -8,8 +8,8 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentController : ControllerBase
 {
-    private static readonly Dictionary<long, Equipment> Equipment = [];
-    private static long _idCounter;
+    private static readonly Dictionary<int, Equipment> Equipment = [];
+    private static int _idCounter;
 
     // GET: api/equipment
     /// <summary>
@@ -40,8 +40,8 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpGet("{id:long}")]
-    public IActionResult GetById(long id)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById(int id)
     {
         return Equipment.TryGetValue(id, out var item)
             ? Ok(item)
@@ -92,7 +92,6 @@ public sealed class EquipmentController : ControllerBase
     {
         equipment.Id = Interlocked.Increment(ref _idCounter);
         equipment.CreatedAt = DateTime.UtcNow;
-        equipment.UpdatedAt = DateTime.UtcNow;
         Equipment[equipment.Id] = equipment;
         return CreatedAtAction(nameof(GetById), new { id = equipment.Id }, equipment);
     }
@@ -112,8 +111,8 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:long}")]
-    public IActionResult Update(long id, Equipment updatedEquipment)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, Equipment updatedEquipment)
     {
         if (!Equipment.TryGetValue(id, out var equipment))
         {
@@ -121,13 +120,9 @@ public sealed class EquipmentController : ControllerBase
         }
 
         equipment.Name = updatedEquipment.Name;
-        equipment.Location = updatedEquipment.Location;
         equipment.CategoryId = updatedEquipment.CategoryId;
-        equipment.AvailableQuantity = updatedEquipment.AvailableQuantity;
-        equipment.TotalStock = updatedEquipment.TotalStock;
         equipment.Description = updatedEquipment.Description;
         equipment.PricePerDay = updatedEquipment.PricePerDay;
-        equipment.UpdatedAt = DateTime.UtcNow;
         equipment.AverageRating = updatedEquipment.AverageRating;
         equipment.TotalReviews = updatedEquipment.TotalReviews;
         return Ok(equipment);
@@ -146,8 +141,8 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
     {
         return !Equipment.Remove(id)
             ? NotFound()

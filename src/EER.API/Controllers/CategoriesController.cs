@@ -68,7 +68,6 @@ public sealed class CategoriesController : ControllerBase
     public IActionResult Create(Category category)
     {
         category.Id = Interlocked.Increment(ref _idCounter);
-        category.IsActive = true;
         Categories[category.Id] = category;
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
     }
@@ -98,7 +97,6 @@ public sealed class CategoriesController : ControllerBase
 
         category.Name = updatedCategory.Name;
         category.Description = updatedCategory.Description;
-        category.IsActive = updatedCategory.IsActive;
         category.Slug = updatedCategory.Slug;
         category.TotalEquipment = updatedCategory.TotalEquipment;
 

@@ -1,11 +1,12 @@
-﻿namespace EER.Domain.Entities;
+﻿using EER.Domain.Entities.Abstractions;
 
-public class Review
+namespace EER.Domain.Entities;
+
+public class EquipmentImages : BaseEntity<int>
 {
-    public Guid CustomerId { get; set; }
     public int EquipmentId { get; set; }
-    public byte Rating { get; set; } // 1 - 5
-    public string? Comment { get; set; }
+    public int DisplayOrder { get; set; }
+    public required string ImageUrl { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }
