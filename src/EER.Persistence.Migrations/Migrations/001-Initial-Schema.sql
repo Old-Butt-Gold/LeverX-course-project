@@ -12,8 +12,10 @@ CREATE TABLE [Identity].[User] (
   [Email] nvarchar(150) NOT NULL,
   [PasswordHash] nvarchar(64) NOT NULL,
   [FullName] nvarchar(150),
+  [UserRole] nvarchar(255) NOT NULL CHECK ([UserRole] IN ('Customer', 'Owner', 'Admin')),
+  
   [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
-  [UserRole] nvarchar(255) NOT NULL CHECK ([UserRole] IN ('Customer', 'Owner', 'Admin'))
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
 )
 GO
 
@@ -26,7 +28,12 @@ CREATE TABLE [Identity].[Office] (
   [Address] nvarchar(150) NOT NULL,
   [City] nvarchar(100) NOT NULL,
   [Country] nvarchar(100) NOT NULL,
-  [IsActive] BIT NOT NULL DEFAULT (1)
+  [IsActive] BIT NOT NULL DEFAULT (1),
+  
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
@@ -38,13 +45,16 @@ GO
 
 CREATE TABLE [Identity].[Favorites] (
   [EquipmentId] int,
-  [UserId] uniqueIdentifier,
-  [AddedAt] datetime2(0) NOT NULL DEFAULT GETUTCDATE(),
-  PRIMARY KEY ([UserId], [EquipmentItemId])
+  [UserId] uniqueidentifier,
+  
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  
+  PRIMARY KEY ([UserId], [EquipmentId])
 )
 GO
 
-CREATE INDEX [IX_Favorites_AddedAt] ON [Identity].[Favorites] ("AddedAt")
+CREATE INDEX [IX_Favorites_CreatedAt] ON [Identity].[Favorites] ("CreatedAt")
 GO
 
 CREATE TABLE [Supplies].[Category] (
@@ -52,7 +62,12 @@ CREATE TABLE [Supplies].[Category] (
   [Name] nvarchar(100) NOT NULL,
   [Description] nvarchar(300) NOT NULL,
   [Slug] nvarchar(100) NOT NULL,
-  [TotalEquipment] integer NOT NULL DEFAULT (0)
+  [TotalEquipment] integer NOT NULL DEFAULT (0),
+  
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
@@ -73,8 +88,12 @@ CREATE TABLE [Supplies].[Equipment] (
   [PricePerDay] decimal(8,2) NOT NULL,
   [AverageRating] decimal(3,2) NOT NULL DEFAULT (0),
   [TotalReviews] integer NOT NULL DEFAULT (0),
+  [IsModerated] BIT NOT NULL DEFAULT (0),
+
   [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
-  [IsModerated] BIT NOT NULL DEFAULT (0)
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
@@ -103,7 +122,12 @@ CREATE TABLE [Supplies].[EquipmentItem] (
   [SerialNumber] nvarchar(100) NOT NULL,
   [ItemStatus] nvarchar(255) NOT NULL CHECK ([ItemStatus] IN ('Available', 'InUse', 'UnderMaintenance', 'Retired')) DEFAULT 'Available',
   [MaintenanceDate] date,
-  [PurchaseDate] date NOT NULL
+  [PurchaseDate] date NOT NULL,
+
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
@@ -125,12 +149,16 @@ CREATE TABLE [Supplies].[EquipmentImages] (
   [EquipmentId] integer NOT NULL,
   [DisplayOrder] integer NOT NULL,
   [ImageUrl] nvarchar(500) NOT NULL,
-  [CreatedAt] datetime2(0) NOT NULL DEFAULT GETUTCDATE()
+
+  [CreatedAt] datetime2(0) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
 ALTER TABLE [Supplies].[EquipmentImages]
-    ADD CONSTRAINT CK_DisplayOrder CHECK (DisplayOrder >= 0);
+    ADD CONSTRAINT CK_DisplayOrder CHECK (DisplayOrder >= 1);
 GO
 
 CREATE UNIQUE INDEX [UQ_EquipmentImages_Order] ON [Supplies].[EquipmentImages] ("EquipmentId", "DisplayOrder")
@@ -144,7 +172,11 @@ CREATE TABLE [Supplies].[Rental] (
   [EndDate] datetime2(0) NOT NULL,
   [TotalPrice] decimal(9,2) NOT NULL,
   [Status] nvarchar(255) NOT NULL CHECK ([Status] IN ('Pending', 'Active', 'Completed', 'Canceled')) DEFAULT 'Pending',
-  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE()
+  
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
 )
 GO
 
@@ -169,6 +201,10 @@ CREATE TABLE [Supplies].[RentalItem] (
   [RentalId] integer,
   [EquipmentItemId] bigint,
   [ActualPrice] decimal(8,2) NOT NULL,
+
+  [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+
   PRIMARY KEY ([RentalId], [EquipmentItemId])
 )
 GO
@@ -181,7 +217,12 @@ CREATE TABLE [Critique].[Review] (
   [EquipmentId] integer NOT NULL,
   [Rating] tinyint NOT NULL,
   [Comment] nvarchar(1000),
+
   [CreatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [CreatedBy] uniqueidentifier NOT NULL,
+  [UpdatedAt] datetime2(2) NOT NULL DEFAULT GETUTCDATE(),
+  [UpdatedBy] uniqueidentifier NOT NULL,
+
   PRIMARY KEY ([CustomerId], [EquipmentId])
 )
 GO
