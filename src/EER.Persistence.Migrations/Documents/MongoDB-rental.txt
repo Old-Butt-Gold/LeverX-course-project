@@ -3,6 +3,7 @@
     _id: "int",
     timeline: {
         createdAt: "DateTime",
+        updatedAt: "DateTime"
         startDate: "DateTime",
         endDate: "DateTime"
     },
@@ -15,9 +16,13 @@
         items: [
             {
                 equipmentItemId: "long",
-                actualPrice: "Decimal"
+                actualPrice: "Decimal",
+                createdAt: "DateTime",
+                createdBy: "UUID",
             }
         ]
     },
     status: "enum('Pending', 'Active', 'Completed', 'Canceled')"
+    createdBy: "UUID",
+    updatedBy: "UUID"
 }

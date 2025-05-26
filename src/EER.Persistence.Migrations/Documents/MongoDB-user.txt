@@ -5,11 +5,13 @@
     passwordHash: "string",
     fullName: "string | null",
     createdAt: "DateTime",
+    updatedAt: "DateTime",
     role: "enum('Customer', 'Owner', 'Admin')",
     favorites: [
         {
             equipmentId: "int"
-            addedAt: "DateTime"
+            createdAt: "DateTime",
+            createdBy: "UUID"
         }
     ],
     offices: [
@@ -18,7 +20,11 @@
             address: "string",
             city: "string",
             country: "string",
-            isActive: "boolean"
+            isActive: "boolean",
+            createdAt: "DateTime",
+            createdBy: "UUID",
+            updatedAt: "DateTime",
+            updatedBy: "UUID"
         }
     ]
 }

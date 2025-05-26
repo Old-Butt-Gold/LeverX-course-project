@@ -22,7 +22,11 @@
                 status: "enum('Available', 'InUse', 'UnderMaintenance', 'Retired')",
                 officeId: "int | null",
                 maintenanceDate: "Date | null",
-                purchaseDate: "Date"
+                purchaseDate: "Date",
+                createdAt: "DateTime",
+                createdBy: "UUID",
+                updatedAt: "DateTime",
+                updatedBy: "UUID"
             }
         ]
     },
@@ -30,7 +34,10 @@
         {
             order: "int",
             url: "string",
-            uploadedAt: "DateTime"
+            uploadedAt: "DateTime",
+            uploadedBy: "UUID",
+            updatedAt: "DateTime",
+            updatedBy: "UUID"
         }
     ],
     reviews: [
@@ -38,8 +45,15 @@
             userId: "UUID",
             rating: "int(1-5)",
             comment: "string | null",
-            createdAt: "DateTime"
+            createdAt: "DateTime",
+            createdAt: "DateTime",
+            createdBy: "UUID",
+            updatedAt: "DateTime",
+            updatedBy: "UUID"
         }
     ],
-    createdAt: "DateTime"
+    createdAt: "DateTime",
+    createdBy: "UUID",
+    updatedAt: "DateTime",
+    updatedBy: "UUID"
 }
