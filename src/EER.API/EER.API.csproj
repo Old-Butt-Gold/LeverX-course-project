@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EER.Domain\EER.Domain.csproj"/>
+    <ProjectReference Include="..\EER.Persistence.Migrations\EER.Persistence.Migrations.csproj" />
   </ItemGroup>
 
 </Project>
