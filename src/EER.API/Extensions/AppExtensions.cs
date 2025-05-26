@@ -1,4 +1,4 @@
-﻿using EER.Domain.Repositories;
+﻿using EER.Domain.DatabaseAbstractions;
 using EER.Persistence;
 
 namespace EER.API.Extensions;

@@ -1,4 +1,4 @@
-﻿using EER.Domain.Repositories;
+﻿using EER.Domain.DatabaseAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EER.Persistence.Extensions;

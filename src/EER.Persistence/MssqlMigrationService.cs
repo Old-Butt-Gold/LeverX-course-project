@@ -1,4 +1,4 @@
-﻿using EER.Domain.Repositories;
+﻿using EER.Domain.DatabaseAbstractions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

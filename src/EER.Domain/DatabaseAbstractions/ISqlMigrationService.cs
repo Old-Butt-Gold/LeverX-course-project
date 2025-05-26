@@ -1,4 +1,4 @@
-﻿namespace EER.Domain.Repositories;
+﻿namespace EER.Domain.DatabaseAbstractions;
 
 public interface ISqlMigrationService
 {
