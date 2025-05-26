@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Services;
 using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +9,12 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class CategoriesController : ControllerBase
 {
-    private static readonly Dictionary<int, Category> Categories = [];
-    private static int _idCounter;
+    private readonly ICategoryService _categoryService;
+
+    public CategoriesController(ICategoryService categoryService)
+    {
+        _categoryService = categoryService;
+    }
 
     // GET: api/categories
     /// <summary>
@@ -24,7 +29,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(Categories.Values.ToList());
+        return Ok(_categoryService.GetAll());
     }
 
     // GET: api/categories/1
@@ -43,12 +48,9 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
-        return Categories.TryGetValue(id, out var category)
-            ? Ok(category)
-            : NotFound();
+        var category = _categoryService.GetById(id);
+        return category is not null ? Ok(category) : NotFound();
     }
-
-    // TODO later use <remarks> for example of DTO and implement BadRequest
 
     // POST: api/categories
     /// <summary>
@@ -67,9 +69,8 @@ public sealed class CategoriesController : ControllerBase
     [HttpPost]
     public IActionResult Create(Category category)
     {
-        category.Id = Interlocked.Increment(ref _idCounter);
-        Categories[category.Id] = category;
-        return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+        var createdCategory = _categoryService.Create(category);
+        return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
     }
 
     // PUT: api/categories/1
@@ -90,17 +91,8 @@ public sealed class CategoriesController : ControllerBase
     [HttpPut("{id:int}")]
     public IActionResult Update(int id, Category updatedCategory)
     {
-        if (!Categories.TryGetValue(id, out var category))
-        {
-            return NotFound();
-        }
-
-        category.Name = updatedCategory.Name;
-        category.Description = updatedCategory.Description;
-        category.Slug = updatedCategory.Slug;
-        category.TotalEquipment = updatedCategory.TotalEquipment;
-
-        return Ok(category);
+        var category = _categoryService.Update(id, updatedCategory);
+        return category is not null ? Ok(category) : NotFound();
     }
 
     // DELETE: api/categories/1
@@ -119,8 +111,6 @@ public sealed class CategoriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
-        return !Categories.Remove(id)
-            ? NotFound()
-            : NoContent();
+        return _categoryService.Delete(id) ? NoContent() : NotFound();
     }
 }

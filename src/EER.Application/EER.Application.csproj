@@ -7,11 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Abstractions\" />
+      <ProjectReference Include="..\EER.Domain\EER.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EER.Domain\EER.Domain.csproj" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Commands\" />
+      <Folder Include="Features\Queries\" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Services;
 using EER.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,12 +10,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class UsersController : ControllerBase
 {
-    private static readonly Dictionary<Guid, User> Users = [];
-    private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly IUserService _service;
 
-    public UsersController(IPasswordHasher<User> passwordHasher)
+    public UsersController(IUserService service)
     {
-        _passwordHasher = passwordHasher;
+        _service = service;
     }
 
     // GET: api/users
@@ -28,10 +28,7 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(typeof(List<User>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll()
-    {
-        return Ok(Users.Values.ToList());
-    }
+    public IActionResult GetAll() => Ok(_service.GetAll());
 
     // GET: api/users/1
     /// <summary>
@@ -49,9 +46,8 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:guid}")]
     public IActionResult GetById(Guid id)
     {
-        return Users.TryGetValue(id, out var user)
-            ? Ok(user)
-            : NotFound();
+        var user = _service.GetById(id);
+        return user is not null ? Ok(user) : NotFound();
     }
 
     // POST: api/users
@@ -71,11 +67,8 @@ public sealed class UsersController : ControllerBase
     [HttpPost]
     public IActionResult Create(User user)
     {
-        user.Id = Guid.NewGuid();
-        user.CreatedAt = DateTime.UtcNow;
-        user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
-        Users[user.Id] = user;
-        return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
+        var createdUser = _service.Create(user);
+        return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
 
     // PUT: api/users/1
@@ -96,15 +89,8 @@ public sealed class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public IActionResult Update(Guid id, User updatedUser)
     {
-        if (!Users.TryGetValue(id, out var user))
-        {
-            return NotFound();
-        }
-
-        user.Email = updatedUser.Email;
-        user.FullName = updatedUser.FullName;
-        user.PasswordHash = _passwordHasher.HashPassword(updatedUser, updatedUser.PasswordHash);
-        return Ok(user);
+        var user = _service.Update(id, updatedUser);
+        return user is not null ? Ok(user) : NotFound();
     }
 
     // DELETE: api/users/1
@@ -120,10 +106,6 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(Guid id)
-    {
-        return !Users.Remove(id)
-            ? NotFound()
-            : NoContent();
-    }
+    public IActionResult Delete(Guid id) =>
+        _service.Delete(id) ? NoContent() : NotFound();
 }

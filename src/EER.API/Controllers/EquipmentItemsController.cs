@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Services;
 using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +9,12 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentItemsController : ControllerBase
 {
-    private static readonly Dictionary<long, EquipmentItem> EquipmentItems = new();
-    private static long _idCounter;
+    private readonly IEquipmentItemService _equipmentItemService;
+
+    public EquipmentItemsController(IEquipmentItemService equipmentItemService)
+    {
+        _equipmentItemService = equipmentItemService;
+    }
 
     // GET: api/equipmentitems
     /// <summary>
@@ -22,10 +27,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(typeof(List<EquipmentItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll()
-    {
-        return Ok(EquipmentItems.Values.ToList());
-    }
+    public IActionResult GetAll() => Ok(_equipmentItemService.GetAll());
 
     // GET: api/equipmentitems/1
     /// <summary>
@@ -43,9 +45,8 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpGet("{id:long}")]
     public IActionResult GetById(long id)
     {
-        return EquipmentItems.TryGetValue(id, out var item)
-            ? Ok(item)
-            : NotFound();
+        var item = _equipmentItemService.GetById(id);
+        return item is not null ? Ok(item) : NotFound();
     }
 
     // POST: api/equipmentitems
@@ -65,9 +66,8 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPost]
     public IActionResult Create(EquipmentItem item)
     {
-        item.Id = Interlocked.Increment(ref _idCounter);
-        EquipmentItems[item.Id] = item;
-        return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
+        var createdItem = _equipmentItemService.Create(item);
+        return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
     // PUT: api/equipmentitems/1
@@ -88,19 +88,8 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPut("{id:long}")]
     public IActionResult Update(long id, EquipmentItem updatedItem)
     {
-        if (!EquipmentItems.TryGetValue(id, out var item))
-        {
-            return NotFound();
-        }
-
-        item.EquipmentId = updatedItem.EquipmentId;
-        item.OfficeId = updatedItem.OfficeId;
-        item.SerialNumber = updatedItem.SerialNumber;
-        item.ItemStatus = updatedItem.ItemStatus;
-        item.MaintenanceDate = updatedItem.MaintenanceDate;
-        item.PurchaseDate = updatedItem.PurchaseDate;
-
-        return Ok(item);
+        var item = _equipmentItemService.Update(id, updatedItem);
+        return item is not null ? Ok(item) : NotFound();
     }
 
     // DELETE: api/equipmentitems/1
@@ -117,10 +106,6 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
-    {
-        return !EquipmentItems.Remove(id)
-            ? NotFound()
-            : NoContent();
-    }
+    public IActionResult Delete(long id) =>
+        _equipmentItemService.Delete(id) ? NoContent() : NotFound();
 }
