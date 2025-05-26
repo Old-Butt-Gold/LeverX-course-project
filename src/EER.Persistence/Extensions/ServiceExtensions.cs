@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EER.Domain.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace EER.Persistence.Migrations.Extensions;
+namespace EER.Persistence.Extensions;
 
 public static class ServiceExtensions
 {

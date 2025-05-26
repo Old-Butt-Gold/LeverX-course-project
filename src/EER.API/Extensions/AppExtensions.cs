@@ -1,4 +1,5 @@
-﻿using EER.Persistence.Migrations;
+﻿using EER.Domain.Repositories;
+using EER.Persistence;
 
 namespace EER.API.Extensions;
 

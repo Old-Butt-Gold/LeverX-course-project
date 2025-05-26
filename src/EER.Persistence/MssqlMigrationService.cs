@@ -1,8 +1,9 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using EER.Domain.Repositories;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace EER.Persistence.Migrations;
+namespace EER.Persistence;
 
 internal sealed class MssqlSqlMigrationService : ISqlMigrationService
 {
