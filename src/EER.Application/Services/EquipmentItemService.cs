@@ -1,37 +1,51 @@
 ﻿using EER.Application.Abstractions.Services;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
-internal sealed class EquipmentItemService : IEquipmentItemService
+internal class EquipmentItemService : IEquipmentItemService
 {
-    private readonly Dictionary<long, EquipmentItem> _items = [];
-    private long _idCounter;
+    private readonly IUnitOfWork _uow;
 
-    public IEnumerable<EquipmentItem> GetAll() => _items.Values.ToList();
-
-    public EquipmentItem? GetById(long id) => _items.GetValueOrDefault(id);
-
-    public EquipmentItem Create(EquipmentItem item)
+    public EquipmentItemService(IUnitOfWork uow)
     {
-        item.Id = Interlocked.Increment(ref _idCounter);
-        _items[item.Id] = item;
-        return item;
+        _uow = uow;
     }
 
-    public EquipmentItem? Update(long id, EquipmentItem updatedItem)
+    public async Task<IEnumerable<EquipmentItem>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        if (!_items.TryGetValue(id, out var item))
-            return null;
-
-        item.EquipmentId = updatedItem.EquipmentId;
-        item.OfficeId = updatedItem.OfficeId;
-        item.SerialNumber = updatedItem.SerialNumber;
-        item.ItemStatus = updatedItem.ItemStatus;
-        item.MaintenanceDate = updatedItem.MaintenanceDate;
-        item.PurchaseDate = updatedItem.PurchaseDate;
-        return item;
+        return await _uow.EquipmentItemRepository.GetAllAsync(cancellationToken);
     }
 
-    public bool Delete(long id) => _items.Remove(id);
+    public async Task<EquipmentItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    {
+        return await _uow.EquipmentItemRepository.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<EquipmentItem> CreateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    {
+        return await _uow.EquipmentItemRepository.AddAsync(item, cancellationToken);
+    }
+
+    public async Task<EquipmentItem?> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default)
+    {
+        var existingItem = await _uow.EquipmentItemRepository.GetByIdAsync(id, cancellationToken);
+        if (existingItem == null) return null;
+
+        existingItem.EquipmentId = updatedItem.EquipmentId;
+        existingItem.OfficeId = updatedItem.OfficeId;
+        existingItem.SerialNumber = updatedItem.SerialNumber;
+        existingItem.ItemStatus = updatedItem.ItemStatus;
+        existingItem.MaintenanceDate = updatedItem.MaintenanceDate;
+        existingItem.PurchaseDate = updatedItem.PurchaseDate;
+        existingItem.UpdatedBy = updatedItem.UpdatedBy;
+
+        return await _uow.EquipmentItemRepository.UpdateAsync(existingItem, cancellationToken);
+    }
+
+    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    {
+        return await _uow.EquipmentItemRepository.DeleteAsync(id, cancellationToken);
+    }
 }

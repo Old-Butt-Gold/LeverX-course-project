@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IOfficeRepository OfficeRepository { get; }
     IRentalRepository RentalRepository { get; }
     IEquipmentRepository EquipmentRepository { get; }
+    IEquipmentItemRepository EquipmentItemRepository { get; }
 
     Task BeginTransactionAsync();
     Task CommitAsync();
