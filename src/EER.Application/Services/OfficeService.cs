@@ -5,7 +5,7 @@ using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
-public class OfficeService : IOfficeService
+internal sealed class OfficeService : IOfficeService
 {
     private readonly IUnitOfWork _uow;
 
