@@ -5,7 +5,7 @@ using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
-public class UserService : IUserService
+internal sealed class UserService : IUserService
 {
     private readonly IUnitOfWork _uow;
     private readonly IPasswordHasher _passwordHasher;

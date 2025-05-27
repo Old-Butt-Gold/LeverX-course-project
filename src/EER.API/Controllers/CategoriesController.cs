@@ -27,9 +27,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Category>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(_categoryService.GetAll());
+        return Ok(await _categoryService.GetAllAsync(cancellationToken));
     }
 
     // GET: api/categories/1
@@ -46,9 +46,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var category = _categoryService.GetById(id);
+        var category = await _categoryService.GetByIdAsync(id, cancellationToken);
         return category is not null ? Ok(category) : NotFound();
     }
 
@@ -67,9 +67,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(Category category)
+    public async Task<IActionResult> Create(Category category, CancellationToken cancellationToken)
     {
-        var createdCategory = _categoryService.Create(category);
+        var createdCategory = await _categoryService.CreateAsync(category, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
     }
 
@@ -89,9 +89,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, Category updatedCategory)
+    public async Task<IActionResult> Update(int id, Category updatedCategory, CancellationToken cancellationToken)
     {
-        var category = _categoryService.Update(id, updatedCategory);
+        var category = await _categoryService.UpdateAsync(id, updatedCategory, cancellationToken);
         return category is not null ? Ok(category) : NotFound();
     }
 
@@ -109,8 +109,10 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        return _categoryService.Delete(id) ? NoContent() : NotFound();
+        return await _categoryService.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
     }
 }

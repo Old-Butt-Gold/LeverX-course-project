@@ -6,12 +6,12 @@ using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
 
-public class DapperUserRepository : IUserRepository
+internal sealed class DapperUserRepository : IUserRepository
 {
-    private readonly DbConnection _connection;
+    private readonly IDbConnection _connection;
     private readonly IDbTransaction? _transaction;
 
-    public DapperUserRepository(DbConnection connection, IDbTransaction? transaction)
+    public DapperUserRepository(IDbConnection connection, IDbTransaction? transaction)
     {
         _connection = connection;
         _transaction = transaction;
