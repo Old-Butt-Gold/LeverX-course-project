@@ -10,23 +10,24 @@ public class ArchitectureTests
     private const string DomainNamespace = "EER.Domain";
     private const string ApplicationNamespace = "EER.Application";
     private const string PersistenceNamespace = "EER.Persistence";
+    private const string InfrastructureNamespace = "EER.Infrastructure";
     private const string ApiNamespace = "EER.API";
     private const string Dll = ".dll";
 
     [Fact]
     public void Domain_Should_Not_HaveDependencyOnOtherProjects()
     {
-        // Arrange
         var assembly = Assembly.LoadFrom(DomainNamespace + Dll);
 
-        // Act
         var result = Types.InAssembly(assembly)
             .ShouldNot()
-            .HaveDependencyOnAny(ApplicationNamespace, PersistenceNamespace, ApiNamespace)
-            // later also infrastructure if exists
+            .HaveDependencyOnAny(
+                ApplicationNamespace,
+                PersistenceNamespace,
+                ApiNamespace,
+                InfrastructureNamespace)
             .GetResult();
 
-        // Assert
         Assert.True(result.IsSuccessful);
     }
 
@@ -54,22 +55,21 @@ public class ArchitectureTests
     [Fact]
     public void Application_Should_Not_DependOnAnyOtherProjectsExceptDomain()
     {
-        // Arrange
         var assembly = Assembly.LoadFrom(ApplicationNamespace + Dll);
 
-        // Act
         var result = Types.InAssembly(assembly)
             .ShouldNot()
-            .HaveDependencyOnAny(ApiNamespace, PersistenceNamespace)
-            // later also infrastructure if exists
+            .HaveDependencyOnAny(
+                ApiNamespace,
+                PersistenceNamespace,
+                InfrastructureNamespace)
             .GetResult();
 
-        // Assert
         Assert.True(result.IsSuccessful);
     }
 
     [Fact]
-    public void Application_Should_NotReferenceNewtonsoftJson()
+    public void Application_Should_NotReferenceJson()
     {
         // Arrange
         var assembly = Assembly.LoadFrom(ApplicationNamespace + Dll);
@@ -102,6 +102,22 @@ public class ArchitectureTests
     }
 
     [Fact]
+    public void Persistence_Should_Not_DependOnInfrastructure()
+    {
+        // Arrange
+        var assembly = Assembly.LoadFrom(PersistenceNamespace + Dll);
+
+        // Act
+        var result = Types.InAssembly(assembly)
+            .ShouldNot()
+            .HaveDependencyOn(InfrastructureNamespace)
+            .GetResult();
+
+        // Assert
+        Assert.True(result.IsSuccessful);
+    }
+
+    [Fact]
     public void Persistence_Should_Not_DependOnApplication()
     {
         // Arrange
@@ -111,7 +127,6 @@ public class ArchitectureTests
         var result = Types.InAssembly(assembly)
             .ShouldNot()
             .HaveDependencyOn(ApplicationNamespace)
-            // later also infrastructure if exists
             .GetResult();
 
         // Assert
@@ -177,6 +192,86 @@ public class ArchitectureTests
             .NotBePublic() // Register in Extensions
             .And()
             .ResideInNamespace(PersistenceNamespace + ".Repositories")
+            .GetResult();
+
+        // Assert
+        Assert.True(result.IsSuccessful);
+    }
+
+    [Fact]
+    public void Infrastructure_Should_DependOnlyOnApplicationAndDomain()
+    {
+        // Arrange
+        var assembly = Assembly.LoadFrom(InfrastructureNamespace + Dll);
+
+        // Act
+        var result = Types.InAssembly(assembly)
+            .ShouldNot()
+            .HaveDependencyOnAny(PersistenceNamespace, ApiNamespace)
+            .GetResult();
+
+        // Assert
+        Assert.True(result.IsSuccessful);
+    }
+
+    [Fact]
+    public void Infrastructure_Should_ContainAllImplementations()
+    {
+        // Arrange
+        var assembly = Assembly.LoadFrom(InfrastructureNamespace + Dll);
+        var applicationAssembly = Assembly.LoadFrom(ApplicationNamespace + Dll);
+
+        // Act
+        var interfaces = GetUnimplementedInterfaces(applicationAssembly);
+
+        var missingImplementations = new List<string>();
+        foreach (var interfaceType in interfaces)
+        {
+            var implementation = Types.InAssembly(assembly)
+                .That().ImplementInterface(interfaceType)
+                .GetTypes();
+
+            if (!implementation.Any())
+                missingImplementations.Add(interfaceType.Name);
+        }
+
+        // Assert
+        Assert.True(missingImplementations.Count == 0,
+            $"Missing implementations for: {string.Join(", ", missingImplementations)}");
+        return;
+
+        static IEnumerable<Type> GetUnimplementedInterfaces(Assembly assembly)
+        {
+            var allTypes = assembly.GetTypes();
+
+            var interfaces = allTypes
+                .Where(t => t.IsInterface)
+                .ToList();
+
+            var classes = allTypes
+                .Where(t => t is { IsClass: true, IsAbstract: false })
+                .ToList();
+
+            foreach (var iface in interfaces)
+            {
+                var hasImpl = classes.Any(c => c.GetInterfaces().Contains(iface));
+
+                if (!hasImpl)
+                    yield return iface;
+            }
+        }
+    }
+
+    [Fact]
+    public void Infrastructure_Should_NotReferenceDomainDirectly()
+    {
+        // Arrange
+        var assembly = Assembly.LoadFrom(InfrastructureNamespace + Dll);
+
+        // Act
+        var result = Types.InAssembly(assembly)
+            .ShouldNot()
+            .HaveDependencyOn(DomainNamespace)
             .GetResult();
 
         // Assert
