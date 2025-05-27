@@ -27,13 +27,17 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_equipmentService.GetAll());
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _equipmentService.GetAllAsync(cancellationToken));
+    }
 
     // GET: api/equipment/1
     /// <summary>
     /// Retrieves a specific equipment item by ID.
     /// </summary>
     /// <param name="id">The ID of the equipment to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested equipment if found.</returns>
     /// <response code="200">Returns the requested equipment.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
@@ -43,9 +47,9 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var item = _equipmentService.GetById(id);
+        var item = await _equipmentService.GetByIdAsync(id, cancellationToken);
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -54,6 +58,7 @@ public sealed class EquipmentController : ControllerBase
     /// Retrieves all equipment items by category ID.
     /// </summary>
     /// <param name="categoryId">The ID of the category to filter by.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of equipment items in the specified category.</returns>
     /// <response code="200">Returns the list of equipment items in the category.</response>
     /// <response code="404">If no equipment is found for the specified category.</response>
@@ -63,9 +68,9 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("category/{categoryId:int}")]
-    public IActionResult GetByCategory(int categoryId)
+    public async Task<IActionResult> GetByCategory(int categoryId, CancellationToken cancellationToken)
     {
-        var items = _equipmentService.GetByCategory(categoryId);
+        var items = await _equipmentService.GetByCategoryAsync(categoryId, cancellationToken);
         return items.Any() ? Ok(items) : NotFound();
     }
 
@@ -74,6 +79,7 @@ public sealed class EquipmentController : ControllerBase
     /// Creates a new equipment item.
     /// </summary>
     /// <param name="equipment">The equipment item to create.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created equipment item.</returns>
     /// <response code="201">Returns the created equipment item ID.</response>
     /// <response code="400">If the equipment data is invalid.</response>
@@ -84,9 +90,9 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(Equipment equipment)
+    public async Task<IActionResult> Create(Equipment equipment, CancellationToken cancellationToken)
     {
-        var createdItem = _equipmentService.Create(equipment);
+        var createdItem = await _equipmentService.CreateAsync(equipment, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
@@ -96,6 +102,7 @@ public sealed class EquipmentController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the equipment to update.</param>
     /// <param name="updatedEquipment">The updated equipment data.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The updated equipment item.</returns>
     /// <response code="200">Returns the updated equipment item.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
@@ -106,9 +113,9 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, Equipment updatedEquipment)
+    public async Task<IActionResult> Update(int id, Equipment updatedEquipment, CancellationToken cancellationToken)
     {
-        var updatedItem = _equipmentService.Update(id, updatedEquipment);
+        var updatedItem = await _equipmentService.UpdateAsync(id, updatedEquipment, cancellationToken);
         return updatedItem is not null ? Ok(updatedItem) : NotFound();
     }
 
@@ -117,6 +124,7 @@ public sealed class EquipmentController : ControllerBase
     /// Deletes a specific equipment item by ID.
     /// </summary>
     /// <param name="id">The ID of the equipment to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The equipment was successfully deleted.</response>
     /// <response code="404">If the equipment with the specified ID is not found.</response>
@@ -126,6 +134,10 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
-        => _equipmentService.Delete(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        return await _equipmentService.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 }

@@ -32,7 +32,7 @@ internal sealed class OfficeService : IOfficeService
     public async Task<Office?> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default)
     {
         var existingOffice = await _uow.OfficeRepository.GetByIdAsync(id, cancellationToken);
-        if (existingOffice == null) return null;
+        if (existingOffice is null) return null;
 
         existingOffice.OwnerId = updatedOffice.OwnerId;
         existingOffice.Address = updatedOffice.Address;

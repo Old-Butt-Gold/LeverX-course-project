@@ -40,7 +40,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                                )
                                OUTPUT INSERTED.*
                                VALUES (
-                                   @OwnerId, @Address, @City, @Country,@CreatedBy, @UpdatedBy
+                                   @OwnerId, @Address, @City, @Country, @CreatedBy, @UpdatedBy
                                )
                            """;
 

@@ -13,6 +13,7 @@ public class DapperUnitOfWork : IUnitOfWork
     private readonly Lazy<ICategoryRepository> _categories;
     private readonly Lazy<IOfficeRepository> _offices;
     private readonly Lazy<IRentalRepository> _rentals;
+    private readonly Lazy<IEquipmentRepository> _equipment;
 
     public DapperUnitOfWork(DbConnection connection)
     {
@@ -29,12 +30,16 @@ public class DapperUnitOfWork : IUnitOfWork
 
         _rentals = new Lazy<IRentalRepository>(() =>
             new DapperRentalRepository(_connection, _transaction));
+
+        _equipment = new Lazy<IEquipmentRepository>(() =>
+            new DapperEquipmentRepository(_connection, _transaction));
     }
 
     public IUserRepository UserRepository => _users.Value;
     public ICategoryRepository CategoryRepository => _categories.Value;
     public IOfficeRepository OfficeRepository => _offices.Value;
     public IRentalRepository RentalRepository => _rentals.Value;
+    public IEquipmentRepository EquipmentRepository => _equipment.Value;
 
     public async Task BeginTransactionAsync()
     {
