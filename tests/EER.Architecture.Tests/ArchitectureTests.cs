@@ -186,13 +186,13 @@ public class ArchitectureTests
         // Act
         var result = Types.InAssembly(assembly)
             .That()
-            .ImplementInterface(typeof(IRepository<>))
+            .ImplementInterface(typeof(IRepository<,>))
             .Should()
             .HaveNameEndingWith("Repository")
             .And()
             .NotBePublic() // Register in Extensions
             .And()
-            .ResideInNamespace(PersistenceNamespace + ".Repositories")
+            .ResideInNamespaceEndingWith(PersistenceNamespace + ".Repositories")
             .GetResult();
 
         // Assert

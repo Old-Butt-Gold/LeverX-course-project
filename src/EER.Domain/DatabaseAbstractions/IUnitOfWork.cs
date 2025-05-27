@@ -1,6 +1,9 @@
 ﻿namespace EER.Domain.DatabaseAbstractions;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
-    Task SaveChangesAsync(CancellationToken cancellationToken = default);
+    IUserRepository UserRepository { get; }
+    Task BeginTransactionAsync();
+    Task CommitAsync();
+    Task RollbackAsync();
 }

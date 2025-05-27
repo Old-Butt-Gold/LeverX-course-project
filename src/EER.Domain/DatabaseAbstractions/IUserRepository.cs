@@ -1,12 +1,12 @@
 ﻿using EER.Domain.Entities;
 
-namespace EER.Application.Abstractions.Services;
+namespace EER.Domain.DatabaseAbstractions;
 
-public interface IUserService
+public interface IUserRepository : IRepository<User, int>
 {
     Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<User> CreateAsync(User user, CancellationToken cancellationToken = default);
-    Task<User?> UpdateAsync(Guid id, User updatedUser, CancellationToken cancellationToken = default);
+    Task<User> AddAsync(User user, CancellationToken cancellationToken = default);
+    Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }
