@@ -160,6 +160,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(DomainNamespace + Dll),
             Assembly.LoadFrom(ApplicationNamespace + Dll),
             Assembly.LoadFrom(PersistenceNamespace + Dll),
+            Assembly.LoadFrom(InfrastructureNamespace + Dll),
         };
 
         // Act and Assert
