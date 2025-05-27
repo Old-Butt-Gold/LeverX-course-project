@@ -27,13 +27,17 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(typeof(List<Office>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_officeService.GetAll());
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _officeService.GetAllAsync(cancellationToken));
+    }
 
     // GET: api/offices/1
     /// <summary>
     /// Retrieves a specific office by ID.
     /// </summary>
     /// <param name="id">The ID of the office to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested office if found.</returns>
     /// <response code="200">Returns the requested office.</response>
     /// <response code="404">If the office with the specified ID is not found.</response>
@@ -43,9 +47,9 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var office = _officeService.GetById(id);
+        var office = await _officeService.GetByIdAsync(id, cancellationToken);
         return office is not null ? Ok(office) : NotFound();
     }
 
@@ -54,6 +58,7 @@ public sealed class OfficesController : ControllerBase
     /// Creates a new office.
     /// </summary>
     /// <param name="office">The office to create.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created office.</returns>
     /// <response code="201">Returns the created office ID.</response>
     /// <response code="400">If the office data is invalid.</response>
@@ -64,9 +69,9 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(Office office)
+    public async Task<IActionResult> Create(Office office, CancellationToken cancellationToken)
     {
-        var createdOffice = _officeService.Create(office);
+        var createdOffice = await _officeService.CreateAsync(office, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdOffice.Id }, createdOffice);
     }
 
@@ -76,6 +81,7 @@ public sealed class OfficesController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the office to update.</param>
     /// <param name="updatedOffice">The updated office data.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated office.</returns>
     /// <response code="200">Returns the updated office.</response>
     /// <response code="404">If the office with the specified ID is not found.</response>
@@ -86,9 +92,9 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, Office updatedOffice)
+    public async Task<IActionResult> Update(int id, Office updatedOffice, CancellationToken cancellationToken)
     {
-        var office = _officeService.Update(id, updatedOffice);
+        var office = await _officeService.UpdateAsync(id, updatedOffice, cancellationToken);
         return office is not null ? Ok(office) : NotFound();
     }
 
@@ -97,6 +103,7 @@ public sealed class OfficesController : ControllerBase
     /// Deletes a specific office by ID.
     /// </summary>
     /// <param name="id">The ID of the office to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The office was successfully deleted.</response>
     /// <response code="404">If the office with the specified ID is not found.</response>
@@ -106,6 +113,10 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id) =>
-        _officeService.Delete(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        return await _officeService.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 }

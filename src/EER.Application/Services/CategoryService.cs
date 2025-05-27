@@ -31,12 +31,11 @@ internal sealed class CategoryService : ICategoryService
     public async Task<Category?> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default)
     {
         var existingCategory = await _uow.CategoryRepository.GetByIdAsync(id, cancellationToken);
-        if (existingCategory == null) return null;
+        if (existingCategory is null) return null;
 
         existingCategory.Name = updatedCategory.Name;
         existingCategory.Description = updatedCategory.Description;
         existingCategory.Slug = updatedCategory.Slug;
-        existingCategory.TotalEquipment = updatedCategory.TotalEquipment;
         existingCategory.UpdatedBy = updatedCategory.UpdatedBy;
 
         return await _uow.CategoryRepository.UpdateAsync(existingCategory, cancellationToken);

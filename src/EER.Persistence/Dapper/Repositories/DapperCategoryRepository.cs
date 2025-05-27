@@ -32,6 +32,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
 
     public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
     {
+        // TODO CreatedBy
         const string sql = """
                                INSERT INTO [Supplies].[Category] (Name, Description, Slug, CreatedBy, UpdatedBy)
                                OUTPUT INSERTED.*
@@ -63,7 +64,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                                WHERE Id = @Id
                            """;
 
-        // TODO UpdatedBy will be later implemented
+        // TODO UpdatedBy
 
         return await _connection.QuerySingleOrDefaultAsync<Category>(
             new CommandDefinition(sql, new
