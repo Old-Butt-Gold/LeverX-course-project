@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Services;
 using EER.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,8 +9,12 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentController : ControllerBase
 {
-    private static readonly Dictionary<long, Equipment> Equipment = [];
-    private static long _idCounter;
+    private readonly IEquipmentService _equipmentService;
+
+    public EquipmentController(IEquipmentService equipmentService)
+    {
+        _equipmentService = equipmentService;
+    }
 
     // GET: api/equipment
     /// <summary>
@@ -22,10 +27,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll()
-    {
-        return Ok(Equipment.Values.ToList());
-    }
+    public IActionResult GetAll() => Ok(_equipmentService.GetAll());
 
     // GET: api/equipment/1
     /// <summary>
@@ -40,12 +42,11 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpGet("{id:long}")]
-    public IActionResult GetById(long id)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById(int id)
     {
-        return Equipment.TryGetValue(id, out var item)
-            ? Ok(item)
-            : NotFound();
+        var item = _equipmentService.GetById(id);
+        return item is not null ? Ok(item) : NotFound();
     }
 
     // GET: api/equipment/category/1
@@ -64,13 +65,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("category/{categoryId:int}")]
     public IActionResult GetByCategory(int categoryId)
     {
-        var items = Equipment.Values
-            .Where(e => e.CategoryId == categoryId)
-            .ToList();
-
-        return items.Count > 0
-            ? Ok(items)
-            : NotFound();
+        var items = _equipmentService.GetByCategory(categoryId);
+        return items.Any() ? Ok(items) : NotFound();
     }
 
     // POST: api/equipment
@@ -90,11 +86,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpPost]
     public IActionResult Create(Equipment equipment)
     {
-        equipment.Id = Interlocked.Increment(ref _idCounter);
-        equipment.CreatedAt = DateTime.UtcNow;
-        equipment.UpdatedAt = DateTime.UtcNow;
-        Equipment[equipment.Id] = equipment;
-        return CreatedAtAction(nameof(GetById), new { id = equipment.Id }, equipment);
+        var createdItem = _equipmentService.Create(equipment);
+        return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
     // PUT: api/equipment/1
@@ -112,25 +105,11 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:long}")]
-    public IActionResult Update(long id, Equipment updatedEquipment)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, Equipment updatedEquipment)
     {
-        if (!Equipment.TryGetValue(id, out var equipment))
-        {
-            return NotFound();
-        }
-
-        equipment.Name = updatedEquipment.Name;
-        equipment.Location = updatedEquipment.Location;
-        equipment.CategoryId = updatedEquipment.CategoryId;
-        equipment.AvailableQuantity = updatedEquipment.AvailableQuantity;
-        equipment.TotalStock = updatedEquipment.TotalStock;
-        equipment.Description = updatedEquipment.Description;
-        equipment.PricePerDay = updatedEquipment.PricePerDay;
-        equipment.UpdatedAt = DateTime.UtcNow;
-        equipment.AverageRating = updatedEquipment.AverageRating;
-        equipment.TotalReviews = updatedEquipment.TotalReviews;
-        return Ok(equipment);
+        var updatedItem = _equipmentService.Update(id, updatedEquipment);
+        return updatedItem is not null ? Ok(updatedItem) : NotFound();
     }
 
     // DELETE: api/equipment/1
@@ -146,11 +125,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
-    {
-        return !Equipment.Remove(id)
-            ? NotFound()
-            : NoContent();
-    }
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+        => _equipmentService.Delete(id) ? NoContent() : NotFound();
 }

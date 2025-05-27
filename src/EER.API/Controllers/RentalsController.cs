@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Services;
 using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +10,12 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class RentalsController : ControllerBase
 {
-    private static readonly Dictionary<long, Rental> Rentals = [];
-    private static long _idCounter;
+    private readonly IRentalService _rentalService;
+
+    public RentalsController(IRentalService rentalService)
+    {
+        _rentalService = rentalService;
+    }
 
     // GET: api/rentals
     /// <summary>
@@ -23,10 +28,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(List<Rental>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll()
-    {
-        return Ok(Rentals.Values.ToList());
-    }
+    public IActionResult GetAll() => Ok(_rentalService.GetAll());
 
     // GET: api/rentals/1
     /// <summary>
@@ -41,12 +43,11 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpGet("{id:long}")]
-    public IActionResult GetById(long id)
+    [HttpGet("{id:int}")]
+    public IActionResult GetById(int id)
     {
-        return Rentals.TryGetValue(id, out var rental)
-            ? Ok(rental)
-            : NotFound();
+        var rental = _rentalService.GetById(id);
+        return rental is not null ? Ok(rental) : NotFound();
     }
 
     // POST: api/rentals
@@ -66,11 +67,8 @@ public sealed class RentalsController : ControllerBase
     [HttpPost]
     public IActionResult Create(Rental rental)
     {
-        rental.Id = Interlocked.Increment(ref _idCounter);
-        rental.Status = RentalStatus.Pending;
-        rental.CreatedAt = DateTime.UtcNow;
-        Rentals[rental.Id] = rental;
-        return CreatedAtAction(nameof(GetById), new { id = rental.Id }, rental);
+        var createdRental = _rentalService.Create(rental);
+        return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
     }
 
     // PUT: api/rentals/1
@@ -78,7 +76,7 @@ public sealed class RentalsController : ControllerBase
     /// Updates the status of an existing rental by ID.
     /// </summary>
     /// <param name="id">The ID of the rental to update.</param>
-    /// <param name="updatedRental">The rental object containing the new status.</param>
+    /// <param name="status">The status that rental object will be setting as new status.</param>
     /// <returns>The updated rental.</returns>
     /// <response code="200">Returns the updated rental.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
@@ -88,16 +86,11 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:long}")]
-    public IActionResult Update(long id, Rental updatedRental)
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, [FromBody] RentalStatus status)
     {
-        if (!Rentals.TryGetValue(id, out var rental))
-        {
-            return NotFound();
-        }
-
-        rental.Status = updatedRental.Status;
-        return Ok(rental);
+        var rental = _rentalService.UpdateStatus(id, status);
+        return rental is not null ? Ok(rental) : NotFound();
     }
 
     // DELETE: api/rentals/1
@@ -113,11 +106,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
-    {
-        return !Rentals.Remove(id)
-            ? NotFound()
-            : NoContent();
-    }
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id) =>
+        _rentalService.Delete(id) ? NoContent() : NotFound();
 }

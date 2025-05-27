@@ -1,4 +1,5 @@
-﻿using EER.Persistence.Migrations;
+﻿using EER.Domain.DatabaseAbstractions;
+using EER.Persistence;
 
 namespace EER.API.Extensions;
 
