@@ -192,7 +192,7 @@ public class ArchitectureTests
             .And()
             .NotBePublic() // Register in Extensions
             .And()
-            .ResideInNamespaceEndingWith(PersistenceNamespace + ".Repositories")
+            .ResideInNamespaceEndingWith(".Repositories")
             .GetResult();
 
         // Assert
