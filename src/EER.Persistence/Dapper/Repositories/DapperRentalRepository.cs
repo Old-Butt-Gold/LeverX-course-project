@@ -65,13 +65,40 @@ internal sealed class DapperRentalRepository : IRentalRepository
     public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
     {
         const string sql = """
+                               DECLARE @UpdatedTable TABLE (
+                                   Id INT,
+                                   CustomerId UNIQUEIDENTIFIER,
+                                   OwnerId UNIQUEIDENTIFIER,
+                                   StartDate DATETIME2(0),
+                                   EndDate DATETIME2(0),
+                                   TotalPrice DECIMAL(9,2),
+                                   Status NVARCHAR(255),
+                                   CreatedAt DATETIME2(2),
+                                   CreatedBy UNIQUEIDENTIFIER,
+                                   UpdatedAt DATETIME2(2),
+                                   UpdatedBy UNIQUEIDENTIFIER
+                               );
+
                                UPDATE [Supplies].[Rental]
                                SET
                                    Status = @Status,
-                                   UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE(),
-                               OUTPUT INSERTED.*
-                               WHERE Id = @Id
+                                   UpdatedBy = @UpdatedBy
+                               OUTPUT
+                                   INSERTED.Id,
+                                   INSERTED.CustomerId,
+                                   INSERTED.OwnerId,
+                                   INSERTED.StartDate,
+                                   INSERTED.EndDate,
+                                   INSERTED.TotalPrice,
+                                   INSERTED.Status,
+                                   INSERTED.CreatedAt,
+                                   INSERTED.CreatedBy,
+                                   INSERTED.UpdatedAt,
+                                   INSERTED.UpdatedBy
+                               INTO @UpdatedTable
+                               WHERE Id = @Id;
+
+                               SELECT * FROM @UpdatedTable;
                            """;
 
         // TODO UpdatedBy

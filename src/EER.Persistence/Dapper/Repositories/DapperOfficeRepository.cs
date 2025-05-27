@@ -68,7 +68,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                                    Country = @Country,
                                    IsActive = @IsActive,
                                    UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE(),
+                                   UpdatedAt = GETUTCDATE()
                                OUTPUT INSERTED.*
                                WHERE Id = @Id
                            """;

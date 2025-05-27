@@ -41,21 +41,49 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
     {
         // TODO CreatedAt
         const string sql = """
+                               DECLARE @InsertedTable TABLE (
+                                   Id INT,
+                                   Name NVARCHAR(100),
+                                   CategoryId INT,
+                                   Description NVARCHAR(3000),
+                                   PricePerDay DECIMAL(8,2),
+                                   AverageRating DECIMAL(3,2),
+                                   TotalReviews INT,
+                                   CreatedAt DATETIME2(2),
+                                   CreatedBy UNIQUEIDENTIFIER,
+                                   UpdatedAt DATETIME2(2),
+                                   UpdatedBy UNIQUEIDENTIFIER
+                               );
+
                                INSERT INTO [Supplies].[Equipment] (
-                                   Name, CategoryId, Description, PricePerDay,
-                                   CreatedBy, UpdatedBy
+                                   Name, OwnerId, CategoryId, Description, PricePerDay, CreatedBy, UpdatedBy
                                )
-                               OUTPUT INSERTED.*
+                               OUTPUT
+                                   INSERTED.Id,
+                                   INSERTED.Name,
+                                   INSERTED.CategoryId,
+                                   INSERTED.Description,
+                                   INSERTED.PricePerDay,
+                                   INSERTED.AverageRating,
+                                   INSERTED.TotalReviews,
+                                   INSERTED.CreatedAt,
+                                   INSERTED.CreatedBy,
+                                   INSERTED.UpdatedAt,
+                                   INSERTED.UpdatedBy
+                               INTO @InsertedTable
                                VALUES (
-                                   @Name, @CategoryId, @Description, @PricePerDay,
+                                   @Name, @OwnerId, @CategoryId, @Description, @PricePerDay,
                                    @CreatedBy, @UpdatedBy
-                               )
+                               );
+
+                               SELECT * FROM @InsertedTable;
                            """;
 
         return await _connection.QuerySingleAsync<Equipment>(
             new CommandDefinition(sql, new
             {
                 equipment.Name,
+                equipment.OwnerId,
                 equipment.CategoryId,
                 equipment.Description,
                 equipment.PricePerDay,
@@ -68,16 +96,45 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
     {
         // TODO UpdatedBy
         const string sql = """
+                               DECLARE @UpdatedTable TABLE (
+                                   Id INT,
+                                   Name NVARCHAR(100),
+                                   OwnerId UNIQUEIDENTIFIER,
+                                   CategoryId INT,
+                                   Description NVARCHAR(3000),
+                                   PricePerDay DECIMAL(8,2),
+                                   AverageRating DECIMAL(3,2),
+                                   TotalReviews INT,
+                                   CreatedAt DATETIME2(2),
+                                   CreatedBy UNIQUEIDENTIFIER,
+                                   UpdatedAt DATETIME2(2),
+                                   UpdatedBy UNIQUEIDENTIFIER
+                               );
+
                                UPDATE [Supplies].[Equipment]
                                SET
                                    Name = @Name,
                                    CategoryId = @CategoryId,
                                    Description = @Description,
                                    PricePerDay = @PricePerDay,
-                                   UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE(),
-                               OUTPUT INSERTED.*
-                               WHERE Id = @Id
+                                   UpdatedBy = @UpdatedBy
+                               OUTPUT
+                                   INSERTED.Id,
+                                   INSERTED.Name,
+                                   INSERTED.OwnerId,
+                                   INSERTED.CategoryId,
+                                   INSERTED.Description,
+                                   INSERTED.PricePerDay,
+                                   INSERTED.AverageRating,
+                                   INSERTED.TotalReviews,
+                                   INSERTED.CreatedAt,
+                                   INSERTED.CreatedBy,
+                                   INSERTED.UpdatedAt,
+                                   INSERTED.UpdatedBy
+                               INTO @UpdatedTable
+                               WHERE Id = @Id;
+
+                               SELECT * FROM @UpdatedTable;
                            """;
 
         return await _connection.QuerySingleOrDefaultAsync<Equipment>(

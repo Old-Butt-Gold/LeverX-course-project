@@ -9,8 +9,8 @@ public class EquipmentItem : BaseEntity<long>
     public int? OfficeId { get; set; }
     public required string SerialNumber { get; set; }
     public ItemStatus ItemStatus { get; set; }
-    public DateOnly? MaintenanceDate { get; set; }
-    public DateOnly PurchaseDate { get; set; }
+    public DateTime? MaintenanceDate { get; set; }
+    public DateTime PurchaseDate { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }

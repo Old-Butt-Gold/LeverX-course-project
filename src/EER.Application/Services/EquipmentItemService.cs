@@ -31,7 +31,7 @@ internal class EquipmentItemService : IEquipmentItemService
     public async Task<EquipmentItem?> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default)
     {
         var existingItem = await _uow.EquipmentItemRepository.GetByIdAsync(id, cancellationToken);
-        if (existingItem == null) return null;
+        if (existingItem is null) return null;
 
         existingItem.EquipmentId = updatedItem.EquipmentId;
         existingItem.OfficeId = updatedItem.OfficeId;

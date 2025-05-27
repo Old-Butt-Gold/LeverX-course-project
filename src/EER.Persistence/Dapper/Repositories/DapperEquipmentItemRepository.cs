@@ -73,13 +73,14 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
                                    MaintenanceDate = @MaintenanceDate,
                                    PurchaseDate = @PurchaseDate,
                                    UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE(),
+                                   UpdatedAt = GETUTCDATE()
                                OUTPUT INSERTED.*
                                WHERE Id = @Id
                            """;
 
         var parameters = new
         {
+            item.Id,
             item.OfficeId,
             item.SerialNumber,
             ItemStatus = item.ItemStatus.ToString(),
