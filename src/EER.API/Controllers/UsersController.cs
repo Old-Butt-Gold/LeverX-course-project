@@ -38,6 +38,7 @@ public sealed class UsersController : ControllerBase
     /// Retrieves a specific user by ID.
     /// </summary>
     /// <param name="id">The ID of the user to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested user if found.</returns>
     /// <response code="200">Returns the requested user.</response>
     /// <response code="404">If the user with the specified ID is not found.</response>
@@ -58,6 +59,7 @@ public sealed class UsersController : ControllerBase
     /// Creates a new user.
     /// </summary>
     /// <param name="user">The user to create. Note: PasswordHash should contain the plain password, which will be hashed by the server.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user.</returns>
     /// <response code="201">Returns the created user ID.</response>
     /// <response code="400">If the user data is invalid.</response>
@@ -80,6 +82,7 @@ public sealed class UsersController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the user to update.</param>
     /// <param name="updatedUser">The updated user data. Note: If PasswordHash is provided, it should be the plain password, which will be hashed by the server.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated user.</returns>
     /// <response code="200">Returns the updated user.</response>
     /// <response code="404">If the user with the specified ID is not found.</response>
@@ -101,6 +104,7 @@ public sealed class UsersController : ControllerBase
     /// Deletes a specific user by ID.
     /// </summary>
     /// <param name="id">The ID of the user to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The user was successfully deleted.</response>
     /// <response code="406">The requested content type is not supported.</response>

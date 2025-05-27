@@ -37,6 +37,7 @@ public sealed class CategoriesController : ControllerBase
     /// Retrieves a specific category by ID.
     /// </summary>
     /// <param name="id">The ID of the category to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested category if found.</returns>
     /// <response code="200">Returns the requested category.</response>
     /// <response code="404">If the category with the specified ID is not found.</response>
@@ -57,6 +58,7 @@ public sealed class CategoriesController : ControllerBase
     /// Creates a new category.
     /// </summary>
     /// <param name="category">The category to create.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The id of created category.</returns>
     /// <response code="201">Returns the created category.</response>
     /// <response code="400">If the category data is invalid.</response>
@@ -79,6 +81,7 @@ public sealed class CategoriesController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the category to update.</param>
     /// <param name="updatedCategory">The updated category data.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated category.</returns>
     /// <response code="200">Returns the updated category.</response>
     /// <response code="404">If the category with the specified ID is not found.</response>
@@ -100,6 +103,7 @@ public sealed class CategoriesController : ControllerBase
     /// Deletes a specific category by ID.
     /// </summary>
     /// <param name="id">The ID of the category to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The category was successfully deleted.</response>
     /// <response code="404">If the category with the specified ID is not found.</response>
