@@ -1,0 +1,14 @@
+﻿-- equipmentItem document --
+{
+  "_id": "long",
+  "equipmentId": "int",
+  "officeId": "int | null",
+  "serialNumber": "string",
+  "status": "enum('Available', 'InUse', 'UnderMaintenance', 'Retired')",
+  "maintenanceDate": "Date | null", // only Date
+  "purchaseDate": "Date", // only Date
+  "createdAt": "Date",
+  "createdBy": "UUID",
+  "updatedAt": "Date",
+  "updatedBy": "UUID"
+}

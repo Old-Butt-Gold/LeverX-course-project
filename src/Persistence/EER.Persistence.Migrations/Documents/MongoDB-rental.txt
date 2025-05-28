@@ -2,22 +2,22 @@
 {
     _id: "int",
     timeline: {
-        createdAt: "DateTime",
-        updatedAt: "DateTime"
-        startDate: "DateTime",
-        endDate: "DateTime"
+        createdAt: "Date",
+        updatedAt: "Date"
+        startDate: "Date",
+        endDate: "Date"
     },
     participants: {
         customerId: "UUID",
         ownerId: "UUID"
     },
     financials: {
-        totalPrice: "Decimal",
+        totalPrice: "decimal",
         items: [
             {
                 equipmentItemId: "long",
-                actualPrice: "Decimal",
-                createdAt: "DateTime",
+                actualPrice: "decimal",
+                createdAt: "Date",
                 createdBy: "UUID",
             }
         ]

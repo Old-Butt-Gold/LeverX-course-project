@@ -5,8 +5,8 @@
     description: "string",
     slug: "string",
     totalEquipment: "int",
-    createdAt: "DateTime",
+    createdAt: "Date",
     createdBy: "UUID",
-    updatedAt: "DateTime",
+    updatedAt: "Date",
     updatedBy: "UUID"
 }

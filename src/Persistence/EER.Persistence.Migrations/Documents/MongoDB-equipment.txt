@@ -1,0 +1,44 @@
+-- equipment document --
+{
+    _id: "int",
+    categoryId: "int",
+    owner: {
+        userId: "UUID",
+        officeIds: ["int"]
+    },
+    name: "string",
+    description: "string",
+    pricePerDay: "decimal",
+    stats: {
+        averageRating: "decimal",
+        totalReviews: "int"
+    },
+    equipmentItemIds: ["long"],
+    isModerated: "boolean",
+    media: [
+        {
+            order: "int",
+            url: "string",
+            uploadedAt: "Date",
+            uploadedBy: "UUID",
+            updatedAt: "Date",
+            updatedBy: "UUID"
+        }
+    ],
+    reviews: [
+        {
+            userId: "UUID",
+            rating: "int(1-5)",
+            comment: "string | null",
+            createdAt: "Date",
+            createdAt: "Date",
+            createdBy: "UUID",
+            updatedAt: "Date",
+            updatedBy: "UUID"
+        }
+    ],
+    createdAt: "Date",
+    createdBy: "UUID",
+    updatedAt: "Date",
+    updatedBy: "UUID"
+}

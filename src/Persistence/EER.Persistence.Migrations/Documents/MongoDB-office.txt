@@ -1,0 +1,14 @@
+﻿-- office document --
+{
+  "_id": "int",
+  "ownerId": "UUID",
+  "address": "string",
+  "city": "string",
+  "country": "string",
+  "isActive": "boolean",
+  "equipmentItemIds": ["long"],
+  "createdAt": "Date",
+  "createdBy": "UUID",
+  "updatedAt": "Date",
+  "updatedBy": "UUID"
+}
