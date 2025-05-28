@@ -1,4 +1,5 @@
 ﻿using EER.Domain.Entities;
+using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,9 +22,14 @@ public class EquipmentItemConfiguration : IEntityTypeConfiguration<EquipmentItem
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");
+
         entity.Property(e => e.ItemStatus)
+            .HasConversion(
+                v => v.ToString(),            // enum → in DB (string)
+                v => Enum.Parse<ItemStatus>(v))    // DB (string) → enum
             .HasMaxLength(255)
             .HasDefaultValue("Available");
+
         entity.Property(e => e.SerialNumber).HasMaxLength(100);
         entity.Property(e => e.UpdatedAt)
             .HasPrecision(2)

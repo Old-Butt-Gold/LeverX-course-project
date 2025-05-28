@@ -29,6 +29,6 @@ public static class ServiceExtensions
         serviceCollection.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("MSConnection")));
 
-        // serviceCollection.AddScoped<IUnitOfWork, EntityFrameworkCoreUnitOfWork>();
+        serviceCollection.AddScoped<IUnitOfWork, EfUnitOfWork>();
     }
 }

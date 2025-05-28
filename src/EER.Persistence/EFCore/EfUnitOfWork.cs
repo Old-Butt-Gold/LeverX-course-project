@@ -1,14 +1,15 @@
 ﻿using System.Data;
-using System.Data.Common;
 using EER.Domain.DatabaseAbstractions;
-using EER.Persistence.Dapper.Repositories;
+using EER.Persistence.EFCore.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
-namespace EER.Persistence.Dapper;
+namespace EER.Persistence.EFCore;
 
-public class DapperUnitOfWork : IUnitOfWork
+public class EfUnitOfWork : IUnitOfWork
 {
-    private readonly DbConnection _connection;
-    private DbTransaction? _transaction;
+    private readonly ApplicationDbContext _context;
+    private IDbContextTransaction? _transaction;
 
     private readonly Lazy<IUserRepository> _users;
     private readonly Lazy<ICategoryRepository> _categories;
@@ -17,27 +18,27 @@ public class DapperUnitOfWork : IUnitOfWork
     private readonly Lazy<IEquipmentRepository> _equipment;
     private readonly Lazy<IEquipmentItemRepository> _equipmentItems;
 
-    public DapperUnitOfWork(DbConnection connection)
+    public EfUnitOfWork(ApplicationDbContext context)
     {
-        _connection = connection;
+        _context = context;
 
         _users = new Lazy<IUserRepository>(() =>
-            new DapperUserRepository(_connection, _transaction));
+            new EfUserRepository(context));
 
         _categories = new Lazy<ICategoryRepository>(() =>
-            new DapperCategoryRepository(_connection, _transaction));
+            new EfCategoryRepository(context));
 
         _offices = new Lazy<IOfficeRepository>(() =>
-            new DapperOfficeRepository(_connection, _transaction));
+            new EfOfficeRepository(context));
 
         _rentals = new Lazy<IRentalRepository>(() =>
-            new DapperRentalRepository(_connection, _transaction));
+            new EfRentalRepository(context));
 
         _equipment = new Lazy<IEquipmentRepository>(() =>
-            new DapperEquipmentRepository(_connection, _transaction));
+            new EfEquipmentRepository(context));
 
         _equipmentItems = new Lazy<IEquipmentItemRepository>(() =>
-            new DapperEquipmentItemRepository(_connection, _transaction));
+            new EfEquipmentItemRepository(context));
     }
 
     public IUserRepository UserRepository => _users.Value;
@@ -50,7 +51,9 @@ public class DapperUnitOfWork : IUnitOfWork
     public async Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
         CancellationToken cancellationToken = default)
     {
-        _transaction = await _connection.BeginTransactionAsync(isolationLevel, cancellationToken);
+        if (_transaction != null) return;
+
+        _transaction = await _context.Database.BeginTransactionAsync(isolationLevel, cancellationToken: cancellationToken);
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
@@ -58,6 +61,7 @@ public class DapperUnitOfWork : IUnitOfWork
         if (_transaction is null)
             throw new InvalidOperationException("Transaction not started");
 
+        await _context.SaveChangesAsync(cancellationToken);
         await _transaction.CommitAsync(cancellationToken);
         await DisposeAsync();
     }

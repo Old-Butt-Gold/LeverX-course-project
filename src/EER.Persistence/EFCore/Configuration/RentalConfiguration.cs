@@ -1,4 +1,5 @@
 ﻿using EER.Domain.Entities;
+using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,9 +24,14 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
             .HasDefaultValueSql("(getutcdate())");
         entity.Property(e => e.EndDate).HasPrecision(0);
         entity.Property(e => e.StartDate).HasPrecision(0);
+
         entity.Property(e => e.Status)
+            .HasConversion(
+                v => v.ToString(),            // enum → in DB (string)
+                v => Enum.Parse<RentalStatus>(v))    // DB (string) → enum
             .HasMaxLength(255)
             .HasDefaultValue("Pending");
+
         entity.Property(e => e.TotalPrice).HasColumnType("decimal(9, 2)");
         entity.Property(e => e.UpdatedAt)
             .HasPrecision(2)

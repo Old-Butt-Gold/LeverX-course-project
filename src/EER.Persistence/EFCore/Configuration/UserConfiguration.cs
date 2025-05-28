@@ -1,4 +1,5 @@
 ﻿using EER.Domain.Entities;
+using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         entity.Property(e => e.UpdatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");
-        entity.Property(e => e.UserRole).HasMaxLength(255);
+
+        entity.Property(e => e.UserRole)
+            .HasConversion(
+                v => v.ToString(),            // enum → in DB (string)
+                v => Enum.Parse<Role>(v))    // DB (string) → enum
+            .HasMaxLength(255);
     }
 }

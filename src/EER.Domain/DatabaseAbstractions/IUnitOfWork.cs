@@ -1,4 +1,6 @@
-﻿namespace EER.Domain.DatabaseAbstractions;
+﻿using System.Data;
+
+namespace EER.Domain.DatabaseAbstractions;
 
 // Can be done with IUnitOfWorkCreator, because of _transaction in it every time etc
 
@@ -11,7 +13,8 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     IEquipmentRepository EquipmentRepository { get; }
     IEquipmentItemRepository EquipmentItemRepository { get; }
 
-    Task BeginTransactionAsync();
-    Task CommitAsync();
-    Task RollbackAsync();
+    Task BeginTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+        CancellationToken cancellationToken = default);
+    Task CommitAsync(CancellationToken cancellationToken = default);
+    Task RollbackAsync(CancellationToken cancellationToken = default);
 }
