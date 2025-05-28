@@ -1,28 +1,22 @@
 -- rental document --
 {
     _id: "int",
-    timeline: {
-        createdAt: "Date",
-        updatedAt: "Date"
-        startDate: "Date",
-        endDate: "Date"
-    },
-    participants: {
-        customerId: "UUID",
-        ownerId: "UUID"
-    },
-    financials: {
-        totalPrice: "decimal",
-        items: [
-            {
-                equipmentItemId: "long",
-                actualPrice: "decimal",
-                createdAt: "Date",
-                createdBy: "UUID",
-            }
-        ]
-    },
+    customerId: "UUID",
+    ownerId: "UUID",
+    startDate: "Date",
+    endDate: "Date",
+    totalPrice: "decimal",
     status: "enum('Pending', 'Active', 'Completed', 'Canceled')"
+    items: [
+        {
+            equipmentItemId: "long",
+            actualPrice: "decimal",
+            createdAt: "Date",
+            createdBy: "UUID",
+        }
+    ],
+    createdAt: "Date",
     createdBy: "UUID",
-    updatedBy: "UUID"
+    updatedAt: "Date"
+    updatedBy: "UUID",
 }

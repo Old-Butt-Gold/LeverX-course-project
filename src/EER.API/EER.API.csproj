@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Persistence\EER.Persistence.Dapper\EER.Persistence.Dapper.csproj" />
     <ProjectReference Include="..\Persistence\EER.Persistence.EFCore\EER.Persistence.EFCore.csproj" />
     <ProjectReference Include="..\Persistence\EER.Persistence.Migrations\EER.Persistence.Migrations.csproj" />
+    <ProjectReference Include="..\Persistence\EER.Persistence.MongoDB\EER.Persistence.MongoDB.csproj" />
   </ItemGroup>
 
 </Project>

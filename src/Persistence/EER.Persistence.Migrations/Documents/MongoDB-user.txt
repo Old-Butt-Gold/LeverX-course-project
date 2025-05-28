@@ -4,8 +4,6 @@
     email: "string",
     passwordHash: "string",
     fullName: "string | null",
-    createdAt: "Date",
-    updatedAt: "Date",
     role: "enum('Customer', 'Owner', 'Admin')",
     favorites: [
         {
@@ -14,5 +12,7 @@
             createdBy: "UUID"
         }
     ],
-    officeIds: ["int"]
+    officeIds: ["int"],
+    createdAt: "Date",
+    updatedAt: "Date",
 }

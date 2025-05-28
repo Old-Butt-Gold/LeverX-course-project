@@ -2,25 +2,20 @@
 {
     _id: "int",
     categoryId: "int",
-    owner: {
-        userId: "UUID",
-        officeIds: ["int"]
-    },
+    ownerId: "UUID",
     name: "string",
     description: "string",
     pricePerDay: "decimal",
-    stats: {
-        averageRating: "decimal",
-        totalReviews: "int"
-    },
-    equipmentItemIds: ["long"],
+    averageRating: "decimal",
+    totalReviews: "int",
     isModerated: "boolean",
     media: [
         {
-            order: "int",
+            id: "int",
+            displayOrder: "int",
             url: "string",
-            uploadedAt: "Date",
-            uploadedBy: "UUID",
+            createdAt: "Date",
+            createdBy: "UUID",
             updatedAt: "Date",
             updatedBy: "UUID"
         }
