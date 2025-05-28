@@ -9,7 +9,10 @@ public class ArchitectureTests
 {
     private const string DomainNamespace = "EER.Domain";
     private const string ApplicationNamespace = "EER.Application";
-    private const string PersistenceNamespace = "EER.Persistence.Migrations";
+    private const string PersistenceMigrationsNamespace = "EER.Persistence.Migrations";
+    private const string PersistenceEfCoreNamespace = "EER.Persistence.EFCore";
+    private const string PersistenceDapperNamespace = "EER.Persistence.Dapper";
+
     private const string InfrastructureNamespace = "EER.Infrastructure";
     private const string ApiNamespace = "EER.API";
     private const string Dll = ".dll";
@@ -23,7 +26,9 @@ public class ArchitectureTests
             .ShouldNot()
             .HaveDependencyOnAny(
                 ApplicationNamespace,
-                PersistenceNamespace,
+                PersistenceMigrationsNamespace,
+                PersistenceDapperNamespace,
+                PersistenceEfCoreNamespace,
                 ApiNamespace,
                 InfrastructureNamespace)
             .GetResult();
@@ -61,7 +66,9 @@ public class ArchitectureTests
             .ShouldNot()
             .HaveDependencyOnAny(
                 ApiNamespace,
-                PersistenceNamespace,
+                PersistenceMigrationsNamespace,
+                PersistenceDapperNamespace,
+                PersistenceEfCoreNamespace,
                 InfrastructureNamespace)
             .GetResult();
 
@@ -88,13 +95,17 @@ public class ArchitectureTests
     public void Persistence_Should_Not_DependOnApi()
     {
         // Arrange
-        var assembly = Assembly.LoadFrom(PersistenceNamespace + Dll);
+        var allAssemblies = new[]
+        {
+            Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
+            Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
+            Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+        };
 
         // Act
-        var result = Types.InAssembly(assembly)
+        var result = Types.InAssemblies(allAssemblies)
             .ShouldNot()
             .HaveDependencyOn(ApiNamespace)
-            // later also infrastructure if exists
             .GetResult();
 
         // Assert
@@ -105,10 +116,15 @@ public class ArchitectureTests
     public void Persistence_Should_Not_DependOnInfrastructure()
     {
         // Arrange
-        var assembly = Assembly.LoadFrom(PersistenceNamespace + Dll);
+        var allAssemblies = new[]
+        {
+            Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
+            Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
+            Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+        };
 
         // Act
-        var result = Types.InAssembly(assembly)
+        var result = Types.InAssemblies(allAssemblies)
             .ShouldNot()
             .HaveDependencyOn(InfrastructureNamespace)
             .GetResult();
@@ -121,10 +137,15 @@ public class ArchitectureTests
     public void Persistence_Should_Not_DependOnApplication()
     {
         // Arrange
-        var assembly = Assembly.LoadFrom(PersistenceNamespace + Dll);
+        var allAssemblies = new[]
+        {
+            Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
+            Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
+            Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+        };
 
         // Act
-        var result = Types.InAssembly(assembly)
+        var result = Types.InAssemblies(allAssemblies)
             .ShouldNot()
             .HaveDependencyOn(ApplicationNamespace)
             .GetResult();
@@ -144,7 +165,10 @@ public class ArchitectureTests
             .That()
             .Inherit(typeof(ControllerBase))
             .ShouldNot()
-            .HaveDependencyOn(PersistenceNamespace)
+            .HaveDependencyOnAny(
+                PersistenceMigrationsNamespace,
+                PersistenceDapperNamespace,
+                PersistenceEfCoreNamespace)
             .GetResult();
 
         // Assert
@@ -159,32 +183,37 @@ public class ArchitectureTests
         {
             Assembly.LoadFrom(DomainNamespace + Dll),
             Assembly.LoadFrom(ApplicationNamespace + Dll),
-            Assembly.LoadFrom(PersistenceNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
+            Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+            Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(InfrastructureNamespace + Dll),
         };
 
-        // Act and Assert
-        foreach (var assembly in allAssemblies)
-        {
-            var result = Types.InAssembly(assembly)
-                .That()
-                .AreInterfaces()
-                .Should()
-                .HaveNameStartingWith("I")
-                .GetResult();
+        // Act
+        var result = Types.InAssemblies(allAssemblies)
+            .That()
+            .AreInterfaces()
+            .Should()
+            .HaveNameStartingWith("I")
+            .GetResult();
 
-            Assert.True(result.IsSuccessful);
-        }
+        // Assert
+        Assert.True(result.IsSuccessful);
     }
 
     [Fact]
     public void Repositories_Should_FollowNamingConvention()
     {
         // Arrange
-        var assembly = Assembly.LoadFrom(PersistenceNamespace + Dll);
+        var allAssemblies = new[]
+        {
+            Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
+            Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
+            Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+        };
 
         // Act
-        var result = Types.InAssembly(assembly)
+        var result = Types.InAssemblies(allAssemblies)
             .That()
             .ImplementInterface(typeof(IRepository<,>))
             .Should()
@@ -208,7 +237,11 @@ public class ArchitectureTests
         // Act
         var result = Types.InAssembly(assembly)
             .ShouldNot()
-            .HaveDependencyOnAny(PersistenceNamespace, ApiNamespace)
+            .HaveDependencyOnAny(
+                PersistenceMigrationsNamespace,
+                ApiNamespace,
+                PersistenceDapperNamespace,
+                PersistenceEfCoreNamespace)
             .GetResult();
 
         // Assert
