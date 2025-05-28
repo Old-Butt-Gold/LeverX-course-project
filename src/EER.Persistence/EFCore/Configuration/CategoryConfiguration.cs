@@ -12,8 +12,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         entity.HasKey(e => e.Id).HasName("PK__Category__3214EC07E13A5348");
 
         entity.Property(e => e.Id)
-            .ValueGeneratedOnAdd()
-            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+            .ValueGeneratedOnAdd();
 
         entity.ToTable("Category", "Supplies");
 

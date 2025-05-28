@@ -13,8 +13,7 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
         entity.HasKey(e => e.Id).HasName("PK__Rental__3214EC074B5974FE");
 
         entity.Property(e => e.Id)
-            .ValueGeneratedOnAdd()
-            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+            .ValueGeneratedOnAdd();
 
         entity.ToTable("Rental", "Supplies", tb => tb.HasTrigger("TRG_RentalStatus_AfterUpdate"));
 

@@ -12,8 +12,7 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
         entity.HasKey(e => e.Id).HasName("PK__Equipmen__3214EC0734AC969E");
 
         entity.Property(e => e.Id)
-            .ValueGeneratedOnAdd()
-            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+            .ValueGeneratedOnAdd();
 
         entity.ToTable("Equipment", "Supplies", tb =>
         {

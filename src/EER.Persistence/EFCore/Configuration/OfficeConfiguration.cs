@@ -12,8 +12,7 @@ public class OfficeConfiguration : IEntityTypeConfiguration<Office>
         entity.HasKey(e => e.Id).HasName("PK__Office__3214EC07B33694A9");
 
         entity.Property(e => e.Id)
-            .ValueGeneratedOnAdd()
-            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+            .ValueGeneratedOnAdd();
 
         entity.ToTable("Office", "Identity");
 
