@@ -3,7 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace EER.Persistence;
+namespace EER.Persistence.Migrations;
 
 internal sealed class MssqlSqlMigrationService : ISqlMigrationService
 {

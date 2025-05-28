@@ -9,7 +9,7 @@ public class ArchitectureTests
 {
     private const string DomainNamespace = "EER.Domain";
     private const string ApplicationNamespace = "EER.Application";
-    private const string PersistenceNamespace = "EER.Persistence";
+    private const string PersistenceNamespace = "EER.Persistence.Migrations";
     private const string InfrastructureNamespace = "EER.Infrastructure";
     private const string ApiNamespace = "EER.API";
     private const string Dll = ".dll";

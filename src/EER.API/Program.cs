@@ -1,7 +1,8 @@
 ﻿using EER.API.Extensions;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
-using EER.Persistence.Extensions;
+using EER.Persistence.EFCore.Extensions;
+using EER.Persistence.Migrations.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -9,27 +9,23 @@ namespace EER.Persistence.Dapper.Repositories;
 internal sealed class DapperUserRepository : IUserRepository
 {
     private readonly IDbConnection _connection;
-    private readonly IDbTransaction? _transaction;
 
-    public DapperUserRepository(IDbConnection connection, IDbTransaction? transaction)
+    public DapperUserRepository(IDbConnection connection)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[User]";
-        return await _connection.QueryAsync<User>(new CommandDefinition(sql, transaction: _transaction,
-            cancellationToken: cancellationToken));
+        return await _connection.QueryAsync<User>(new CommandDefinition(sql, cancellationToken: cancellationToken));
     }
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[User] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<User>(new CommandDefinition(sql,
-            new { Id = id }, transaction: _transaction,
-            cancellationToken: cancellationToken));
+            new { Id = id }, cancellationToken: cancellationToken));
     }
 
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
@@ -49,7 +45,7 @@ internal sealed class DapperUserRepository : IUserRepository
         };
 
         return await _connection.QuerySingleAsync<User>(
-            new CommandDefinition(sql, parameters, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
     public async Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default)
@@ -76,15 +72,14 @@ internal sealed class DapperUserRepository : IUserRepository
         };
 
         return await _connection.QuerySingleOrDefaultAsync<User>(
-            new CommandDefinition(sql, parameters, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[User] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id },
-                cancellationToken: cancellationToken, transaction: _transaction));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

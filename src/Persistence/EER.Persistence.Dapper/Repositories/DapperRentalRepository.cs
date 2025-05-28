@@ -9,26 +9,24 @@ namespace EER.Persistence.Dapper.Repositories;
 internal sealed class DapperRentalRepository : IRentalRepository
 {
     private readonly IDbConnection _connection;
-    private readonly IDbTransaction? _transaction;
 
-    public DapperRentalRepository(IDbConnection connection, IDbTransaction? transaction)
+    public DapperRentalRepository(IDbConnection connection)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<IEnumerable<Rental>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Rental]";
         return await _connection.QueryAsync<Rental>(
-            new CommandDefinition(sql, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, cancellationToken: cancellationToken));
     }
 
     public async Task<Rental?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Rental] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Rental>(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
     }
 
     public async Task<Rental> AddAsync(Rental rental, CancellationToken cancellationToken = default)
@@ -59,7 +57,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
         };
 
         return await _connection.QuerySingleAsync<Rental>(
-            new CommandDefinition(sql, parameters, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
     public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
@@ -109,14 +107,14 @@ internal sealed class DapperRentalRepository : IRentalRepository
                 Id = id,
                 Status = status.ToString(),
                 UpdatedBy = updatedBy,
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Rental] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

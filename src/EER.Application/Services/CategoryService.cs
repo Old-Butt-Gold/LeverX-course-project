@@ -6,31 +6,31 @@ namespace EER.Application.Services;
 
 internal sealed class CategoryService : ICategoryService
 {
-    private readonly IUnitOfWork _uow;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public CategoryService(IUnitOfWork uow)
+    public CategoryService(ICategoryRepository categoryRepository)
     {
-        _uow = uow;
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _uow.CategoryRepository.GetAllAsync(cancellationToken);
+        return await _categoryRepository.GetAllAsync(cancellationToken);
     }
 
     public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.CategoryRepository.GetByIdAsync(id, cancellationToken);
+        return await _categoryRepository.GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default)
     {
-        return await _uow.CategoryRepository.AddAsync(category, cancellationToken);
+        return await _categoryRepository.AddAsync(category, cancellationToken);
     }
 
     public async Task<Category?> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default)
     {
-        var existingCategory = await _uow.CategoryRepository.GetByIdAsync(id, cancellationToken);
+        var existingCategory = await _categoryRepository.GetByIdAsync(id, cancellationToken);
         if (existingCategory is null) return null;
 
         existingCategory.Name = updatedCategory.Name;
@@ -38,11 +38,11 @@ internal sealed class CategoryService : ICategoryService
         existingCategory.Slug = updatedCategory.Slug;
         existingCategory.UpdatedBy = updatedCategory.UpdatedBy;
 
-        return await _uow.CategoryRepository.UpdateAsync(existingCategory, cancellationToken);
+        return await _categoryRepository.UpdateAsync(existingCategory, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.CategoryRepository.DeleteAsync(id, cancellationToken);
+        return await _categoryRepository.DeleteAsync(id, cancellationToken);
     }
 }

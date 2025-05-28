@@ -7,36 +7,36 @@ namespace EER.Application.Services;
 
 internal sealed class RentalService : IRentalService
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IRentalRepository _rentalRepository;
 
-    public RentalService(IUnitOfWork uow)
+    public RentalService(IRentalRepository rentalRepository)
     {
-        _uow = uow;
+        _rentalRepository = rentalRepository;
     }
 
     public async Task<IEnumerable<Rental>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _uow.RentalRepository.GetAllAsync(cancellationToken);
+        return await _rentalRepository.GetAllAsync(cancellationToken);
     }
 
     public async Task<Rental?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.RentalRepository.GetByIdAsync(id, cancellationToken);
+        return await _rentalRepository.GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<Rental> CreateAsync(Rental rental, CancellationToken cancellationToken = default)
     {
         rental.Status = RentalStatus.Pending;
-        return await _uow.RentalRepository.AddAsync(rental, cancellationToken);
+        return await _rentalRepository.AddAsync(rental, cancellationToken);
     }
 
     public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
     {
-        return await _uow.RentalRepository.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
+        return await _rentalRepository.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.RentalRepository.DeleteAsync(id, cancellationToken);
+        return await _rentalRepository.DeleteAsync(id, cancellationToken);
     }
 }

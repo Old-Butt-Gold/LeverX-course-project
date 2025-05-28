@@ -7,31 +7,31 @@ namespace EER.Application.Services;
 
 internal sealed class OfficeService : IOfficeService
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IOfficeRepository _officeRepository;
 
-    public OfficeService(IUnitOfWork uow)
+    public OfficeService(IOfficeRepository officeRepository)
     {
-        _uow = uow;
+        _officeRepository = officeRepository;
     }
 
     public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _uow.OfficeRepository.GetAllAsync(cancellationToken);
+        return await _officeRepository.GetAllAsync(cancellationToken);
     }
 
     public async Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.OfficeRepository.GetByIdAsync(id, cancellationToken);
+        return await _officeRepository.GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<Office> CreateAsync(Office office, CancellationToken cancellationToken = default)
     {
-        return await _uow.OfficeRepository.AddAsync(office, cancellationToken);
+        return await _officeRepository.AddAsync(office, cancellationToken);
     }
 
     public async Task<Office?> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default)
     {
-        var existingOffice = await _uow.OfficeRepository.GetByIdAsync(id, cancellationToken);
+        var existingOffice = await _officeRepository.GetByIdAsync(id, cancellationToken);
         if (existingOffice is null) return null;
 
         existingOffice.OwnerId = updatedOffice.OwnerId;
@@ -41,11 +41,11 @@ internal sealed class OfficeService : IOfficeService
         existingOffice.IsActive = updatedOffice.IsActive;
         existingOffice.UpdatedBy = updatedOffice.UpdatedBy;
 
-        return await _uow.OfficeRepository.UpdateAsync(existingOffice, cancellationToken);
+        return await _officeRepository.UpdateAsync(existingOffice, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.OfficeRepository.DeleteAsync(id, cancellationToken);
+        return await _officeRepository.DeleteAsync(id, cancellationToken);
     }
 }

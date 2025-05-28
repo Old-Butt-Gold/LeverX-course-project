@@ -6,31 +6,31 @@ namespace EER.Application.Services;
 
 internal class EquipmentItemService : IEquipmentItemService
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IEquipmentItemRepository _equipmentItemRepository;
 
-    public EquipmentItemService(IUnitOfWork uow)
+    public EquipmentItemService(IEquipmentItemRepository equipmentItemRepository)
     {
-        _uow = uow;
+        _equipmentItemRepository = equipmentItemRepository;
     }
 
     public async Task<IEnumerable<EquipmentItem>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentItemRepository.GetAllAsync(cancellationToken);
+        return await _equipmentItemRepository.GetAllAsync(cancellationToken);
     }
 
     public async Task<EquipmentItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentItemRepository.GetByIdAsync(id, cancellationToken);
+        return await _equipmentItemRepository.GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<EquipmentItem> CreateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentItemRepository.AddAsync(item, cancellationToken);
+        return await _equipmentItemRepository.AddAsync(item, cancellationToken);
     }
 
     public async Task<EquipmentItem?> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default)
     {
-        var existingItem = await _uow.EquipmentItemRepository.GetByIdAsync(id, cancellationToken);
+        var existingItem = await _equipmentItemRepository.GetByIdAsync(id, cancellationToken);
         if (existingItem is null) return null;
 
         existingItem.EquipmentId = updatedItem.EquipmentId;
@@ -41,11 +41,11 @@ internal class EquipmentItemService : IEquipmentItemService
         existingItem.PurchaseDate = updatedItem.PurchaseDate;
         existingItem.UpdatedBy = updatedItem.UpdatedBy;
 
-        return await _uow.EquipmentItemRepository.UpdateAsync(existingItem, cancellationToken);
+        return await _equipmentItemRepository.UpdateAsync(existingItem, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentItemRepository.DeleteAsync(id, cancellationToken);
+        return await _equipmentItemRepository.DeleteAsync(id, cancellationToken);
     }
 }

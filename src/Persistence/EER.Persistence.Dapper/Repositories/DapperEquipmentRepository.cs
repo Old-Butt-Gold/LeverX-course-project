@@ -8,33 +8,31 @@ namespace EER.Persistence.Dapper.Repositories;
 internal sealed class DapperEquipmentRepository : IEquipmentRepository
 {
     private readonly IDbConnection _connection;
-    private readonly IDbTransaction? _transaction;
 
-    public DapperEquipmentRepository(IDbConnection connection, IDbTransaction? transaction)
+    public DapperEquipmentRepository(IDbConnection connection)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Equipment]";
         return await _connection.QueryAsync<Equipment>(
-            new CommandDefinition(sql, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, cancellationToken: cancellationToken));
     }
 
     public async Task<Equipment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Equipment>(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
     }
 
     public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE CategoryId = @CategoryId";
         return await _connection.QueryAsync<Equipment>(
-            new CommandDefinition(sql, new { CategoryId = categoryId }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { CategoryId = categoryId }, cancellationToken: cancellationToken));
     }
 
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
@@ -89,7 +87,7 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.PricePerDay,
                 equipment.CreatedBy,
                 equipment.UpdatedBy,
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<Equipment?> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
@@ -146,14 +144,14 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.Description,
                 equipment.PricePerDay,
                 equipment.UpdatedBy,
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Equipment] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

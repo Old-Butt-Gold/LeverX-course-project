@@ -6,36 +6,36 @@ namespace EER.Application.Services;
 
 internal sealed class EquipmentService : IEquipmentService
 {
-    private readonly IUnitOfWork _uow;
+    private readonly IEquipmentRepository _equipmentRepository;
 
-    public EquipmentService(IUnitOfWork uow)
+    public EquipmentService(IEquipmentRepository equipmentRepository)
     {
-        _uow = uow;
+        _equipmentRepository = equipmentRepository;
     }
 
     public async Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentRepository.GetAllAsync(cancellationToken);
+        return await _equipmentRepository.GetAllAsync(cancellationToken);
     }
 
     public async Task<Equipment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentRepository.GetByIdAsync(id, cancellationToken);
+        return await _equipmentRepository.GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentRepository.GetByCategoryAsync(categoryId, cancellationToken);
+        return await _equipmentRepository.GetByCategoryAsync(categoryId, cancellationToken);
     }
 
     public async Task<Equipment> CreateAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentRepository.AddAsync(equipment, cancellationToken);
+        return await _equipmentRepository.AddAsync(equipment, cancellationToken);
     }
 
     public async Task<Equipment?> UpdateAsync(int id, Equipment updatedEquipment, CancellationToken cancellationToken = default)
     {
-        var existingEquipment = await _uow.EquipmentRepository.GetByIdAsync(id, cancellationToken);
+        var existingEquipment = await _equipmentRepository.GetByIdAsync(id, cancellationToken);
         if (existingEquipment is null) return null;
 
         existingEquipment.Name = updatedEquipment.Name;
@@ -44,11 +44,11 @@ internal sealed class EquipmentService : IEquipmentService
         existingEquipment.PricePerDay = updatedEquipment.PricePerDay;
         existingEquipment.UpdatedBy = updatedEquipment.UpdatedBy;
 
-        return await _uow.EquipmentRepository.UpdateAsync(existingEquipment, cancellationToken);
+        return await _equipmentRepository.UpdateAsync(existingEquipment, cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _uow.EquipmentRepository.DeleteAsync(id, cancellationToken);
+        return await _equipmentRepository.DeleteAsync(id, cancellationToken);
     }
 }

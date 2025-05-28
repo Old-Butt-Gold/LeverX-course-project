@@ -5,29 +5,28 @@ using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
 
+// if need can inject interface of other repositories
 internal sealed class DapperCategoryRepository : ICategoryRepository
 {
     private readonly IDbConnection _connection;
-    private readonly IDbTransaction? _transaction;
 
-    public DapperCategoryRepository(IDbConnection connection, IDbTransaction? transaction)
+    public DapperCategoryRepository(IDbConnection connection)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Category]";
         return await _connection.QueryAsync<Category>(
-            new CommandDefinition(sql, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, cancellationToken: cancellationToken));
     }
 
     public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Category] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Category>(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
     }
 
     public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
@@ -47,7 +46,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                 category.Slug,
                 category.CreatedBy,
                 category.UpdatedBy
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<Category?> UpdateAsync(Category category, CancellationToken cancellationToken = default)
@@ -74,14 +73,14 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                 category.Description,
                 category.Slug,
                 category.UpdatedBy
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Category] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

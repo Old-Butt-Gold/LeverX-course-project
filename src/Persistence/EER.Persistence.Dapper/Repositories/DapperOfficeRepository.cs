@@ -8,27 +8,24 @@ namespace EER.Persistence.Dapper.Repositories;
 internal sealed class DapperOfficeRepository : IOfficeRepository
 {
     private readonly IDbConnection _connection;
-    private readonly IDbTransaction? _transaction;
 
-    public DapperOfficeRepository(IDbConnection connection, IDbTransaction? transaction)
+    public DapperOfficeRepository(IDbConnection connection)
     {
         _connection = connection;
-        _transaction = transaction;
     }
 
     public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[Office]";
         return await _connection.QueryAsync<Office>(
-            new CommandDefinition(sql, transaction: _transaction, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, cancellationToken: cancellationToken));
     }
 
     public async Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[Office] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Office>(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction,
-                cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
     }
 
     public async Task<Office> AddAsync(Office office, CancellationToken cancellationToken = default)
@@ -53,7 +50,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                 office.Country,
                 office.CreatedBy,
                 office.UpdatedBy
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<Office?> UpdateAsync(Office office, CancellationToken cancellationToken = default)
@@ -83,15 +80,14 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                 office.Country,
                 office.IsActive,
                 office.UpdatedBy
-            }, transaction: _transaction, cancellationToken: cancellationToken));
+            }, cancellationToken: cancellationToken));
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[Office] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, transaction: _transaction,
-                cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

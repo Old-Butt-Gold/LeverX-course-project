@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EER.Persistence.EFCore.Repositories;
 
+// If need can inject interface of other repositories
 internal sealed class EfCategoryRepository : ICategoryRepository
 {
     private readonly ApplicationDbContext _context;
