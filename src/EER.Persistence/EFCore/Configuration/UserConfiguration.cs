@@ -1,6 +1,7 @@
 ﻿using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -15,7 +16,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         entity.HasIndex(e => e.Email, "UQ_User_Email").IsUnique();
 
-        entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+        entity.Property(e => e.Id)
+            .HasDefaultValueSql("(newsequentialid())")
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");

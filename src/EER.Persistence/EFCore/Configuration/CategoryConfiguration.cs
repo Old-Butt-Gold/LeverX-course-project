@@ -1,5 +1,6 @@
 ﻿using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -10,9 +11,16 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
         entity.HasKey(e => e.Id).HasName("PK__Category__3214EC07E13A5348");
 
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+
         entity.ToTable("Category", "Supplies");
 
         entity.HasIndex(e => e.Slug, "UQ_Category_Slug").IsUnique();
+
+        entity.Property(e => e.TotalEquipment)
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)

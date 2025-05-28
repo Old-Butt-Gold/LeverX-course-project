@@ -1,6 +1,7 @@
 ﻿using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -10,6 +11,10 @@ public class EquipmentItemConfiguration : IEntityTypeConfiguration<EquipmentItem
     public void Configure(EntityTypeBuilder<EquipmentItem> entity)
     {
         entity.HasKey(e => e.Id).HasName("PK__Equipmen__3214EC07DD244325");
+
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.ToTable("EquipmentItem", "Supplies");
 
@@ -28,7 +33,7 @@ public class EquipmentItemConfiguration : IEntityTypeConfiguration<EquipmentItem
                 v => v.ToString(),            // enum → in DB (string)
                 v => Enum.Parse<ItemStatus>(v))    // DB (string) → enum
             .HasMaxLength(255)
-            .HasDefaultValue("Available");
+            .HasDefaultValue(ItemStatus.Available);
 
         entity.Property(e => e.SerialNumber).HasMaxLength(100);
         entity.Property(e => e.UpdatedAt)

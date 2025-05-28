@@ -1,5 +1,6 @@
 ﻿using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -9,6 +10,10 @@ public class EquipmentImagesConfiguration : IEntityTypeConfiguration<EquipmentIm
     public void Configure(EntityTypeBuilder<EquipmentImages> entity)
     {
         entity.HasKey(e => e.Id).HasName("PK__Equipmen__3214EC075365B074");
+
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.ToTable("EquipmentImages", "Supplies");
 

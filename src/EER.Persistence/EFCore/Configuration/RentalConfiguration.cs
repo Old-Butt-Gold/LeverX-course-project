@@ -1,6 +1,7 @@
 ﻿using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -10,6 +11,10 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
     public void Configure(EntityTypeBuilder<Rental> entity)
     {
         entity.HasKey(e => e.Id).HasName("PK__Rental__3214EC074B5974FE");
+
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.ToTable("Rental", "Supplies", tb => tb.HasTrigger("TRG_RentalStatus_AfterUpdate"));
 
@@ -30,7 +35,7 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
                 v => v.ToString(),            // enum → in DB (string)
                 v => Enum.Parse<RentalStatus>(v))    // DB (string) → enum
             .HasMaxLength(255)
-            .HasDefaultValue("Pending");
+            .HasDefaultValue(RentalStatus.Pending);
 
         entity.Property(e => e.TotalPrice).HasColumnType("decimal(9, 2)");
         entity.Property(e => e.UpdatedAt)

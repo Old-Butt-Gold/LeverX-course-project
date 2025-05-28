@@ -1,5 +1,6 @@
 ﻿using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -9,6 +10,10 @@ public class OfficeConfiguration : IEntityTypeConfiguration<Office>
     public void Configure(EntityTypeBuilder<Office> entity)
     {
         entity.HasKey(e => e.Id).HasName("PK__Office__3214EC07B33694A9");
+
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.ToTable("Office", "Identity");
 

@@ -17,12 +17,14 @@ internal sealed class EfUserRepository : IUserRepository
     {
         return await _context.Users.ToListAsync(cancellationToken);
     }
+
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users.FindAsync([id], cancellationToken: cancellationToken);
 
         return user;
     }
+
     public async Task<User> AddAsync(User entity, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Users.AddAsync(entity, cancellationToken);

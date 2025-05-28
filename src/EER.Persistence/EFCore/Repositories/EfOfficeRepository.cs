@@ -37,7 +37,6 @@ internal sealed class EfOfficeRepository : IOfficeRepository
         var existing = await _context.Offices.FindAsync([office.Id], cancellationToken);
         if (existing is null) return null;
 
-        existing.OwnerId = office.OwnerId;
         existing.Address = office.Address;
         existing.City = office.City;
         existing.Country = office.Country;

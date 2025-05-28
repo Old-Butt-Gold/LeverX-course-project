@@ -1,5 +1,6 @@
 ﻿using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EER.Persistence.EFCore.Configuration;
@@ -9,6 +10,10 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
     public void Configure(EntityTypeBuilder<Equipment> entity)
     {
         entity.HasKey(e => e.Id).HasName("PK__Equipmen__3214EC0734AC969E");
+
+        entity.Property(e => e.Id)
+            .ValueGeneratedOnAdd()
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
 
         entity.ToTable("Equipment", "Supplies", tb =>
         {
@@ -23,7 +28,13 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
 
         entity.HasIndex(e => e.Name, "IX_Equipment_Name");
 
-        entity.Property(e => e.AverageRating).HasColumnType("decimal(3, 2)");
+        entity.Property(e => e.TotalReviews)
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+
+        entity.Property(e => e.AverageRating)
+            .HasColumnType("decimal(3, 2)")
+            .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
+
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");
