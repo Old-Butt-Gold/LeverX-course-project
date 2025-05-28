@@ -14,4 +14,8 @@ public class Office : BaseEntity<int>
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual ICollection<EquipmentItem> EquipmentItems { get; set; } = [];
+
+    public virtual User Owner { get; set; } = null!;
 }

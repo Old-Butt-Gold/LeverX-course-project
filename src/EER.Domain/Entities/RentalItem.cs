@@ -8,4 +8,8 @@ public class RentalItem
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }
+
+    public virtual EquipmentItem EquipmentItem { get; set; } = null!;
+
+    public virtual Rental Rental { get; set; } = null!;
 }

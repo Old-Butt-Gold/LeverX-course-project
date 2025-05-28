@@ -16,4 +16,10 @@ public class EquipmentItem : BaseEntity<long>
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual Equipment Equipment { get; set; } = null!;
+
+    public virtual Office? Office { get; set; }
+
+    public virtual ICollection<RentalItem> RentalItems { get; set; } = [];
 }

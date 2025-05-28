@@ -16,5 +16,11 @@ public class Rental : BaseEntity<int>
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual User Customer { get; set; } = null!;
+
+    public virtual User Owner { get; set; } = null!;
+
+    public virtual ICollection<RentalItem> RentalItems { get; set; } = [];
 }
 

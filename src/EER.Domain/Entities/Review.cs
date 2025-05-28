@@ -11,4 +11,8 @@ public class Review
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual User Customer { get; set; } = null!;
+
+    public virtual Equipment Equipment { get; set; } = null!;
 }

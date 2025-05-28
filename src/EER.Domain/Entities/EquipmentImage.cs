@@ -12,4 +12,6 @@ public class EquipmentImages : BaseEntity<int>
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual Equipment Equipment { get; set; } = null!;
 }

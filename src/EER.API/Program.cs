@@ -19,6 +19,7 @@ builder.Services.ConfigureServices();
 // Persistence
 builder.Services.ConfigureMigrationService();
 builder.Services.ConfigureDapper(builder.Configuration);
+builder.Services.ConfigureEntityFrameworkCore(builder.Configuration);
 
 // Infrastructure
 builder.Services.ConfigureSecurity();

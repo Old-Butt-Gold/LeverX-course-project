@@ -1,7 +1,9 @@
 ﻿using System.Data.Common;
 using EER.Domain.DatabaseAbstractions;
 using EER.Persistence.Dapper;
+using EER.Persistence.EFCore;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,5 +22,13 @@ public static class ServiceExtensions
             new SqlConnection(configuration.GetConnectionString("MSConnection")));
 
         serviceCollection.AddScoped<IUnitOfWork, DapperUnitOfWork>();
+    }
+
+    public static void ConfigureEntityFrameworkCore(this IServiceCollection serviceCollection, IConfiguration configuration)
+    {
+        serviceCollection.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("MSConnection")));
+
+        // serviceCollection.AddScoped<IUnitOfWork, EntityFrameworkCoreUnitOfWork>();
     }
 }
