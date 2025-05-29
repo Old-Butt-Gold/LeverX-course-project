@@ -17,4 +17,16 @@ public class Equipment : BaseEntity<int>
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+
+    public virtual Category Category { get; set; } = null!;
+
+    public virtual ICollection<EquipmentImages> EquipmentImages { get; set; } = [];
+
+    public virtual ICollection<EquipmentItem> EquipmentItems { get; set; } = [];
+
+    public virtual ICollection<Favorites> Favorites { get; set; } = [];
+
+    public virtual User Owner { get; set; } = null!;
+
+    public virtual ICollection<Review> Reviews { get; set; } = [];
 }

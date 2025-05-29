@@ -4,9 +4,9 @@ namespace EER.Application.Abstractions.Services;
 
 public interface ICategoryService
 {
-    IEnumerable<Category> GetAll();
-    Category? GetById(int id);
-    Category Create(Category category);
-    Category? Update(int id, Category updatedCategory);
-    bool Delete(int id);
+    Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default);
+    Task<Category?> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

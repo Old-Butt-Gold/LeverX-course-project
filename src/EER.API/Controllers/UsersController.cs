@@ -28,13 +28,17 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(typeof(List<User>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_service.GetAll());
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _service.GetAllAsync(cancellationToken));
+    }
 
     // GET: api/users/1
     /// <summary>
     /// Retrieves a specific user by ID.
     /// </summary>
     /// <param name="id">The ID of the user to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested user if found.</returns>
     /// <response code="200">Returns the requested user.</response>
     /// <response code="404">If the user with the specified ID is not found.</response>
@@ -44,9 +48,9 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:guid}")]
-    public IActionResult GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var user = _service.GetById(id);
+        var user = await _service.GetByIdAsync(id, cancellationToken);
         return user is not null ? Ok(user) : NotFound();
     }
 
@@ -55,6 +59,7 @@ public sealed class UsersController : ControllerBase
     /// Creates a new user.
     /// </summary>
     /// <param name="user">The user to create. Note: PasswordHash should contain the plain password, which will be hashed by the server.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user.</returns>
     /// <response code="201">Returns the created user ID.</response>
     /// <response code="400">If the user data is invalid.</response>
@@ -65,9 +70,9 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(User user)
+    public async Task<IActionResult> Create(User user, CancellationToken cancellationToken)
     {
-        var createdUser = _service.Create(user);
+        var createdUser = await _service.CreateAsync(user, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
 
@@ -77,6 +82,7 @@ public sealed class UsersController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the user to update.</param>
     /// <param name="updatedUser">The updated user data. Note: If PasswordHash is provided, it should be the plain password, which will be hashed by the server.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated user.</returns>
     /// <response code="200">Returns the updated user.</response>
     /// <response code="404">If the user with the specified ID is not found.</response>
@@ -87,9 +93,9 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:guid}")]
-    public IActionResult Update(Guid id, User updatedUser)
+    public async Task<IActionResult> Update(Guid id, User updatedUser, CancellationToken cancellationToken)
     {
-        var user = _service.Update(id, updatedUser);
+        var user = await _service.UpdateAsync(id, updatedUser, cancellationToken);
         return user is not null ? Ok(user) : NotFound();
     }
 
@@ -98,6 +104,7 @@ public sealed class UsersController : ControllerBase
     /// Deletes a specific user by ID.
     /// </summary>
     /// <param name="id">The ID of the user to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The user was successfully deleted.</response>
     /// <response code="406">The requested content type is not supported.</response>
@@ -106,6 +113,10 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(Guid id) =>
-        _service.Delete(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        return await _service.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 }

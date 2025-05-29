@@ -1,7 +1,7 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EER.Persistence.Extensions;
+namespace EER.Persistence.Migrations.Extensions;
 
 public static class ServiceExtensions
 {

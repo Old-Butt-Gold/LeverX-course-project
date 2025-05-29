@@ -28,13 +28,17 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(List<Rental>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_rentalService.GetAll());
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _rentalService.GetAllAsync(cancellationToken));
+    }
 
     // GET: api/rentals/1
     /// <summary>
     /// Retrieves a specific rental by ID.
     /// </summary>
     /// <param name="id">The ID of the rental to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested rental if found.</returns>
     /// <response code="200">Returns the requested rental.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
@@ -44,9 +48,9 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var rental = _rentalService.GetById(id);
+        var rental = await _rentalService.GetByIdAsync(id, cancellationToken);
         return rental is not null ? Ok(rental) : NotFound();
     }
 
@@ -55,6 +59,7 @@ public sealed class RentalsController : ControllerBase
     /// Creates a new rental.
     /// </summary>
     /// <param name="rental">The rental to create.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created rental.</returns>
     /// <response code="201">Returns the created rental ID.</response>
     /// <response code="400">If the rental data is invalid.</response>
@@ -65,9 +70,9 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(Rental rental)
+    public async Task<IActionResult> Create(Rental rental, CancellationToken cancellationToken)
     {
-        var createdRental = _rentalService.Create(rental);
+        var createdRental = await _rentalService.CreateAsync(rental, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
     }
 
@@ -77,6 +82,7 @@ public sealed class RentalsController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the rental to update.</param>
     /// <param name="status">The status that rental object will be setting as new status.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated rental.</returns>
     /// <response code="200">Returns the updated rental.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
@@ -87,9 +93,11 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, [FromBody] RentalStatus status)
+    public async Task<IActionResult> Update(int id, [FromBody] RentalStatus status, CancellationToken cancellationToken)
     {
-        var rental = _rentalService.UpdateStatus(id, status);
+        // TODO updatedBy
+        var updatedBy = Guid.NewGuid();
+        var rental = await _rentalService.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
         return rental is not null ? Ok(rental) : NotFound();
     }
 
@@ -98,6 +106,7 @@ public sealed class RentalsController : ControllerBase
     /// Deletes a specific rental by ID.
     /// </summary>
     /// <param name="id">The ID of the rental to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The rental was successfully deleted.</response>
     /// <response code="404">If the rental with the specified ID is not found.</response>
@@ -107,6 +116,10 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id) =>
-        _rentalService.Delete(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        return await _rentalService.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 }

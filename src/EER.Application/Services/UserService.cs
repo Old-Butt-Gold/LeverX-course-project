@@ -1,42 +1,52 @@
 ﻿using EER.Application.Abstractions.Security;
 using EER.Application.Abstractions.Services;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
-public class UserService : IUserService
+internal sealed class UserService : IUserService
 {
-    private readonly Dictionary<Guid, User> _users = [];
+    private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IPasswordHasher passwordHasher)
+    public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
     {
+        _userRepository = userRepository;
         _passwordHasher = passwordHasher;
     }
 
-    public IEnumerable<User> GetAll() => _users.Values.ToList();
-
-    public User? GetById(Guid id) => _users.GetValueOrDefault(id);
-
-    public User Create(User user)
+    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        user.Id = Guid.NewGuid();
-        user.CreatedAt = DateTime.UtcNow;
+        return await _userRepository.GetAllAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _userRepository.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
+    {
         user.PasswordHash = _passwordHasher.HashPassword(user.PasswordHash);
-        _users[user.Id] = user;
-        return user;
+        return await _userRepository.AddAsync(user, cancellationToken);
     }
 
-    public User? Update(Guid id, User updatedUser)
+    public async Task<User?> UpdateAsync(Guid id, User updatedUser, CancellationToken cancellationToken = default)
     {
-        if (!_users.TryGetValue(id, out var user))
-            return null;
+        var existingUser = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (existingUser is null) return null;
 
-        user.Email = updatedUser.Email;
-        user.FullName = updatedUser.FullName;
-        user.PasswordHash = _passwordHasher.HashPassword(updatedUser.PasswordHash);
-        return user;
+        existingUser.Email = updatedUser.Email;
+        existingUser.FullName = updatedUser.FullName;
+        existingUser.PasswordHash = _passwordHasher.HashPassword(updatedUser.PasswordHash);
+        existingUser.UserRole = updatedUser.UserRole;
+
+        return await _userRepository.UpdateAsync(existingUser, cancellationToken);
     }
 
-    public bool Delete(Guid id) => _users.Remove(id);
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _userRepository.DeleteAsync(id, cancellationToken);
+    }
 }

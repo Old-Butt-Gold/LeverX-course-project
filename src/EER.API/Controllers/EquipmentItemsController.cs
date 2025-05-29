@@ -27,13 +27,17 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(typeof(List<EquipmentItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_equipmentItemService.GetAll());
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        return Ok(await _equipmentItemService.GetAllAsync(cancellationToken));
+    }
 
     // GET: api/equipmentitems/1
     /// <summary>
     /// Retrieves a specific equipment item by ID.
     /// </summary>
     /// <param name="id">The ID of the equipment item to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested equipment item if found.</returns>
     /// <response code="200">Returns the requested equipment item.</response>
     /// <response code="404">If the equipment item with the specified ID is not found.</response>
@@ -43,9 +47,9 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:long}")]
-    public IActionResult GetById(long id)
+    public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken)
     {
-        var item = _equipmentItemService.GetById(id);
+        var item = await _equipmentItemService.GetByIdAsync(id, cancellationToken);
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -54,6 +58,7 @@ public sealed class EquipmentItemsController : ControllerBase
     /// Creates a new equipment item.
     /// </summary>
     /// <param name="item">The equipment item to create.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created equipment item.</returns>
     /// <response code="201">Returns the created equipment item ID.</response>
     /// <response code="400">If the equipment item data is invalid.</response>
@@ -64,9 +69,9 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public IActionResult Create(EquipmentItem item)
+    public async Task<IActionResult> Create(EquipmentItem item, CancellationToken cancellationToken)
     {
-        var createdItem = _equipmentItemService.Create(item);
+        var createdItem = await _equipmentItemService.CreateAsync(item, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
@@ -76,6 +81,7 @@ public sealed class EquipmentItemsController : ControllerBase
     /// </summary>
     /// <param name="id">The ID of the equipment item to update.</param>
     /// <param name="updatedItem">The updated equipment item data.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated equipment item.</returns>
     /// <response code="200">Returns the updated equipment item.</response>
     /// <response code="404">If the equipment item with the specified ID is not found.</response>
@@ -86,9 +92,9 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut("{id:long}")]
-    public IActionResult Update(long id, EquipmentItem updatedItem)
+    public async Task<IActionResult> Update(long id, EquipmentItem updatedItem, CancellationToken cancellationToken)
     {
-        var item = _equipmentItemService.Update(id, updatedItem);
+        var item = await _equipmentItemService.UpdateAsync(id, updatedItem, cancellationToken);
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -97,6 +103,7 @@ public sealed class EquipmentItemsController : ControllerBase
     /// Deletes a specific equipment item by ID.
     /// </summary>
     /// <param name="id">The ID of the equipment item to delete.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>No content if successful.</returns>
     /// <response code="204">The equipment item was successfully deleted.</response>
     /// <response code="404">If the equipment item with the specified ID is not found.</response>
@@ -106,6 +113,10 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id) =>
-        _equipmentItemService.Delete(id) ? NoContent() : NotFound();
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        return await _equipmentItemService.DeleteAsync(id, cancellationToken)
+            ? NoContent()
+            : NotFound();
+    }
 }

@@ -1,36 +1,48 @@
 ﻿using EER.Application.Abstractions.Services;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
 internal sealed class CategoryService : ICategoryService
 {
-    private readonly Dictionary<int, Category> _categories = [];
-    private int _idCounter;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public IEnumerable<Category> GetAll() => _categories.Values.ToList();
-
-    public Category? GetById(int id) => _categories.GetValueOrDefault(id);
-
-    public Category Create(Category category)
+    public CategoryService(ICategoryRepository categoryRepository)
     {
-        category.Id = Interlocked.Increment(ref _idCounter);
-        _categories[category.Id] = category;
-        return category;
+        _categoryRepository = categoryRepository;
     }
 
-    public Category? Update(int id, Category updatedCategory)
+    public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        if (!_categories.TryGetValue(id, out var category))
-            return null;
-
-        category.Name = updatedCategory.Name;
-        category.Description = updatedCategory.Description;
-        category.Slug = updatedCategory.Slug;
-        category.TotalEquipment = updatedCategory.TotalEquipment;
-
-        return category;
+        return await _categoryRepository.GetAllAsync(cancellationToken);
     }
 
-    public bool Delete(int id) => _categories.Remove(id);
+    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _categoryRepository.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<Category> CreateAsync(Category category, CancellationToken cancellationToken = default)
+    {
+        return await _categoryRepository.AddAsync(category, cancellationToken);
+    }
+
+    public async Task<Category?> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default)
+    {
+        var existingCategory = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+        if (existingCategory is null) return null;
+
+        existingCategory.Name = updatedCategory.Name;
+        existingCategory.Description = updatedCategory.Description;
+        existingCategory.Slug = updatedCategory.Slug;
+        existingCategory.UpdatedBy = updatedCategory.UpdatedBy;
+
+        return await _categoryRepository.UpdateAsync(existingCategory, cancellationToken);
+    }
+
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _categoryRepository.DeleteAsync(id, cancellationToken);
+    }
 }

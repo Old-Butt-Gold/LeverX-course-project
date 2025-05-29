@@ -4,9 +4,9 @@ namespace EER.Application.Abstractions.Services;
 
 public interface IOfficeService
 {
-    IEnumerable<Office> GetAll();
-    Office? GetById(int id);
-    Office Create(Office office);
-    Office? Update(int id, Office updatedOffice);
-    bool Delete(int id);
+    Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<Office> CreateAsync(Office office, CancellationToken cancellationToken = default);
+    Task<Office?> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

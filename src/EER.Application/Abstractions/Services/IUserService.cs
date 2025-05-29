@@ -4,9 +4,9 @@ namespace EER.Application.Abstractions.Services;
 
 public interface IUserService
 {
-    IEnumerable<User> GetAll();
-    User? GetById(Guid id);
-    User Create(User user);
-    User? Update(Guid id, User updatedUser);
-    bool Delete(Guid id);
+    Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<User> CreateAsync(User user, CancellationToken cancellationToken = default);
+    Task<User?> UpdateAsync(Guid id, User updatedUser, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

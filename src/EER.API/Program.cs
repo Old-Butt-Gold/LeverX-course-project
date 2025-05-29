@@ -1,7 +1,8 @@
 ﻿using EER.API.Extensions;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
-using EER.Persistence.Extensions;
+using EER.Persistence.EFCore.Extensions;
+using EER.Persistence.Migrations.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.ConfigureServices();
 
 // Persistence
 builder.Services.ConfigureMigrationService();
+//builder.Services.ConfigureDapper(builder.Configuration);
+builder.Services.ConfigureEntityFrameworkCore(builder.Configuration);
 
 // Infrastructure
 builder.Services.ConfigureSecurity();

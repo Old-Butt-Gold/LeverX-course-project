@@ -4,9 +4,9 @@ namespace EER.Application.Abstractions.Services;
 
 public interface IEquipmentItemService
 {
-    IEnumerable<EquipmentItem> GetAll();
-    EquipmentItem? GetById(long id);
-    EquipmentItem Create(EquipmentItem item);
-    EquipmentItem? Update(long id, EquipmentItem updatedItem);
-    bool Delete(long id);
+    Task<IEnumerable<EquipmentItem>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<EquipmentItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
+    Task<EquipmentItem> CreateAsync(EquipmentItem item, CancellationToken cancellationToken = default);
+    Task<EquipmentItem?> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);
 }

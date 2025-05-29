@@ -5,9 +5,9 @@ namespace EER.Application.Abstractions.Services;
 
 public interface IRentalService
 {
-    IEnumerable<Rental> GetAll();
-    Rental? GetById(int id);
-    Rental Create(Rental rental);
-    Rental? UpdateStatus(int id, RentalStatus status);
-    bool Delete(int id);
+    Task<IEnumerable<Rental>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Rental?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<Rental> CreateAsync(Rental rental, CancellationToken cancellationToken = default);
+    Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

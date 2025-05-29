@@ -1,0 +1,62 @@
+﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace EER.Persistence.EFCore.Repositories;
+
+internal sealed class EfEquipmentRepository : IEquipmentRepository
+{
+    private readonly ApplicationDbContext _context;
+
+    public EfEquipmentRepository(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Equipment.AsNoTracking().ToListAsync(cancellationToken);
+    }
+
+    public async Task<Equipment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Equipment.FindAsync([id], cancellationToken);
+    }
+
+    public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
+        => await _context.Equipment.Where(e => e.CategoryId == categoryId).ToListAsync(cancellationToken);
+
+    public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
+    {
+        var entry = await _context.Equipment.AddAsync(equipment, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return entry.Entity;
+    }
+
+    public async Task<Equipment?> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
+    {
+        var existing = await _context.Equipment.FindAsync([equipment.Id], cancellationToken);
+        if (existing is null) return null;
+
+        existing.Name = equipment.Name;
+        existing.CategoryId = equipment.CategoryId;
+        existing.Description = equipment.Description;
+        existing.PricePerDay = equipment.PricePerDay;
+        existing.UpdatedBy = equipment.UpdatedBy;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return existing;
+    }
+
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _context.Equipment.FindAsync([id], cancellationToken);
+        if (existing is null) return false;
+
+        _context.Equipment.Remove(existing);
+        return await _context.SaveChangesAsync(cancellationToken) > 0;
+    }
+}

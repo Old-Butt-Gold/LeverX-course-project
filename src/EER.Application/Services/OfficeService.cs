@@ -1,36 +1,51 @@
-﻿using EER.Application.Abstractions.Services;
+﻿// EER.Application.Services/OfficeService.cs
+using EER.Application.Abstractions.Services;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 
 namespace EER.Application.Services;
 
 internal sealed class OfficeService : IOfficeService
 {
-    private readonly Dictionary<int, Office> _offices = [];
-    private int _idCounter;
+    private readonly IOfficeRepository _officeRepository;
 
-    public IEnumerable<Office> GetAll() => _offices.Values.ToList();
-
-    public Office? GetById(int id) => _offices.GetValueOrDefault(id);
-
-    public Office Create(Office office)
+    public OfficeService(IOfficeRepository officeRepository)
     {
-        office.Id = Interlocked.Increment(ref _idCounter);
-        _offices[office.Id] = office;
-        return office;
+        _officeRepository = officeRepository;
     }
 
-    public Office? Update(int id, Office updatedOffice)
+    public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        if (!_offices.TryGetValue(id, out var office))
-            return null;
-
-        office.OwnerId = updatedOffice.OwnerId;
-        office.Address = updatedOffice.Address;
-        office.City = updatedOffice.City;
-        office.Country = updatedOffice.Country;
-        office.IsActive = updatedOffice.IsActive;
-        return office;
+        return await _officeRepository.GetAllAsync(cancellationToken);
     }
 
-    public bool Delete(int id) => _offices.Remove(id);
+    public async Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _officeRepository.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task<Office> CreateAsync(Office office, CancellationToken cancellationToken = default)
+    {
+        return await _officeRepository.AddAsync(office, cancellationToken);
+    }
+
+    public async Task<Office?> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default)
+    {
+        var existingOffice = await _officeRepository.GetByIdAsync(id, cancellationToken);
+        if (existingOffice is null) return null;
+
+        existingOffice.OwnerId = updatedOffice.OwnerId;
+        existingOffice.Address = updatedOffice.Address;
+        existingOffice.City = updatedOffice.City;
+        existingOffice.Country = updatedOffice.Country;
+        existingOffice.IsActive = updatedOffice.IsActive;
+        existingOffice.UpdatedBy = updatedOffice.UpdatedBy;
+
+        return await _officeRepository.UpdateAsync(existingOffice, cancellationToken);
+    }
+
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _officeRepository.DeleteAsync(id, cancellationToken);
+    }
 }
