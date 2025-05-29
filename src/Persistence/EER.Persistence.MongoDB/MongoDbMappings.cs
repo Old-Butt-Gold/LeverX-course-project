@@ -12,7 +12,7 @@ using MongoDB.Bson.Serialization.Serializers;
 
 namespace EER.Persistence.MongoDB;
 
-public static class MongoMappings
+public static class MongoDbMappings
 {
     public static void RegisterClassMaps()
     {
@@ -24,17 +24,6 @@ public static class MongoMappings
                 cm.MapIdMember(c => c.Id)
                     .SetIdGenerator(GuidGenerator.Instance)
                     .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
-
-                cm.UnmapMember(u => u.OfficeIds);
-                cm.UnmapMember(u => u.Favorites);
-
-                cm.MapMember(u => u.OfficeIds)
-                    .SetElementName("officeIds")
-                    .SetSerializer(new ArraySerializer<int>(new Int32Serializer(BsonType.Int32)));
-
-                cm.MapMember(u => u.Favorites)
-                    .SetElementName("favorites")
-                    .SetSerializer(new ArraySerializer<UserFavoriteEmbedded>());
             });
         }
 
@@ -55,14 +44,6 @@ public static class MongoMappings
                 cm.AutoMap();
                 cm.MapIdMember(c => c.Id)
                     .SetSerializer(new Int32Serializer(BsonType.Int32));
-
-                cm.MapMember(e => e.Images)
-                    .SetElementName("media")
-                    .SetSerializer(new ArraySerializer<EquipmentImageEmbedded>());
-
-                cm.MapMember(e => e.Reviews)
-                    .SetElementName("reviews")
-                    .SetSerializer(new ArraySerializer<ReviewEmbedded>());
             });
         }
 
@@ -73,11 +54,12 @@ public static class MongoMappings
                 cm.AutoMap();
                 cm.MapIdMember(c => c.Id).SetSerializer(new Int64Serializer(BsonType.Int64));
 
-                cm.MapMember(i => i.MaintenanceDate)
-                    .SetSerializer(new DateOnlySerializer(BsonType.DateTime, DateOnlyDocumentFormat.YearMonthDay));
-
                 cm.MapMember(i => i.PurchaseDate)
                     .SetSerializer(new DateOnlySerializer(BsonType.DateTime, DateOnlyDocumentFormat.YearMonthDay));
+
+                cm.MapMember(i => i.MaintenanceDate)
+                    .SetSerializer(new NullableSerializer<DateOnly>(
+                        new DateOnlySerializer(BsonType.DateTime, DateOnlyDocumentFormat.YearMonthDay)));
             });
         }
 
@@ -88,10 +70,6 @@ public static class MongoMappings
                 cm.AutoMap();
                 cm.MapIdMember(c => c.Id)
                     .SetSerializer(new Int32Serializer(BsonType.Int32));
-
-                cm.MapMember(o => o.EquipmentItemIds)
-                    .SetElementName("equipmentItemIds")
-                    .SetSerializer(new ArraySerializer<long>(new Int64Serializer(BsonType.Int64)));
             });
         }
 
@@ -102,10 +80,6 @@ public static class MongoMappings
                 cm.AutoMap();
                 cm.MapIdMember(c => c.Id)
                     .SetSerializer(new Int32Serializer(BsonType.Int32));
-
-                cm.MapMember(r => r.Items)
-                    .SetElementName("items")
-                    .SetSerializer(new ArraySerializer<RentalItemEmbedded>());
 
                 cm.MapMember(r => r.StartDate)
                     .SetSerializer(new DateTimeSerializer(DateTimeKind.Utc));

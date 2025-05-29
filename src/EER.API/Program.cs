@@ -1,7 +1,6 @@
 ﻿using EER.API.Extensions;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
-using EER.Persistence.EFCore.Extensions;
 using EER.Persistence.Migrations.Extensions;
 using EER.Persistence.MongoDB.Extensions;
 
@@ -49,6 +48,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.ApplyMigrations(app.Services);
+// app.ApplyMigrations(app.Services);
+await app.Services.InitializeMongoDb();
 
 app.Run();

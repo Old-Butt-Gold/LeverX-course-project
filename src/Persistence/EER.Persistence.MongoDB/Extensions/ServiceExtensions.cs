@@ -28,8 +28,23 @@ public static class ServiceExtensions
             return client.GetDatabase(dbSettings.DatabaseName);
         });
 
-        serviceCollection.AddScoped<IUserRepository, MongoUserRepository>();
+        serviceCollection.AddScoped<IdGenerator>();
+        serviceCollection.AddScoped<MongoDbInitializer>();
 
-        MongoMappings.RegisterClassMaps();
+        serviceCollection.AddScoped<IUserRepository, MongoUserRepository>();
+        serviceCollection.AddScoped<IOfficeRepository, MongoOfficeRepository>();
+        serviceCollection.AddScoped<IRentalRepository, MongoRentalRepository>();
+        serviceCollection.AddScoped<IEquipmentRepository, MongoEquipmentRepository>();
+        serviceCollection.AddScoped<IEquipmentItemRepository, MongoEquipmentItemRepository>();
+        serviceCollection.AddScoped<ICategoryRepository, MongoCategoryRepository>();
+
+        MongoDbMappings.RegisterClassMaps();
+    }
+
+    public static async Task InitializeMongoDb(this IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var initializer = scope.ServiceProvider.GetRequiredService<MongoDbInitializer>();
+        await initializer.InitializeAsync();
     }
 }

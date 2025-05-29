@@ -12,4 +12,5 @@ public class DatabaseSettings
     public string EquipmentItemCollection { get; set; } = null!;
     public string CategoryCollection { get; set; } = null!;
     public string RentalCollection { get; set; } = null!;
+    public string ImagesEmbedded { get; set; } = null!;
 }
