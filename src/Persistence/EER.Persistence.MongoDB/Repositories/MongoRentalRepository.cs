@@ -70,6 +70,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return result.DeletedCount > 0;
     }
 
+    // TODO arrays
     private static RentalDocument MapToDocument(Rental entity) => new()
     {
         Id = entity.Id,

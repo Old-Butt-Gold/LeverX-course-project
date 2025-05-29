@@ -1,4 +1,6 @@
-﻿namespace EER.Persistence.MongoDB.Documents.EquipmentItem;
+﻿using EER.Persistence.MongoDB.Documents.EquipmentItem;
+
+namespace EER.Persistence.MongoDB.Documents.Equipment;
 
 public class EquipmentDocument
 {

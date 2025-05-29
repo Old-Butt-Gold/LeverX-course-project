@@ -1,5 +1,6 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
+using EER.Persistence.MongoDB.Documents.Equipment;
 using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
@@ -81,6 +82,7 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         return result.DeletedCount > 0;
     }
 
+    // TODO arrays
     private static EquipmentDocument MapToDocument(Equipment entity) => new()
     {
         Id = entity.Id,

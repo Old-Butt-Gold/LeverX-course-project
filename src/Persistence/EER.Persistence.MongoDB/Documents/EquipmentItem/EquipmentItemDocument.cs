@@ -1,6 +1,6 @@
 ﻿using EER.Domain.Enums;
 
-namespace EER.Persistence.MongoDB.Documents.Equipment;
+namespace EER.Persistence.MongoDB.Documents.EquipmentItem;
 
 public class EquipmentItemDocument
 {

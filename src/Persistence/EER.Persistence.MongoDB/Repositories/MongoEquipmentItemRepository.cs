@@ -1,6 +1,6 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
-using EER.Persistence.MongoDB.Documents.Equipment;
+using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;

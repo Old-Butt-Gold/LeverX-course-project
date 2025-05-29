@@ -68,6 +68,7 @@ internal sealed class MongoUserRepository : IUserRepository
         return result.DeletedCount > 0;
     }
 
+    // TODO arrays
     private static UserDocument MapToDocument(User entity) => new()
     {
         Id = entity.Id,
