@@ -34,10 +34,14 @@ public class MongoDbInitializer
         await users.Indexes.CreateManyAsync([
             new CreateIndexModel<UserDocument>(
                 Builders<UserDocument>.IndexKeys.Ascending(u => u.Email),
-                new CreateIndexOptions { Unique = true,  }
+                new CreateIndexOptions { Unique = true, }
             ),
             new CreateIndexModel<UserDocument>(
-                Builders<UserDocument>.IndexKeys.Ascending(u => u.UserRole))
+                Builders<UserDocument>.IndexKeys.Ascending(u => u.UserRole)),
+            new CreateIndexModel<UserDocument>(
+                Builders<UserDocument>.IndexKeys.Ascending("Favorites.EquipmentId")),
+            new CreateIndexModel<UserDocument>(
+                Builders<UserDocument>.IndexKeys.Ascending("Favorites.CreatedAt"))
         ]);
 
         var equipment = _database.GetCollection<EquipmentDocument>(_settings.EquipmentCollection);
@@ -47,7 +51,9 @@ public class MongoDbInitializer
             new CreateIndexModel<EquipmentDocument>(
                 Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.OwnerId)),
             new CreateIndexModel<EquipmentDocument>(
-                Builders<EquipmentDocument>.IndexKeys.Text(e => e.Name))
+                Builders<EquipmentDocument>.IndexKeys.Text(e => e.Name)),
+            new CreateIndexModel<EquipmentDocument>(
+                Builders<EquipmentDocument>.IndexKeys.Ascending("Reviews.CustomerId"))
         ]);
 
         var items = _database.GetCollection<EquipmentItemDocument>(_settings.EquipmentItemCollection);
@@ -59,13 +65,14 @@ public class MongoDbInitializer
             new CreateIndexModel<EquipmentItemDocument>(
                 Builders<EquipmentItemDocument>.IndexKeys.Ascending(i => i.OfficeId)),
             new CreateIndexModel<EquipmentItemDocument>(
-                Builders<EquipmentItemDocument>.IndexKeys.Ascending(i => i.SerialNumber),
+                Builders<EquipmentItemDocument>.IndexKeys.Combine(
+                    Builders<EquipmentItemDocument>.IndexKeys.Ascending(i => i.SerialNumber),
+                    Builders<EquipmentItemDocument>.IndexKeys.Ascending(i => i.EquipmentId)),
                 new CreateIndexOptions { Unique = true })
         ]);
 
         var rentals = _database.GetCollection<RentalDocument>(_settings.RentalCollection);
-        await rentals.Indexes.CreateManyAsync(new[]
-        {
+        await rentals.Indexes.CreateManyAsync([
             new CreateIndexModel<RentalDocument>(
                 Builders<RentalDocument>.IndexKeys.Combine(
                     Builders<RentalDocument>.IndexKeys.Ascending(r => r.StartDate),
@@ -73,15 +80,24 @@ public class MongoDbInitializer
             new CreateIndexModel<RentalDocument>(
                 Builders<RentalDocument>.IndexKeys.Ascending(r => r.CustomerId)),
             new CreateIndexModel<RentalDocument>(
-                Builders<RentalDocument>.IndexKeys.Ascending(r => r.OwnerId))
-        });
+                Builders<RentalDocument>.IndexKeys.Combine(
+                    Builders<RentalDocument>.IndexKeys.Ascending(r => r.OwnerId),
+                    Builders<RentalDocument>.IndexKeys.Ascending(r => r.Status),
+                    Builders<RentalDocument>.IndexKeys.Ascending(r => r.CreatedAt)
+                )
+            )
+        ]);
 
         var offices = _database.GetCollection<OfficeDocument>(_settings.OfficeCollection);
-        await offices.Indexes.CreateOneAsync(
-            new CreateIndexModel<OfficeDocument>(
-                Builders<OfficeDocument>.IndexKeys.Combine(
-                    Builders<OfficeDocument>.IndexKeys.Ascending(o => o.City),
-                    Builders<OfficeDocument>.IndexKeys.Ascending(o => o.Country)))
+        await offices.Indexes.CreateManyAsync([
+                new CreateIndexModel<OfficeDocument>(
+                    Builders<OfficeDocument>.IndexKeys.Combine(
+                        Builders<OfficeDocument>.IndexKeys.Ascending(o => o.City),
+                        Builders<OfficeDocument>.IndexKeys.Ascending(o => o.Country))),
+                new CreateIndexModel<OfficeDocument>(
+                    Builders<OfficeDocument>.IndexKeys.Ascending(o => o.OwnerId)
+                )
+            ]
         );
 
         var categories = _database.GetCollection<CategoryDocument>(_settings.CategoryCollection);
@@ -112,12 +128,8 @@ public class MongoDbInitializer
 
             if (existing is null)
             {
-                await collection.InsertOneAsync(new SequenceDocument
-                {
-                    Id = name,
-                    Value = start,
-                    LongValue = longStart
-                });
+                await collection.InsertOneAsync(
+                    new SequenceDocument { Id = name, Value = start, LongValue = longStart });
             }
         }
     }

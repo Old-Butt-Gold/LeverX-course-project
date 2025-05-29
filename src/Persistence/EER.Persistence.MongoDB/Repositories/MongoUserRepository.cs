@@ -34,6 +34,7 @@ public class MongoUserRepository : IUserRepository
     {
         user.CreatedAt = DateTime.UtcNow;
         user.UpdatedAt = DateTime.UtcNow;
+        user.Id = Guid.Empty;
 
         var document = MapToDocument(user);
         await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
@@ -46,7 +47,6 @@ public class MongoUserRepository : IUserRepository
 
         var update = Builders<UserDocument>.Update
             .Set(u => u.Email, user.Email)
-            .Set(u => u.PasswordHash, user.PasswordHash)
             .Set(u => u.FullName, user.FullName)
             .Set(u => u.UserRole, user.UserRole)
             .Set(u => u.UpdatedAt, DateTime.UtcNow);

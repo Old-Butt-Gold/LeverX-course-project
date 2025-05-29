@@ -16,6 +16,8 @@ public static class MongoDbMappings
 {
     public static void RegisterClassMaps()
     {
+        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+
         if (!BsonClassMap.IsClassMapRegistered(typeof(UserDocument)))
         {
             BsonClassMap.RegisterClassMap<UserDocument>(cm =>
