@@ -1,6 +1,13 @@
 ﻿using System.Net.Mime;
 using EER.Application.Abstractions.Services;
+using EER.Application.Features.Equipment.Commands.CreateEquipment;
+using EER.Application.Features.Equipment.Commands.DeleteEquipment;
+using EER.Application.Features.Equipment.Commands.UpdateEquipment;
+using EER.Application.Features.Equipment.Queries.GetAllEquipment;
+using EER.Application.Features.Equipment.Queries.GetEquipmentByCategory;
+using EER.Application.Features.Equipment.Queries.GetEquipmentById;
 using EER.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -9,12 +16,13 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentController : ControllerBase
 {
-    private readonly IEquipmentService _equipmentService;
+    private readonly ISender _sender;
 
-    public EquipmentController(IEquipmentService equipmentService)
+    public EquipmentController(ISender sender)
     {
-        _equipmentService = equipmentService;
+        _sender = sender;
     }
+
 
     // GET: api/equipment
     /// <summary>
@@ -29,7 +37,8 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _equipmentService.GetAllAsync(cancellationToken));
+        var equipment = await _sender.Send(new GetAllEquipmentQuery(), cancellationToken);
+        return Ok(equipment);
     }
 
     // GET: api/equipment/1
@@ -49,7 +58,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var item = await _equipmentService.GetByIdAsync(id, cancellationToken);
+        var item = await _sender.Send(new GetEquipmentByIdQuery(id), cancellationToken);
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -70,7 +79,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("category/{categoryId:int}")]
     public async Task<IActionResult> GetByCategory(int categoryId, CancellationToken cancellationToken)
     {
-        var items = await _equipmentService.GetByCategoryAsync(categoryId, cancellationToken);
+        var items = await _sender.Send(new GetEquipmentByCategoryQuery(categoryId), cancellationToken);
         return items.Any() ? Ok(items) : NotFound();
     }
 
@@ -92,7 +101,14 @@ public sealed class EquipmentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Equipment equipment, CancellationToken cancellationToken)
     {
-        var createdItem = await _equipmentService.CreateAsync(equipment, cancellationToken);
+        var command = new CreateEquipmentCommand(
+            equipment.Name,
+            equipment.CategoryId,
+            equipment.OwnerId,
+            equipment.Description,
+            equipment.PricePerDay);
+
+        var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
@@ -115,7 +131,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, Equipment updatedEquipment, CancellationToken cancellationToken)
     {
-        var updatedItem = await _equipmentService.UpdateAsync(id, updatedEquipment, cancellationToken);
+        var updatedItem = await _sender.Send(new UpdateEquipmentCommand(id, updatedEquipment), cancellationToken);
         return Ok(updatedItem);
     }
 
@@ -136,8 +152,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        return await _equipmentService.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteEquipmentCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }
