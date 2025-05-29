@@ -1,4 +1,5 @@
 ﻿using EER.API.Extensions;
+using EER.API.Filters;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
 using EER.Persistence.Migrations.Extensions;
@@ -12,6 +13,8 @@ builder.Services.AddControllers(config =>
 {
     config.RespectBrowserAcceptHeader = true;
     config.ReturnHttpNotAcceptable = true;
+    config.Filters.Add<AddHeaderFilter>();
+    config.Filters.Add<RequiredHeaderFilter>();
 }).AddXmlDataContractSerializerFormatters();
 
 // Application

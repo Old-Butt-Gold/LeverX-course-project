@@ -27,9 +27,10 @@ public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
             _logger.LogInformation("[END] Handled {RequestName} successfully in {ElapsedMilliseconds:0.0000}ms", requestName, stopwatch.ElapsedMilliseconds);
             return response;
         }
-        catch (Exception ex)
+        catch
         {
             stopwatch.Stop();
+            _logger.LogError("[ERROR] Exception occured in {RequestName}", requestName);
             throw;
         }
     }
