@@ -3,7 +3,7 @@ using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.DeleteCategory;
 
-public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, bool>
+internal sealed class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand, bool>
 {
     private readonly ICategoryRepository _repository;
 

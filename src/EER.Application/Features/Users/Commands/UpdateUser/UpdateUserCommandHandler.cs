@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Commands.UpdateUser;
 
-public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, User>
+internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, User>
 {
     private readonly IUserRepository _userRepository;
 

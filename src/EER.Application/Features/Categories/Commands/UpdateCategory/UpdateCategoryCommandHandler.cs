@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
 
-public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Category>
+internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Category>
 {
     private readonly ICategoryRepository _repository;
 

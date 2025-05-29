@@ -5,7 +5,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Commands.CreateUser;
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, User>
+internal sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, User>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;

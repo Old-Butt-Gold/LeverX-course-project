@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Categories.Queries.GetCategoryById;
 
-public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, Category?>
+internal sealed class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, Category?>
 {
     private readonly ICategoryRepository _repository;
 

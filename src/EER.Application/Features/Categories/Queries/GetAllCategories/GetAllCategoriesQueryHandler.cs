@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Categories.Queries.GetAllCategories;
 
-public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, IEnumerable<Category>>
+internal sealed class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, IEnumerable<Category>>
 {
     private readonly ICategoryRepository _repository;
 

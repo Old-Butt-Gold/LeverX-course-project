@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.CreateCategory;
 
-public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Category>
+internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Category>
 {
     private readonly ICategoryRepository _repository;
 
