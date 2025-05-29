@@ -1,6 +1,11 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
+using EER.Application.Features.EquipmentItems.Commands.CreateEquipmentItem;
+using EER.Application.Features.EquipmentItems.Commands.DeleteEquipmentItem;
+using EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
+using EER.Application.Features.EquipmentItems.Queries.GetAllEquipmentItems;
+using EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
 using EER.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -9,11 +14,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class EquipmentItemsController : ControllerBase
 {
-    private readonly IEquipmentItemService _equipmentItemService;
+    private readonly ISender _sender;
 
-    public EquipmentItemsController(IEquipmentItemService equipmentItemService)
+    public EquipmentItemsController(ISender sender)
     {
-        _equipmentItemService = equipmentItemService;
+        _sender = sender;
     }
 
     // GET: api/equipmentitems
@@ -29,7 +34,8 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _equipmentItemService.GetAllAsync(cancellationToken));
+        var items = await _sender.Send(new GetAllEquipmentItemsQuery(), cancellationToken);
+        return Ok(items);
     }
 
     // GET: api/equipmentitems/1
@@ -49,7 +55,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken)
     {
-        var item = await _equipmentItemService.GetByIdAsync(id, cancellationToken);
+        var item = await _sender.Send(new GetEquipmentItemByIdQuery(id), cancellationToken);
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -71,7 +77,15 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(EquipmentItem item, CancellationToken cancellationToken)
     {
-        var createdItem = await _equipmentItemService.CreateAsync(item, cancellationToken);
+        var command = new CreateEquipmentItemCommand(
+            item.EquipmentId,
+            item.OfficeId,
+            item.SerialNumber,
+            item.ItemStatus,
+            item.MaintenanceDate,
+            item.PurchaseDate);
+
+        var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
@@ -94,7 +108,11 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPut("{id:long}")]
     public async Task<IActionResult> Update(long id, EquipmentItem updatedItem, CancellationToken cancellationToken)
     {
-        var item = await _equipmentItemService.UpdateAsync(id, updatedItem, cancellationToken);
+        var command = new UpdateEquipmentItemCommand(
+            id,
+            updatedItem);
+
+        var item = await _sender.Send(command, cancellationToken);
         return Ok(item);
     }
 
@@ -115,8 +133,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
-        return await _equipmentItemService.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteEquipmentItemCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }

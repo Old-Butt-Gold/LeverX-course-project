@@ -1,5 +1,4 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
 using EER.Application.Features.Equipment.Commands.CreateEquipment;
 using EER.Application.Features.Equipment.Commands.DeleteEquipment;
 using EER.Application.Features.Equipment.Commands.UpdateEquipment;

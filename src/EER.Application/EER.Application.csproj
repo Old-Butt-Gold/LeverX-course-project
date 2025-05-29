@@ -15,19 +15,4 @@
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\EquipmentItems\Commands\CreateEquipmentItem\" />
-      <Folder Include="Features\EquipmentItems\Commands\DeleteEquipmentItem\" />
-      <Folder Include="Features\EquipmentItems\Commands\UpdateEquipmentItem\" />
-      <Folder Include="Features\EquipmentItems\Queries\GetAllEquipmentItems\" />
-      <Folder Include="Features\EquipmentItems\Queries\GetEquipmentItemById\" />
-      <Folder Include="Features\Offices\Commands\CreateOffice\" />
-      <Folder Include="Features\Offices\Commands\DeleteOffice\" />
-      <Folder Include="Features\Offices\Commands\UpdateOffice\" />
-      <Folder Include="Features\Offices\Queries\GetAllOffices\" />
-      <Folder Include="Features\Offices\Queries\GetOfficeById\" />
-      <Folder Include="Features\Rentals\Commands\" />
-      <Folder Include="Features\Rentals\Queries\" />
-    </ItemGroup>
-
 </Project>

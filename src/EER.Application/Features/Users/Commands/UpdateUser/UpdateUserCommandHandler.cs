@@ -17,7 +17,7 @@ internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserComma
     {
         var updatedUser = command.User;
 
-        var user = await _userRepository.GetByIdAsync(command.Id, cancellationToken) ;
+        var user = await _userRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (user is null)
             throw new KeyNotFoundException("User with provided ID is not found");

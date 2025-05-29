@@ -1,5 +1,4 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
 using EER.Application.Features.Users.Commands.CreateUser;
 using EER.Application.Features.Users.Commands.DeleteUser;
 using EER.Application.Features.Users.Commands.UpdateUser;
@@ -7,7 +6,6 @@ using EER.Application.Features.Users.Queries.GetAllUsers;
 using EER.Application.Features.Users.Queries.GetUserById;
 using EER.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;

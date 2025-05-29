@@ -1,6 +1,11 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
+using EER.Application.Features.Offices.Commands.CreateOffice;
+using EER.Application.Features.Offices.Commands.DeleteOffice;
+using EER.Application.Features.Offices.Commands.UpdateOffice;
+using EER.Application.Features.Offices.Queries.GetAllOffices;
+using EER.Application.Features.Offices.Queries.GetOfficeById;
 using EER.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -9,11 +14,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class OfficesController : ControllerBase
 {
-    private readonly IOfficeService _officeService;
+    private readonly ISender _sender;
 
-    public OfficesController(IOfficeService officeService)
+    public OfficesController(ISender sender)
     {
-        _officeService = officeService;
+        _sender = sender;
     }
 
     // GET: api/offices
@@ -29,7 +34,8 @@ public sealed class OfficesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _officeService.GetAllAsync(cancellationToken));
+        var offices = await _sender.Send(new GetAllOfficesQuery(), cancellationToken);
+        return Ok(offices);
     }
 
     // GET: api/offices/1
@@ -49,7 +55,7 @@ public sealed class OfficesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var office = await _officeService.GetByIdAsync(id, cancellationToken);
+        var office = await _sender.Send(new GetOfficeByIdQuery(id), cancellationToken);
         return office is not null ? Ok(office) : NotFound();
     }
 
@@ -71,7 +77,14 @@ public sealed class OfficesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Office office, CancellationToken cancellationToken)
     {
-        var createdOffice = await _officeService.CreateAsync(office, cancellationToken);
+        var command = new CreateOfficeCommand(
+            office.OwnerId,
+            office.Address,
+            office.City,
+            office.Country,
+            office.IsActive);
+
+        var createdOffice = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdOffice.Id }, createdOffice);
     }
 
@@ -94,7 +107,10 @@ public sealed class OfficesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, Office updatedOffice, CancellationToken cancellationToken)
     {
-        var office = await _officeService.UpdateAsync(id, updatedOffice, cancellationToken);
+        var command = new UpdateOfficeCommand(
+            id, updatedOffice);
+
+        var office = await _sender.Send(command, cancellationToken);
         return Ok(office);
     }
 
@@ -115,8 +131,7 @@ public sealed class OfficesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        return await _officeService.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteOfficeCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }

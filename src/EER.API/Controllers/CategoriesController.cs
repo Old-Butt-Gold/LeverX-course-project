@@ -1,11 +1,9 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
 using EER.Application.Features.Categories.Commands.CreateCategory;
 using EER.Application.Features.Categories.Commands.DeleteCategory;
 using EER.Application.Features.Categories.Commands.UpdateCategory;
 using EER.Application.Features.Categories.Queries.GetAllCategories;
 using EER.Application.Features.Categories.Queries.GetCategoryById;
-using EER.Application.Features.Users.Commands.UpdateUser;
 using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

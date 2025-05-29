@@ -3,8 +3,7 @@ using MediatR;
 
 namespace EER.Application.Features.Equipment.Queries.GetEquipmentByCategory;
 
-public class GetEquipmentByCategoryQueryHandler 
-    
+internal sealed class GetEquipmentByCategoryQueryHandler
     : IRequestHandler<GetEquipmentByCategoryQuery, IEnumerable<Domain.Entities.Equipment>>
 {
     private readonly IEquipmentRepository _repository;
