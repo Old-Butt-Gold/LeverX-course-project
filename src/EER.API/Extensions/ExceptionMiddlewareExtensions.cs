@@ -48,10 +48,10 @@ public static class ExceptionMiddlewareExtensions
                         Detail = pd.Detail,
                         Instance = pd.Instance,
                         Extensions = pd.Extensions.Select(e => new ExtensionEntry
-                            {
-                                Key = e.Key,
-                                Value = e.Value?.ToString()
-                            })
+                        {
+                            Key = e.Key,
+                            Value = e.Value?.ToString()
+                        })
                             .ToList(),
                     };
 
