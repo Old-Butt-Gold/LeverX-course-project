@@ -12,7 +12,7 @@ public class ArchitectureTests
     private const string PersistenceMigrationsNamespace = "EER.Persistence.Migrations";
     private const string PersistenceEfCoreNamespace = "EER.Persistence.EFCore";
     private const string PersistenceDapperNamespace = "EER.Persistence.Dapper";
-
+    private const string PersistenceMongoDbNamespace = "EER.Persistence.MongoDB";
     private const string InfrastructureNamespace = "EER.Infrastructure";
     private const string ApiNamespace = "EER.API";
     private const string Dll = ".dll";
@@ -29,6 +29,7 @@ public class ArchitectureTests
                 PersistenceMigrationsNamespace,
                 PersistenceDapperNamespace,
                 PersistenceEfCoreNamespace,
+                PersistenceMongoDbNamespace,
                 ApiNamespace,
                 InfrastructureNamespace)
             .GetResult();
@@ -69,6 +70,7 @@ public class ArchitectureTests
                 PersistenceMigrationsNamespace,
                 PersistenceDapperNamespace,
                 PersistenceEfCoreNamespace,
+                PersistenceMongoDbNamespace,
                 InfrastructureNamespace)
             .GetResult();
 
@@ -100,6 +102,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
             Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMongoDbNamespace + Dll)
         };
 
         // Act
@@ -121,6 +124,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
             Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMongoDbNamespace + Dll)
         };
 
         // Act
@@ -142,6 +146,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
             Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMongoDbNamespace + Dll)
         };
 
         // Act
@@ -168,7 +173,8 @@ public class ArchitectureTests
             .HaveDependencyOnAny(
                 PersistenceMigrationsNamespace,
                 PersistenceDapperNamespace,
-                PersistenceEfCoreNamespace)
+                PersistenceEfCoreNamespace,
+                PersistenceMongoDbNamespace)
             .GetResult();
 
         // Assert
@@ -187,6 +193,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
             Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(InfrastructureNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMongoDbNamespace + Dll)
         };
 
         // Act
@@ -210,6 +217,7 @@ public class ArchitectureTests
             Assembly.LoadFrom(PersistenceMigrationsNamespace + Dll),
             Assembly.LoadFrom(PersistenceDapperNamespace + Dll),
             Assembly.LoadFrom(PersistenceEfCoreNamespace + Dll),
+            Assembly.LoadFrom(PersistenceMongoDbNamespace + Dll)
         };
 
         // Act
@@ -241,7 +249,8 @@ public class ArchitectureTests
                 PersistenceMigrationsNamespace,
                 ApiNamespace,
                 PersistenceDapperNamespace,
-                PersistenceEfCoreNamespace)
+                PersistenceEfCoreNamespace,
+                PersistenceMongoDbNamespace)
             .GetResult();
 
         // Assert

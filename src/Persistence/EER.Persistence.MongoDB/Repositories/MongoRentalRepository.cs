@@ -8,7 +8,7 @@ using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;
 
-public class MongoRentalRepository : IRentalRepository
+internal sealed class MongoRentalRepository : IRentalRepository
 {
     private readonly IMongoCollection<RentalDocument> _collection;
     private readonly IdGenerator _idGenerator;

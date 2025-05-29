@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;
 
-public class MongoEquipmentItemRepository : IEquipmentItemRepository
+internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
 {
     private readonly IMongoCollection<EquipmentItemDocument> _collection;
     private readonly IdGenerator _idGenerator;

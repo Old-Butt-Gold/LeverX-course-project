@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;
 
-public class MongoOfficeRepository : IOfficeRepository
+internal sealed class MongoOfficeRepository : IOfficeRepository
 {
     private readonly IMongoCollection<OfficeDocument> _collection;
     private readonly IdGenerator _idGenerator;

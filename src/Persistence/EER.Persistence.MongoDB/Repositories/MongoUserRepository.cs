@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;
 
-public class MongoUserRepository : IUserRepository
+internal sealed class MongoUserRepository : IUserRepository
 {
     private readonly IMongoCollection<UserDocument> _collection;
     private readonly IMongoDatabase _database;
