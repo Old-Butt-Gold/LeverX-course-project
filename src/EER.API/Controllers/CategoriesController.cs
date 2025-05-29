@@ -1,6 +1,13 @@
 ﻿using System.Net.Mime;
 using EER.Application.Abstractions.Services;
+using EER.Application.Features.Categories.Commands.CreateCategory;
+using EER.Application.Features.Categories.Commands.DeleteCategory;
+using EER.Application.Features.Categories.Commands.UpdateCategory;
+using EER.Application.Features.Categories.Queries.GetAllCategories;
+using EER.Application.Features.Categories.Queries.GetCategoryById;
+using EER.Application.Features.Users.Commands.UpdateUser;
 using EER.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -9,11 +16,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class CategoriesController : ControllerBase
 {
-    private readonly ICategoryService _categoryService;
+    private readonly ISender _sender;
 
-    public CategoriesController(ICategoryService categoryService)
+    public CategoriesController(ISender sender)
     {
-        _categoryService = categoryService;
+        _sender = sender;
     }
 
     // GET: api/categories
@@ -29,7 +36,8 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _categoryService.GetAllAsync(cancellationToken));
+        var categories = await _sender.Send(new GetAllCategoriesQuery(), cancellationToken);
+        return Ok(categories);
     }
 
     // GET: api/categories/1
@@ -49,7 +57,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var category = await _categoryService.GetByIdAsync(id, cancellationToken);
+        var category = await _sender.Send(new GetCategoryByIdQuery(id), cancellationToken);
         return category is not null ? Ok(category) : NotFound();
     }
 
@@ -71,7 +79,12 @@ public sealed class CategoriesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Category category, CancellationToken cancellationToken)
     {
-        var createdCategory = await _categoryService.CreateAsync(category, cancellationToken);
+        var command = new CreateCategoryCommand(
+            category.Name,
+            category.Description,
+            category.Slug);
+
+        var createdCategory = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
     }
 
@@ -94,7 +107,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, Category updatedCategory, CancellationToken cancellationToken)
     {
-        var category = await _categoryService.UpdateAsync(id, updatedCategory, cancellationToken);
+        var category = await _sender.Send(new UpdateCategoryCommand(id, updatedCategory), cancellationToken);
         return Ok(category);
     }
 
@@ -115,8 +128,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        return await _categoryService.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteCategoryCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }

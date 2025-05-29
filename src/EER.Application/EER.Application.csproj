@@ -11,12 +11,28 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.5.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Features\Commands\" />
-      <Folder Include="Features\Queries\" />
+      <Folder Include="Features\EquipmentItems\Commands\CreateEquipmentItem\" />
+      <Folder Include="Features\EquipmentItems\Commands\DeleteEquipmentItem\" />
+      <Folder Include="Features\EquipmentItems\Commands\UpdateEquipmentItem\" />
+      <Folder Include="Features\EquipmentItems\Queries\GetAllEquipmentItems\" />
+      <Folder Include="Features\EquipmentItems\Queries\GetEquipmentItemById\" />
+      <Folder Include="Features\Equipment\Commands\CreateEquipment\" />
+      <Folder Include="Features\Equipment\Commands\DeleteEquipment\" />
+      <Folder Include="Features\Equipment\Commands\UpdateEquipment\" />
+      <Folder Include="Features\Equipment\Queries\GetAllEquipment\" />
+      <Folder Include="Features\Equipment\Queries\GetEquipmentById\" />
+      <Folder Include="Features\Offices\Commands\CreateOffice\" />
+      <Folder Include="Features\Offices\Commands\DeleteOffice\" />
+      <Folder Include="Features\Offices\Commands\UpdateOffice\" />
+      <Folder Include="Features\Offices\Queries\GetAllOffices\" />
+      <Folder Include="Features\Offices\Queries\GetOfficeById\" />
+      <Folder Include="Features\Rentals\Commands\" />
+      <Folder Include="Features\Rentals\Queries\" />
     </ItemGroup>
 
 </Project>

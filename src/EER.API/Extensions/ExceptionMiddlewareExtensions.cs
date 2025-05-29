@@ -22,6 +22,7 @@ public static class ExceptionMiddlewareExtensions
                 var statusCode = contextFeature.Error switch
                 {
                     KeyNotFoundException => StatusCodes.Status404NotFound,
+                    OperationCanceledException => StatusCodes.Status499ClientClosedRequest,
                     _ => StatusCodes.Status500InternalServerError
                 };
 

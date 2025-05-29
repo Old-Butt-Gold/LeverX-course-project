@@ -54,7 +54,6 @@ internal sealed class DapperUserRepository : IUserRepository
                                 UPDATE [Identity].[User]
                                 SET
                                     Email = @Email,
-                                    PasswordHash = @PasswordHash,
                                     FullName = @FullName,
                                     UserRole = @UserRole,
                                     UpdatedAt = GETUTCDATE()
@@ -66,7 +65,6 @@ internal sealed class DapperUserRepository : IUserRepository
         {
             user.Id,
             user.Email,
-            user.PasswordHash,
             user.FullName,
             UserRole = user.UserRole.ToString()
         };

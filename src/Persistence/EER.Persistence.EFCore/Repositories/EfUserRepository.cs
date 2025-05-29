@@ -45,7 +45,6 @@ internal sealed class EfUserRepository : IUserRepository
         }
 
         entity.Email = user.Email;
-        entity.PasswordHash = user.PasswordHash;
         entity.FullName = user.FullName;
         entity.UserRole = user.UserRole;
         entity.UpdatedAt = DateTime.UtcNow;

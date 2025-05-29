@@ -15,7 +15,7 @@ builder.Services.AddControllers(config =>
 }).AddXmlDataContractSerializerFormatters();
 
 // Application
-builder.Services.ConfigureServices();
+builder.Services.ConfigureMediatR();
 
 // Persistence
 builder.Services.ConfigureMigrationService();
