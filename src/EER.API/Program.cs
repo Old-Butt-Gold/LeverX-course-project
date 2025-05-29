@@ -1,8 +1,8 @@
 ﻿using EER.API.Extensions;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
-using EER.Persistence.EFCore.Extensions;
 using EER.Persistence.Migrations.Extensions;
+using EER.Persistence.MongoDB.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,8 @@ builder.Services.ConfigureServices();
 // Persistence
 builder.Services.ConfigureMigrationService();
 //builder.Services.ConfigureDapper(builder.Configuration);
-builder.Services.ConfigureEntityFrameworkCore(builder.Configuration);
+//builder.Services.ConfigureEntityFrameworkCore(builder.Configuration);
+builder.Services.ConfigureMongo(builder.Configuration);
 
 // Infrastructure
 builder.Services.ConfigureSecurity();
@@ -47,6 +48,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.ApplyMigrations(app.Services);
+// app.ApplyMigrations(app.Services);
+await app.Services.InitializeMongoDb();
 
 app.Run();
