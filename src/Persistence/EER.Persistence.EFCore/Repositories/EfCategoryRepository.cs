@@ -46,7 +46,7 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         entity.Description = category.Description;
         entity.Slug = category.Slug;
         entity.UpdatedBy = category.UpdatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = category.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 

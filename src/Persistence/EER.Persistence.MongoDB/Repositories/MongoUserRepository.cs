@@ -32,10 +32,6 @@ internal sealed class MongoUserRepository : IUserRepository
 
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
     {
-        user.CreatedAt = DateTime.UtcNow;
-        user.UpdatedAt = DateTime.UtcNow;
-        user.Id = Guid.Empty;
-
         var document = MapToDocument(user);
         await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
         return MapToEntity(document);

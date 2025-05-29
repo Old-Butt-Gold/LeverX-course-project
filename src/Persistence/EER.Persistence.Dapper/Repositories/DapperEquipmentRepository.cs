@@ -37,7 +37,6 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
 
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
-        // TODO CreatedAt
         const string sql = """
                                DECLARE @InsertedTable TABLE (
                                    Id INT,
@@ -92,7 +91,6 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
 
     public async Task<Equipment> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
-        // TODO UpdatedBy
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
                                    Id INT,
@@ -115,7 +113,8 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                                    CategoryId = @CategoryId,
                                    Description = @Description,
                                    PricePerDay = @PricePerDay,
-                                   UpdatedBy = @UpdatedBy
+                                   UpdatedBy = @UpdatedBy,
+                                   UpdatedAt = @UpdatedAt
                                OUTPUT
                                    INSERTED.Id,
                                    INSERTED.Name,
@@ -144,6 +143,7 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.Description,
                 equipment.PricePerDay,
                 equipment.UpdatedBy,
+                equipment.UpdatedAt,
             }, cancellationToken: cancellationToken));
     }
 

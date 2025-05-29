@@ -24,7 +24,9 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
     }
 
     public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
-        => await _context.Equipment.Where(e => e.CategoryId == categoryId).ToListAsync(cancellationToken);
+    {
+        return await _context.Equipment.Where(e => e.CategoryId == categoryId).ToListAsync(cancellationToken);
+    }
 
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
@@ -48,7 +50,7 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
         entity.Description = equipment.Description;
         entity.PricePerDay = equipment.PricePerDay;
         entity.UpdatedBy = equipment.UpdatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = equipment.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 

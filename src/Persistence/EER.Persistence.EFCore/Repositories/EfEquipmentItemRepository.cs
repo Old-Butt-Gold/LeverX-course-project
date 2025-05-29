@@ -46,7 +46,7 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         entity.MaintenanceDate = item.MaintenanceDate;
         entity.PurchaseDate = item.PurchaseDate;
         entity.UpdatedBy = item.UpdatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = item.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 

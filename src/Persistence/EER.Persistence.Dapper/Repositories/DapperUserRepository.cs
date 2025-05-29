@@ -56,7 +56,7 @@ internal sealed class DapperUserRepository : IUserRepository
                                     Email = @Email,
                                     FullName = @FullName,
                                     UserRole = @UserRole,
-                                    UpdatedAt = GETUTCDATE()
+                                    UpdatedAt = @UpdatedAt
                                 OUTPUT INSERTED.*
                                 WHERE Id = @Id
                            """;
@@ -66,6 +66,7 @@ internal sealed class DapperUserRepository : IUserRepository
             user.Id,
             user.Email,
             user.FullName,
+            user.UpdatedAt,
             UserRole = user.UserRole.ToString()
         };
 

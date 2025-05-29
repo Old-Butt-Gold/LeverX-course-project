@@ -30,7 +30,6 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
 
     public async Task<Office> AddAsync(Office office, CancellationToken cancellationToken = default)
     {
-        // TODO CreatedBy
         const string sql = """
                                INSERT INTO [Identity].[Office] (
                                    OwnerId, Address, City, Country, CreatedBy, UpdatedBy
@@ -55,7 +54,6 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
 
     public async Task<Office> UpdateAsync(Office office, CancellationToken cancellationToken = default)
     {
-        // TODO UpdatedBy
         const string sql = """
                                UPDATE [Identity].[Office]
                                SET
@@ -65,7 +63,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                                    Country = @Country,
                                    IsActive = @IsActive,
                                    UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE()
+                                   UpdatedAt = @UpdatedAt
                                OUTPUT INSERTED.*
                                WHERE Id = @Id
                            """;
@@ -79,7 +77,8 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                 office.City,
                 office.Country,
                 office.IsActive,
-                office.UpdatedBy
+                office.UpdatedBy,
+                office.UpdatedAt
             }, cancellationToken: cancellationToken));
     }
 

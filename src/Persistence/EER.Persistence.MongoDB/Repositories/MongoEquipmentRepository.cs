@@ -45,8 +45,6 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken ct = default)
     {
         equipment.Id = await _idGenerator.GetNextIdAsync(_settings.EquipmentCollection);
-        equipment.UpdatedAt = DateTime.UtcNow;
-        equipment.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(equipment);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
@@ -60,6 +58,7 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         var update = Builders<EquipmentDocument>.Update
             .Set(e => e.Name, equipment.Name)
             .Set(e => e.CategoryId, equipment.CategoryId)
+            .Set(e => e.IsModerated, equipment.IsModerated)
             .Set(e => e.Description, equipment.Description)
             .Set(e => e.PricePerDay, equipment.PricePerDay)
             .Set(e => e.UpdatedBy, equipment.UpdatedBy)

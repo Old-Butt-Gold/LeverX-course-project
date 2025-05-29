@@ -36,8 +36,6 @@ internal sealed class MongoRentalRepository : IRentalRepository
     public async Task<Rental> AddAsync(Rental rental, CancellationToken ct = default)
     {
         rental.Id = await _idGenerator.GetNextIdAsync(_settings.RentalCollection);
-        rental.UpdatedAt = DateTime.UtcNow;
-        rental.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(rental);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
@@ -58,8 +56,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, ct);
+        var document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
 
         return MapToEntity(document);
     }

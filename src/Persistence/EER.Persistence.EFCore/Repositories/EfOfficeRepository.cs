@@ -46,7 +46,7 @@ internal sealed class EfOfficeRepository : IOfficeRepository
         entity.Country = office.Country;
         entity.IsActive = office.IsActive;
         entity.UpdatedBy = office.UpdatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = office.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 

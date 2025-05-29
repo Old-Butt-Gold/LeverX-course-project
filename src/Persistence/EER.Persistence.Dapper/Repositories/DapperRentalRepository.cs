@@ -31,7 +31,6 @@ internal sealed class DapperRentalRepository : IRentalRepository
 
     public async Task<Rental> AddAsync(Rental rental, CancellationToken cancellationToken = default)
     {
-        // TODO CreatedBy
         const string sql = """
                                INSERT INTO [Supplies].[Rental] (
                                    CustomerId, OwnerId, StartDate, EndDate,
@@ -60,7 +59,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
@@ -80,6 +79,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
                                UPDATE [Supplies].[Rental]
                                SET
                                    Status = @Status,
+                                   UpdatedAt = @UpdatedAt,
                                    UpdatedBy = @UpdatedBy
                                OUTPUT
                                    INSERTED.Id,
@@ -99,12 +99,11 @@ internal sealed class DapperRentalRepository : IRentalRepository
                                SELECT * FROM @UpdatedTable;
                            """;
 
-        // TODO UpdatedBy
-
         return await _connection.QuerySingleAsync<Rental>(
             new CommandDefinition(sql, new
             {
                 Id = id,
+                UpdatedAt = DateTime.UtcNow,
                 Status = status.ToString(),
                 UpdatedBy = updatedBy,
             }, cancellationToken: cancellationToken));

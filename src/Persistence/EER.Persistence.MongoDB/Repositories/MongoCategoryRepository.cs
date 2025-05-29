@@ -35,8 +35,6 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
     public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
     {
         category.Id = await _idGenerator.GetNextIdAsync(_settings.CategoryCollection);
-        category.UpdatedAt = DateTime.UtcNow;
-        category.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(category);
         await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);

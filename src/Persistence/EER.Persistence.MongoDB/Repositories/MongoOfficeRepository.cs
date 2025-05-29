@@ -35,8 +35,6 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
     public async Task<Office> AddAsync(Office office, CancellationToken ct = default)
     {
         office.Id = await _idGenerator.GetNextIdAsync(_settings.OfficeCollection);
-        office.UpdatedAt = DateTime.UtcNow;
-        office.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(office);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
