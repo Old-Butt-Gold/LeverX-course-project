@@ -34,21 +34,25 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
         return entry.Entity;
     }
 
-    public async Task<Equipment?> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
+    public async Task<Equipment> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
-        var existing = await _context.Equipment.FindAsync([equipment.Id], cancellationToken);
-        if (existing is null) return null;
+        var entity = await _context.Equipment.FindAsync([equipment.Id], cancellationToken);
 
-        existing.Name = equipment.Name;
-        existing.CategoryId = equipment.CategoryId;
-        existing.Description = equipment.Description;
-        existing.PricePerDay = equipment.PricePerDay;
-        existing.UpdatedBy = equipment.UpdatedBy;
-        existing.UpdatedAt = DateTime.UtcNow;
+        if (entity is null)
+        {
+            throw new InvalidOperationException($"Equipment with ID '{equipment.Id}' was not found.");
+        }
+
+        entity.Name = equipment.Name;
+        entity.CategoryId = equipment.CategoryId;
+        entity.Description = equipment.Description;
+        entity.PricePerDay = equipment.PricePerDay;
+        entity.UpdatedBy = equipment.UpdatedBy;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return existing;
+        return entity;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)

@@ -30,8 +30,12 @@ internal sealed class RentalService : IRentalService
         return await _rentalRepository.AddAsync(rental, cancellationToken);
     }
 
-    public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
     {
+        var existingRental = await _rentalRepository.GetByIdAsync(id, cancellationToken);
+        if (existingRental is null)
+            throw new KeyNotFoundException("Rental with provided ID is not found");
+
         return await _rentalRepository.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
     }
 

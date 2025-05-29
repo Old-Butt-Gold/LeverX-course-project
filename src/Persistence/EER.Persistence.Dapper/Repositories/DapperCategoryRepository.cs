@@ -49,7 +49,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
             }, cancellationToken: cancellationToken));
     }
 
-    public async Task<Category?> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                UPDATE [Supplies].[Category]
@@ -65,7 +65,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
 
         // TODO UpdatedBy
 
-        return await _connection.QuerySingleOrDefaultAsync<Category>(
+        return await _connection.QuerySingleAsync<Category>(
             new CommandDefinition(sql, new
             {
                 category.Id,

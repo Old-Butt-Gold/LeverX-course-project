@@ -44,7 +44,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return MapToEntity(document);
     }
 
-    public async Task<Rental?> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken ct = default)
+    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken ct = default)
     {
         var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, id);
 
@@ -61,7 +61,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
         var document = await _collection.FindOneAndUpdateAsync(
             filter, update, options, ct);
 
-        return document != null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)

@@ -33,10 +33,11 @@ internal sealed class EquipmentService : IEquipmentService
         return await _equipmentRepository.AddAsync(equipment, cancellationToken);
     }
 
-    public async Task<Equipment?> UpdateAsync(int id, Equipment updatedEquipment, CancellationToken cancellationToken = default)
+    public async Task<Equipment> UpdateAsync(int id, Equipment updatedEquipment, CancellationToken cancellationToken = default)
     {
         var existingEquipment = await _equipmentRepository.GetByIdAsync(id, cancellationToken);
-        if (existingEquipment is null) return null;
+        if (existingEquipment is null)
+            throw new KeyNotFoundException("Equipment with provided ID is not found");
 
         existingEquipment.Name = updatedEquipment.Name;
         existingEquipment.CategoryId = updatedEquipment.CategoryId;

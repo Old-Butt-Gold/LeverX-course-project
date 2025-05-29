@@ -95,7 +95,7 @@ public sealed class CategoriesController : ControllerBase
     public async Task<IActionResult> Update(int id, Category updatedCategory, CancellationToken cancellationToken)
     {
         var category = await _categoryService.UpdateAsync(id, updatedCategory, cancellationToken);
-        return category is not null ? Ok(category) : NotFound();
+        return Ok(category);
     }
 
     // DELETE: api/categories/1

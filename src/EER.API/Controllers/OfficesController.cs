@@ -95,7 +95,7 @@ public sealed class OfficesController : ControllerBase
     public async Task<IActionResult> Update(int id, Office updatedOffice, CancellationToken cancellationToken)
     {
         var office = await _officeService.UpdateAsync(id, updatedOffice, cancellationToken);
-        return office is not null ? Ok(office) : NotFound();
+        return Ok(office);
     }
 
     // DELETE: api/offices/1

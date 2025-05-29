@@ -41,7 +41,7 @@ internal sealed class MongoUserRepository : IUserRepository
         return MapToEntity(document);
     }
 
-    public async Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         var filter = Builders<UserDocument>.Filter.Eq(u => u.Id, user.Id);
 
@@ -59,7 +59,7 @@ internal sealed class MongoUserRepository : IUserRepository
         var document = await _collection.FindOneAndUpdateAsync(
             filter, update, options, cancellationToken);
 
-        return document != null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

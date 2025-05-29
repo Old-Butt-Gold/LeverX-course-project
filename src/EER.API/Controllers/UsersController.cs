@@ -96,7 +96,7 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> Update(Guid id, User updatedUser, CancellationToken cancellationToken)
     {
         var user = await _service.UpdateAsync(id, updatedUser, cancellationToken);
-        return user is not null ? Ok(user) : NotFound();
+        return Ok(user);
     }
 
     // DELETE: api/users/1

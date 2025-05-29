@@ -98,7 +98,7 @@ public sealed class RentalsController : ControllerBase
         // TODO updatedBy
         var updatedBy = Guid.NewGuid();
         var rental = await _rentalService.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
-        return rental is not null ? Ok(rental) : NotFound();
+        return Ok(rental);
     }
 
     // DELETE: api/rentals/1

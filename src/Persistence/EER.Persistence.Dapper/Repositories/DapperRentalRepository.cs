@@ -101,7 +101,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
 
         // TODO UpdatedBy
 
-        return await _connection.QuerySingleOrDefaultAsync<Rental>(
+        return await _connection.QuerySingleAsync<Rental>(
             new CommandDefinition(sql, new
             {
                 Id = id,

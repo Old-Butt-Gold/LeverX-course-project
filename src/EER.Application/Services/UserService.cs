@@ -32,10 +32,11 @@ internal sealed class UserService : IUserService
         return await _userRepository.AddAsync(user, cancellationToken);
     }
 
-    public async Task<User?> UpdateAsync(Guid id, User updatedUser, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(Guid id, User updatedUser, CancellationToken cancellationToken = default)
     {
         var existingUser = await _userRepository.GetByIdAsync(id, cancellationToken);
-        if (existingUser is null) return null;
+        if (existingUser is null)
+            throw new KeyNotFoundException("User with provided ID is not found");
 
         existingUser.Email = updatedUser.Email;
         existingUser.FullName = updatedUser.FullName;

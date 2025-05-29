@@ -116,7 +116,7 @@ public sealed class EquipmentController : ControllerBase
     public async Task<IActionResult> Update(int id, Equipment updatedEquipment, CancellationToken cancellationToken)
     {
         var updatedItem = await _equipmentService.UpdateAsync(id, updatedEquipment, cancellationToken);
-        return updatedItem is not null ? Ok(updatedItem) : NotFound();
+        return Ok(updatedItem);
     }
 
     // DELETE: api/equipment/1

@@ -48,7 +48,7 @@ internal sealed class DapperUserRepository : IUserRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                 UPDATE [Identity].[User]
@@ -71,7 +71,7 @@ internal sealed class DapperUserRepository : IUserRepository
             UserRole = user.UserRole.ToString()
         };
 
-        return await _connection.QuerySingleOrDefaultAsync<User>(
+        return await _connection.QuerySingleAsync<User>(
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 

@@ -28,10 +28,11 @@ internal class EquipmentItemService : IEquipmentItemService
         return await _equipmentItemRepository.AddAsync(item, cancellationToken);
     }
 
-    public async Task<EquipmentItem?> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> UpdateAsync(long id, EquipmentItem updatedItem, CancellationToken cancellationToken = default)
     {
         var existingItem = await _equipmentItemRepository.GetByIdAsync(id, cancellationToken);
-        if (existingItem is null) return null;
+        if (existingItem is null)
+            throw new KeyNotFoundException("EquipmentItem with provided ID is not found");
 
         existingItem.EquipmentId = updatedItem.EquipmentId;
         existingItem.OfficeId = updatedItem.OfficeId;

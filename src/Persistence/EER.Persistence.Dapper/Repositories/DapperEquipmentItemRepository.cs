@@ -59,7 +59,7 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<EquipmentItem?> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
     {
         // TODO UpdatedBy
         const string sql = """
@@ -87,7 +87,7 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
             item.UpdatedBy
         };
 
-        return await _connection.QuerySingleOrDefaultAsync<EquipmentItem>(
+        return await _connection.QuerySingleAsync<EquipmentItem>(
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 

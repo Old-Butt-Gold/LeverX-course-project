@@ -53,7 +53,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
             }, cancellationToken: cancellationToken));
     }
 
-    public async Task<Office?> UpdateAsync(Office office, CancellationToken cancellationToken = default)
+    public async Task<Office> UpdateAsync(Office office, CancellationToken cancellationToken = default)
     {
         // TODO UpdatedBy
         const string sql = """
@@ -70,7 +70,7 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                                WHERE Id = @Id
                            """;
 
-        return await _connection.QuerySingleOrDefaultAsync<Office>(
+        return await _connection.QuerySingleAsync<Office>(
             new CommandDefinition(sql, new
             {
                 office.Id,

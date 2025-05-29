@@ -28,10 +28,11 @@ internal sealed class CategoryService : ICategoryService
         return await _categoryRepository.AddAsync(category, cancellationToken);
     }
 
-    public async Task<Category?> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(int id, Category updatedCategory, CancellationToken cancellationToken = default)
     {
         var existingCategory = await _categoryRepository.GetByIdAsync(id, cancellationToken);
-        if (existingCategory is null) return null;
+        if (existingCategory is null)
+            throw new KeyNotFoundException("Category with provided ID is not found");
 
         existingCategory.Name = updatedCategory.Name;
         existingCategory.Description = updatedCategory.Description;

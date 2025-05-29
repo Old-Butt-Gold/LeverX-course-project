@@ -29,10 +29,11 @@ internal sealed class OfficeService : IOfficeService
         return await _officeRepository.AddAsync(office, cancellationToken);
     }
 
-    public async Task<Office?> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default)
+    public async Task<Office> UpdateAsync(int id, Office updatedOffice, CancellationToken cancellationToken = default)
     {
         var existingOffice = await _officeRepository.GetByIdAsync(id, cancellationToken);
-        if (existingOffice is null) return null;
+        if (existingOffice is null)
+            throw new KeyNotFoundException("Office with provided ID is not found");
 
         existingOffice.OwnerId = updatedOffice.OwnerId;
         existingOffice.Address = updatedOffice.Address;
