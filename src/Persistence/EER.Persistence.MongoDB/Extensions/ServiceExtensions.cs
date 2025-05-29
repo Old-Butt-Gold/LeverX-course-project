@@ -1,4 +1,6 @@
-﻿using EER.Persistence.MongoDB.Settings;
+﻿using EER.Domain.DatabaseAbstractions;
+using EER.Persistence.MongoDB.Repositories;
+using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -25,5 +27,9 @@ public static class ServiceExtensions
             var dbSettings = sp.GetRequiredService<IOptions<DatabaseSettings>>().Value;
             return client.GetDatabase(dbSettings.DatabaseName);
         });
+
+        serviceCollection.AddScoped<IUserRepository, MongoUserRepository>();
+
+        MongoMappings.RegisterClassMaps();
     }
 }
