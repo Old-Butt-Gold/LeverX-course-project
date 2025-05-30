@@ -1,21 +1,10 @@
 ﻿using EER.API.Extensions;
-using EER.API.Filters;
 using EER.Application.Extensions;
 using EER.Infrastructure.Extensions;
 using EER.Persistence.Migrations.Extensions;
 using EER.Persistence.MongoDB.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-builder.Services.AddControllers(config =>
-{
-    config.RespectBrowserAcceptHeader = true;
-    config.ReturnHttpNotAcceptable = true;
-    config.Filters.Add<AddHeaderFilter>();
-    config.Filters.Add<RequiredHeaderFilter>();
-}).AddXmlDataContractSerializerFormatters();
 
 // Application
 builder.Services.ConfigureMediatR();
@@ -30,6 +19,7 @@ builder.Services.ConfigureMongo(builder.Configuration);
 builder.Services.ConfigureSecurity();
 
 // API
+builder.Services.ConfigureControllers();
 builder.Services.ConfigureCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();

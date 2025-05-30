@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using EER.API.CustomAttributes;
+using EER.API.Filters;
 using EER.API.SwaggerSchemaFilters;
 using Microsoft.OpenApi.Models;
 
@@ -6,6 +8,34 @@ namespace EER.API.Extensions;
 
 public static class ServiceExtensions
 {
+    public static void ConfigureControllers(this IServiceCollection services)
+    {
+        services.AddControllers(config =>
+        {
+            config.RespectBrowserAcceptHeader = true;
+            config.ReturnHttpNotAcceptable = true;
+
+            var assembly = typeof(Program).Assembly;
+
+            var addHeaderAttributes = assembly.GetExportedTypes()
+                .Where(x => x.GetCustomAttributes<AddHeaderAttribute>().Any());
+
+            var requiredHeaderAttributes = assembly.GetExportedTypes()
+                .Where(x => x.GetCustomAttributes<RequiredHeaderAttribute>().Any());
+
+            if (addHeaderAttributes.Any())
+            {
+                config.Filters.Add<AddHeaderFilter>();
+            }
+
+            if (requiredHeaderAttributes.Any())
+            {
+                config.Filters.Add<RequiredHeaderFilter>();
+            }
+
+        }).AddXmlDataContractSerializerFormatters();
+    }
+
     public static void ConfigureCors(this IServiceCollection services)
     {
         services.AddCors(options =>
