@@ -35,15 +35,13 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
     public async Task<EquipmentItem> AddAsync(EquipmentItem item, CancellationToken ct = default)
     {
         item.Id = await _idGenerator.GetNextLongIdAsync(_settings.EquipmentItemCollection);
-        item.CreatedAt = DateTime.UtcNow;
-        item.UpdatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(item);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
         return MapToEntity(document);
     }
 
-    public async Task<EquipmentItem?> UpdateAsync(EquipmentItem item, CancellationToken ct = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken ct = default)
     {
         var filter = Builders<EquipmentItemDocument>.Filter.Eq(i => i.Id, item.Id);
 
@@ -63,10 +61,9 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, ct);
+        var document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
 
-        return document != null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)

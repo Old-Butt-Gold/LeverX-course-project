@@ -31,7 +31,6 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
 
     public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
     {
-        // TODO CreatedBy
         const string sql = """
                                INSERT INTO [Supplies].[Category] (Name, Description, Slug, CreatedBy, UpdatedBy)
                                OUTPUT INSERTED.*
@@ -49,7 +48,7 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
             }, cancellationToken: cancellationToken));
     }
 
-    public async Task<Category?> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                UPDATE [Supplies].[Category]
@@ -58,21 +57,20 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                                    Description = @Description,
                                    Slug = @Slug,
                                    UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE()
+                                   UpdatedAt = @UpdatedAt
                                OUTPUT INSERTED.*
                                WHERE Id = @Id
                            """;
 
-        // TODO UpdatedBy
-
-        return await _connection.QuerySingleOrDefaultAsync<Category>(
+        return await _connection.QuerySingleAsync<Category>(
             new CommandDefinition(sql, new
             {
                 category.Id,
                 category.Name,
                 category.Description,
                 category.Slug,
-                category.UpdatedBy
+                category.UpdatedBy,
+                category.UpdatedAt,
             }, cancellationToken: cancellationToken));
     }
 

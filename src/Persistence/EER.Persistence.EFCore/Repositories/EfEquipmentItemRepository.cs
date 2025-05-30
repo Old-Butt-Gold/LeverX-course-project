@@ -31,22 +31,26 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         return entry.Entity;
     }
 
-    public async Task<EquipmentItem?> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
     {
-        var existing = await _context.EquipmentItems.FindAsync([item.Id], cancellationToken);
-        if (existing is null) return null;
+        var entity = await _context.EquipmentItems.FindAsync([item.Id], cancellationToken);
 
-        existing.OfficeId = item.OfficeId;
-        existing.SerialNumber = item.SerialNumber;
-        existing.ItemStatus = item.ItemStatus;
-        existing.MaintenanceDate = item.MaintenanceDate;
-        existing.PurchaseDate = item.PurchaseDate;
-        existing.UpdatedBy = item.UpdatedBy;
-        existing.UpdatedAt = DateTime.UtcNow;
+        if (entity is null)
+        {
+            throw new InvalidOperationException($"EquipmentItem with ID '{item.Id}' was not found.");
+        }
+
+        entity.OfficeId = item.OfficeId;
+        entity.SerialNumber = item.SerialNumber;
+        entity.ItemStatus = item.ItemStatus;
+        entity.MaintenanceDate = item.MaintenanceDate;
+        entity.PurchaseDate = item.PurchaseDate;
+        entity.UpdatedBy = item.UpdatedBy;
+        entity.UpdatedAt = item.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return existing;
+        return entity;
     }
 
     public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)

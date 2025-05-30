@@ -35,15 +35,13 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
     public async Task<Office> AddAsync(Office office, CancellationToken ct = default)
     {
         office.Id = await _idGenerator.GetNextIdAsync(_settings.OfficeCollection);
-        office.UpdatedAt = DateTime.UtcNow;
-        office.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(office);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
         return MapToEntity(document);
     }
 
-    public async Task<Office?> UpdateAsync(Office office, CancellationToken ct = default)
+    public async Task<Office> UpdateAsync(Office office, CancellationToken ct = default)
     {
         var filter = Builders<OfficeDocument>.Filter.Eq(o => o.Id, office.Id);
 
@@ -63,7 +61,7 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
         var document = await _collection.FindOneAndUpdateAsync(
             filter, update, options, ct);
 
-        return document is not null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)

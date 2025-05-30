@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using EER.Domain.DatabaseAbstractions;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetArchTest.Rules;
 
@@ -315,6 +316,26 @@ public class ArchitectureTests
         var result = Types.InAssembly(assembly)
             .ShouldNot()
             .HaveDependencyOn(DomainNamespace)
+            .GetResult();
+
+        // Assert
+        Assert.True(result.IsSuccessful);
+    }
+
+    [Fact]
+    public void QueryAndCommandHandlers_Should_NotBePublic()
+    {
+        // Arrange
+        var assembly = Assembly.LoadFrom(ApplicationNamespace + Dll);
+
+        // Act
+        var result = Types.InAssembly(assembly)
+            .That()
+            .ImplementInterface(typeof(IRequestHandler<,>))
+            .Should()
+            .NotBePublic()
+            .And()
+            .BeSealed()
             .GetResult();
 
         // Assert

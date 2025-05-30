@@ -33,17 +33,21 @@ internal sealed class EfUserRepository : IUserRepository
         return entry.Entity;
     }
 
-    public async Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
+        // FindAsync first looks in memory, after that in DB.
+        // Exactly after checkout with Tracking in application layer
         var entity = await _context.Users.FindAsync([user.Id], cancellationToken);
 
-        if (entity is null) return null;
+        if (entity is null)
+        {
+            throw new InvalidOperationException($"User with ID '{user.Id}' was not found.");
+        }
 
         entity.Email = user.Email;
-        entity.PasswordHash = user.PasswordHash;
         entity.FullName = user.FullName;
         entity.UserRole = user.UserRole;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = user.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 

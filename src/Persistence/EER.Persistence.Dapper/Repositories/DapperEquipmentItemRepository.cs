@@ -30,7 +30,6 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
 
     public async Task<EquipmentItem> AddAsync(EquipmentItem item, CancellationToken cancellationToken = default)
     {
-        // TODO CreatedBy
         const string sql = """
                                INSERT INTO [Supplies].[EquipmentItem] (
                                    EquipmentId, OfficeId, SerialNumber, ItemStatus,
@@ -59,9 +58,8 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<EquipmentItem?> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
     {
-        // TODO UpdatedBy
         const string sql = """
                                UPDATE [Supplies].[EquipmentItem]
                                SET
@@ -71,7 +69,7 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
                                    MaintenanceDate = @MaintenanceDate,
                                    PurchaseDate = @PurchaseDate,
                                    UpdatedBy = @UpdatedBy,
-                                   UpdatedAt = GETUTCDATE()
+                                   UpdatedAt = @UpdatedAt
                                OUTPUT INSERTED.*
                                WHERE Id = @Id
                            """;
@@ -84,10 +82,11 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
             ItemStatus = item.ItemStatus.ToString(),
             item.MaintenanceDate,
             item.PurchaseDate,
-            item.UpdatedBy
+            item.UpdatedBy,
+            item.UpdatedAt
         };
 
-        return await _connection.QuerySingleOrDefaultAsync<EquipmentItem>(
+        return await _connection.QuerySingleAsync<EquipmentItem>(
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 

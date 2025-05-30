@@ -33,20 +33,24 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         return entry.Entity;
     }
 
-    public async Task<Category?> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
     {
-        var existing = await _context.Categories.FindAsync([category.Id], cancellationToken);
-        if (existing is null) return null;
+        var entity = await _context.Categories.FindAsync([category.Id], cancellationToken);
 
-        existing.Name = category.Name;
-        existing.Description = category.Description;
-        existing.Slug = category.Slug;
-        existing.UpdatedBy = category.UpdatedBy;
-        existing.UpdatedAt = DateTime.UtcNow;
+        if (entity is null)
+        {
+            throw new InvalidOperationException($"Category with ID '{category.Id}' was not found.");
+        }
+
+        entity.Name = category.Name;
+        entity.Description = category.Description;
+        entity.Slug = category.Slug;
+        entity.UpdatedBy = category.UpdatedBy;
+        entity.UpdatedAt = category.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return existing;
+        return entity;
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)

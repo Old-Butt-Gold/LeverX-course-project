@@ -48,16 +48,15 @@ internal sealed class DapperUserRepository : IUserRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<User?> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                 UPDATE [Identity].[User]
                                 SET
                                     Email = @Email,
-                                    PasswordHash = @PasswordHash,
                                     FullName = @FullName,
                                     UserRole = @UserRole,
-                                    UpdatedAt = GETUTCDATE()
+                                    UpdatedAt = @UpdatedAt
                                 OUTPUT INSERTED.*
                                 WHERE Id = @Id
                            """;
@@ -66,12 +65,12 @@ internal sealed class DapperUserRepository : IUserRepository
         {
             user.Id,
             user.Email,
-            user.PasswordHash,
             user.FullName,
+            user.UpdatedAt,
             UserRole = user.UserRole.ToString()
         };
 
-        return await _connection.QuerySingleOrDefaultAsync<User>(
+        return await _connection.QuerySingleAsync<User>(
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 

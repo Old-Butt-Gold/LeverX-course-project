@@ -15,7 +15,7 @@ builder.Services.AddControllers(config =>
 }).AddXmlDataContractSerializerFormatters();
 
 // Application
-builder.Services.ConfigureServices();
+builder.Services.ConfigureMediatR();
 
 // Persistence
 builder.Services.ConfigureMigrationService();
@@ -32,6 +32,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
 
 var app = builder.Build();
+
+app.ConfigureExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

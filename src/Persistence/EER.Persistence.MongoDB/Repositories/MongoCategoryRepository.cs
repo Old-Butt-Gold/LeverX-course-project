@@ -35,15 +35,13 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
     public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
     {
         category.Id = await _idGenerator.GetNextIdAsync(_settings.CategoryCollection);
-        category.UpdatedAt = DateTime.UtcNow;
-        category.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(category);
         await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
         return MapToEntity(document);
     }
 
-    public async Task<Category?> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
     {
         var filter = Builders<CategoryDocument>.Filter.Eq(c => c.Id, category.Id);
 
@@ -62,7 +60,7 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
         var document = await _collection.FindOneAndUpdateAsync(
             filter, update, options, cancellationToken);
 
-        return document is not null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)

@@ -11,12 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.5.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.5" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Features\Commands\" />
-      <Folder Include="Features\Queries\" />
     </ItemGroup>
 
 </Project>

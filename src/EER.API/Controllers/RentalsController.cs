@@ -1,7 +1,12 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
+using EER.Application.Features.Rentals.Commands.CreateRental;
+using EER.Application.Features.Rentals.Commands.DeleteRental;
+using EER.Application.Features.Rentals.Commands.UpdateRentalStatus;
+using EER.Application.Features.Rentals.Queries.GetAllRentals;
+using EER.Application.Features.Rentals.Queries.GetRentalById;
 using EER.Domain.Entities;
 using EER.Domain.Enums;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -10,11 +15,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class RentalsController : ControllerBase
 {
-    private readonly IRentalService _rentalService;
+    private readonly ISender _sender;
 
-    public RentalsController(IRentalService rentalService)
+    public RentalsController(ISender sender)
     {
-        _rentalService = rentalService;
+        _sender = sender;
     }
 
     // GET: api/rentals
@@ -30,7 +35,8 @@ public sealed class RentalsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _rentalService.GetAllAsync(cancellationToken));
+        var rentals = await _sender.Send(new GetAllRentalsQuery(), cancellationToken);
+        return Ok(rentals);
     }
 
     // GET: api/rentals/1
@@ -50,7 +56,7 @@ public sealed class RentalsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        var rental = await _rentalService.GetByIdAsync(id, cancellationToken);
+        var rental = await _sender.Send(new GetRentalByIdQuery(id), cancellationToken);
         return rental is not null ? Ok(rental) : NotFound();
     }
 
@@ -72,7 +78,14 @@ public sealed class RentalsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Rental rental, CancellationToken cancellationToken)
     {
-        var createdRental = await _rentalService.CreateAsync(rental, cancellationToken);
+        var command = new CreateRentalCommand(
+            rental.OwnerId,
+            rental.CustomerId,
+            rental.StartDate,
+            rental.EndDate,
+            rental.TotalPrice);
+
+        var createdRental = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
     }
 
@@ -95,10 +108,9 @@ public sealed class RentalsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] RentalStatus status, CancellationToken cancellationToken)
     {
-        // TODO updatedBy
-        var updatedBy = Guid.NewGuid();
-        var rental = await _rentalService.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
-        return rental is not null ? Ok(rental) : NotFound();
+        var command = new UpdateRentalStatusCommand(id, status);
+        var rental = await _sender.Send(command, cancellationToken);
+        return Ok(rental);
     }
 
     // DELETE: api/rentals/1
@@ -118,8 +130,7 @@ public sealed class RentalsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        return await _rentalService.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteRentalCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }

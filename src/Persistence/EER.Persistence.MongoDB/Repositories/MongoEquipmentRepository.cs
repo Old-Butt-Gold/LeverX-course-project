@@ -45,21 +45,20 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken ct = default)
     {
         equipment.Id = await _idGenerator.GetNextIdAsync(_settings.EquipmentCollection);
-        equipment.UpdatedAt = DateTime.UtcNow;
-        equipment.CreatedAt = DateTime.UtcNow;
 
         var document = MapToDocument(equipment);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
         return MapToEntity(document);
     }
 
-    public async Task<Equipment?> UpdateAsync(Equipment equipment, CancellationToken ct = default)
+    public async Task<Equipment> UpdateAsync(Equipment equipment, CancellationToken ct = default)
     {
         var filter = Builders<EquipmentDocument>.Filter.Eq(e => e.Id, equipment.Id);
 
         var update = Builders<EquipmentDocument>.Update
             .Set(e => e.Name, equipment.Name)
             .Set(e => e.CategoryId, equipment.CategoryId)
+            .Set(e => e.IsModerated, equipment.IsModerated)
             .Set(e => e.Description, equipment.Description)
             .Set(e => e.PricePerDay, equipment.PricePerDay)
             .Set(e => e.UpdatedBy, equipment.UpdatedBy)
@@ -73,7 +72,7 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         var document = await _collection.FindOneAndUpdateAsync(
             filter, update, options, ct);
 
-        return document is not null ? MapToEntity(document) : null;
+        return MapToEntity(document);
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)

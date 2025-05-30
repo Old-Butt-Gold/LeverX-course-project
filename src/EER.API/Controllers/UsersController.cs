@@ -1,7 +1,11 @@
 ﻿using System.Net.Mime;
-using EER.Application.Abstractions.Services;
+using EER.Application.Features.Users.Commands.CreateUser;
+using EER.Application.Features.Users.Commands.DeleteUser;
+using EER.Application.Features.Users.Commands.UpdateUser;
+using EER.Application.Features.Users.Queries.GetAllUsers;
+using EER.Application.Features.Users.Queries.GetUserById;
 using EER.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
@@ -10,11 +14,11 @@ namespace EER.API.Controllers;
 [ApiController]
 public sealed class UsersController : ControllerBase
 {
-    private readonly IUserService _service;
+    private readonly ISender _sender;
 
-    public UsersController(IUserService service)
+    public UsersController(ISender sender)
     {
-        _service = service;
+        _sender = sender;
     }
 
     // GET: api/users
@@ -30,7 +34,8 @@ public sealed class UsersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(await _service.GetAllAsync(cancellationToken));
+        var users = await _sender.Send(new GetAllUsersQuery(), cancellationToken);
+        return Ok(users);
     }
 
     // GET: api/users/1
@@ -50,7 +55,7 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var user = await _service.GetByIdAsync(id, cancellationToken);
+        var user = await _sender.Send(new GetUserByIdQuery(id), cancellationToken);
         return user is not null ? Ok(user) : NotFound();
     }
 
@@ -72,7 +77,13 @@ public sealed class UsersController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(User user, CancellationToken cancellationToken)
     {
-        var createdUser = await _service.CreateAsync(user, cancellationToken);
+        var command = new CreateUserCommand(
+            user.Email,
+            user.FullName,
+            user.PasswordHash,
+            user.UserRole);
+
+        var createdUser = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
 
@@ -95,8 +106,8 @@ public sealed class UsersController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, User updatedUser, CancellationToken cancellationToken)
     {
-        var user = await _service.UpdateAsync(id, updatedUser, cancellationToken);
-        return user is not null ? Ok(user) : NotFound();
+        var user = await _sender.Send(new UpdateUserCommand(id, updatedUser), cancellationToken);
+        return Ok(user);
     }
 
     // DELETE: api/users/1
@@ -115,8 +126,7 @@ public sealed class UsersController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        return await _service.DeleteAsync(id, cancellationToken)
-            ? NoContent()
-            : NotFound();
+        var result = await _sender.Send(new DeleteUserCommand(id), cancellationToken);
+        return result ? NoContent() : NotFound();
     }
 }
