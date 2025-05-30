@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EER.Application.Behaviors;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EER.Application.Extensions;
 
@@ -9,6 +10,8 @@ public static class ServiceExtensions
         servicesCollection.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(typeof(AssemblyReference).Assembly);
+
+            config.AddOpenBehavior(typeof(LoggingBehavior<,>));
         });
     }
 }
