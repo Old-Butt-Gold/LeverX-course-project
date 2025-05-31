@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Application
 builder.Services.ConfigureMediatR();
+builder.Services.ConfigureFluentValidation();
+builder.Services.ConfigureAutoMapper();
 
 // Persistence
 builder.Services.ConfigureMigrationService();
@@ -44,6 +46,8 @@ app.UseCors("CorsGlobalPolicy");
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.AssertAutoMapperConfigurationValid(app.Services);
 
 app.ApplyMigrations(app.Services);
 //await app.Services.InitializeMongoDb();
