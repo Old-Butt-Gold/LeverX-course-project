@@ -4,7 +4,6 @@ using EER.Application.Features.EquipmentItems.Commands.DeleteEquipmentItem;
 using EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
 using EER.Application.Features.EquipmentItems.Queries.GetAllEquipmentItems;
 using EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
-using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ public sealed class EquipmentItemsController : ControllerBase
     /// <response code="200">Returns the list of equipment items.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<EquipmentItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<EquipmentItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -49,7 +48,7 @@ public sealed class EquipmentItemsController : ControllerBase
     /// <response code="404">If the equipment item with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(EquipmentItem), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EquipmentItemDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:long}")]
@@ -71,19 +70,13 @@ public sealed class EquipmentItemsController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(EquipmentItem), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(EquipmentItemCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(EquipmentItem item, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateEquipmentItemDto item, CancellationToken cancellationToken)
     {
-        var command = new CreateEquipmentItemCommand(
-            item.EquipmentId,
-            item.OfficeId,
-            item.SerialNumber,
-            item.ItemStatus,
-            item.MaintenanceDate,
-            item.PurchaseDate);
+        var command = new CreateEquipmentItemCommand(item);
 
         var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
@@ -93,7 +86,6 @@ public sealed class EquipmentItemsController : ControllerBase
     /// <summary>
     /// Updates an existing equipment item by ID.
     /// </summary>
-    /// <param name="id">The ID of the equipment item to update.</param>
     /// <param name="updatedItem">The updated equipment item data.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated equipment item.</returns>
@@ -102,15 +94,13 @@ public sealed class EquipmentItemsController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(EquipmentItem), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EquipmentItemUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:long}")]
-    public async Task<IActionResult> Update(long id, EquipmentItem updatedItem, CancellationToken cancellationToken)
+    [HttpPut]
+    public async Task<IActionResult> Update(UpdateEquipmentItemDto updatedItem, CancellationToken cancellationToken)
     {
-        var command = new UpdateEquipmentItemCommand(
-            id,
-            updatedItem);
+        var command = new UpdateEquipmentItemCommand(updatedItem);
 
         var item = await _sender.Send(command, cancellationToken);
         return Ok(item);

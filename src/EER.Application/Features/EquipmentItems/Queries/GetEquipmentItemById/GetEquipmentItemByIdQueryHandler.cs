@@ -1,20 +1,26 @@
-﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
 
-internal sealed class GetEquipmentItemByIdQueryHandler : IRequestHandler<GetEquipmentItemByIdQuery, EquipmentItem?>
+internal sealed class GetEquipmentItemByIdQueryHandler : IRequestHandler<GetEquipmentItemByIdQuery, EquipmentItemDetailsDto?>
 {
     private readonly IEquipmentItemRepository _repository;
+    private readonly IMapper _mapper;
 
-    public GetEquipmentItemByIdQueryHandler(IEquipmentItemRepository repository)
+    public GetEquipmentItemByIdQueryHandler(IEquipmentItemRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<EquipmentItem?> Handle(GetEquipmentItemByIdQuery request, CancellationToken cancellationToken)
+    public async Task<EquipmentItemDetailsDto?> Handle(GetEquipmentItemByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var item = await _repository.GetByIdAsync(request.Id, cancellationToken);
+
+        return item is null
+            ? null
+            : _mapper.Map<EquipmentItemDetailsDto>(item);
     }
 }

@@ -7,6 +7,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<UpdateEquipmentDto, Domain.Entities.Equipment>()
+            .ForMember(dest => dest.IsModerated, opt => opt.Ignore())
             .ForMember(dest => dest.OwnerId, opt => opt.Ignore())
             .ForMember(dest => dest.AverageRating, opt => opt.Ignore())
             .ForMember(dest => dest.TotalReviews, opt => opt.Ignore())

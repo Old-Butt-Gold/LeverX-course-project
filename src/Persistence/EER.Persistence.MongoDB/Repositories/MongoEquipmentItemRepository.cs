@@ -54,7 +54,7 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
                 : null)
             .Set(i => i.PurchaseDate, DateOnly.FromDateTime(item.PurchaseDate))
             .Set(i => i.UpdatedBy, item.UpdatedBy)
-            .Set(i => i.UpdatedAt, DateTime.UtcNow);
+            .Set(i => i.UpdatedAt, item.UpdatedAt);
 
         var options = new FindOneAndUpdateOptions<EquipmentItemDocument>
         {

@@ -1,39 +1,33 @@
-﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
 
-internal sealed class UpdateEquipmentItemCommandHandler
-    : IRequestHandler<UpdateEquipmentItemCommand, EquipmentItem>
+internal sealed class UpdateEquipmentItemCommandHandler : IRequestHandler<UpdateEquipmentItemCommand, EquipmentItemUpdatedDto>
 {
     private readonly IEquipmentItemRepository _repository;
+    private readonly IMapper _mapper;
 
-    public UpdateEquipmentItemCommandHandler(IEquipmentItemRepository repository)
+    public UpdateEquipmentItemCommandHandler(IEquipmentItemRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<EquipmentItem> Handle(UpdateEquipmentItemCommand command, CancellationToken cancellationToken)
+    public async Task<EquipmentItemUpdatedDto> Handle(UpdateEquipmentItemCommand command, CancellationToken cancellationToken)
     {
-        var item = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var dto = command.UpdateEquipmentItemDto;
+
+        var item = await _repository.GetByIdAsync(dto.Id, cancellationToken);
 
         if (item is null)
-            throw new KeyNotFoundException("EquipmentItem with provided ID is not found");
+            throw new KeyNotFoundException($"EquipmentItem with ID {dto.Id} not found");
 
-        var updatedEquipmentItem = command.EquipmentItem;
+        _mapper.Map(dto, item);
 
-        // TODO UpdatedBy
+        var updatedItem = await _repository.UpdateAsync(item, cancellationToken);
 
-        item.EquipmentId = updatedEquipmentItem.EquipmentId;
-        item.OfficeId = updatedEquipmentItem.OfficeId;
-        item.SerialNumber = updatedEquipmentItem.SerialNumber;
-        item.ItemStatus = updatedEquipmentItem.ItemStatus;
-        item.MaintenanceDate = updatedEquipmentItem.MaintenanceDate;
-        item.PurchaseDate = updatedEquipmentItem.PurchaseDate;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = Guid.NewGuid();
-
-        return await _repository.UpdateAsync(item, cancellationToken);
+        return _mapper.Map<EquipmentItemUpdatedDto>(updatedItem);
     }
 }

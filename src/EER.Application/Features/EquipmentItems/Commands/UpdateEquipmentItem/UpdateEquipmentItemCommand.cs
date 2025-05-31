@@ -1,8 +1,6 @@
-﻿using EER.Domain.Entities;
-using MediatR;
+﻿using MediatR;
 
 namespace EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
 
-public record UpdateEquipmentItemCommand(
-    long Id,
-    EquipmentItem EquipmentItem) : IRequest<EquipmentItem>;
+public record UpdateEquipmentItemCommand(UpdateEquipmentItemDto UpdateEquipmentItemDto)
+    : IRequest<EquipmentItemUpdatedDto>;

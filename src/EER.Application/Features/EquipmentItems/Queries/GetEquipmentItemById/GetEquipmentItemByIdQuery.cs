@@ -1,6 +1,5 @@
-﻿using EER.Domain.Entities;
-using MediatR;
+﻿using MediatR;
 
 namespace EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
 
-public record GetEquipmentItemByIdQuery(long Id) : IRequest<EquipmentItem?>;
+public record GetEquipmentItemByIdQuery(long Id) : IRequest<EquipmentItemDetailsDto?>;

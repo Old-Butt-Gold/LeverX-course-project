@@ -1,37 +1,27 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using MediatR;
 
 namespace EER.Application.Features.EquipmentItems.Commands.CreateEquipmentItem;
 
-internal sealed class CreateEquipmentItemCommandHandler : IRequestHandler<CreateEquipmentItemCommand, EquipmentItem>
+internal sealed class CreateEquipmentItemCommandHandler : IRequestHandler<CreateEquipmentItemCommand, EquipmentItemCreatedDto>
 {
     private readonly IEquipmentItemRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateEquipmentItemCommandHandler(IEquipmentItemRepository repository)
+    public CreateEquipmentItemCommandHandler(IEquipmentItemRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<EquipmentItem> Handle(
-        CreateEquipmentItemCommand command,
-        CancellationToken cancellationToken)
+    public async Task<EquipmentItemCreatedDto> Handle(CreateEquipmentItemCommand command, CancellationToken cancellationToken)
     {
-        // TODO UpdatedBy
-        var item = new EquipmentItem
-        {
-            EquipmentId = command.EquipmentId,
-            OfficeId = command.OfficeId,
-            SerialNumber = command.SerialNumber,
-            ItemStatus = command.ItemStatus,
-            MaintenanceDate = command.MaintenanceDate,
-            PurchaseDate = command.PurchaseDate,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            CreatedBy = Guid.NewGuid(),
-            UpdatedBy = Guid.NewGuid(),
-        };
+        var item = _mapper.Map<EquipmentItem>(command.CreateEquipmentItemDto);
 
-        return await _repository.AddAsync(item, cancellationToken);
+        var createdItem = await _repository.AddAsync(item, cancellationToken);
+
+        return _mapper.Map<EquipmentItemCreatedDto>(createdItem);
     }
 }
