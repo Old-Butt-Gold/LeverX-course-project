@@ -51,7 +51,7 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
             .Set(o => o.Country, office.Country)
             .Set(o => o.IsActive, office.IsActive)
             .Set(o => o.UpdatedBy, office.UpdatedBy)
-            .Set(o => o.UpdatedAt, DateTime.UtcNow);
+            .Set(o => o.UpdatedAt, office.UpdatedAt);
 
         var options = new FindOneAndUpdateOptions<OfficeDocument>
         {

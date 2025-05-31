@@ -23,7 +23,8 @@ internal sealed class CreateUserCommandHandler : IRequestHandler<CreateUserComma
     {
         // TODO Email Unique with BadRequest later
 
-        var user = _mapper.Map<User>(command);
+        var user = _mapper.Map<User>(command.CreateUserDto);
+
         user.PasswordHash = _passwordHasher.HashPassword(command.CreateUserDto.Password);
 
         var createdUser = await _userRepository.AddAsync(user, cancellationToken);

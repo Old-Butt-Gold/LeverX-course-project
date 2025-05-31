@@ -4,7 +4,6 @@ using EER.Application.Features.Offices.Commands.DeleteOffice;
 using EER.Application.Features.Offices.Commands.UpdateOffice;
 using EER.Application.Features.Offices.Queries.GetAllOffices;
 using EER.Application.Features.Offices.Queries.GetOfficeById;
-using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ public sealed class OfficesController : ControllerBase
     /// <response code="200">Returns the list of offices.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<Office>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<OfficeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -49,7 +48,7 @@ public sealed class OfficesController : ControllerBase
     /// <response code="404">If the office with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Office), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfficeDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
@@ -71,20 +70,16 @@ public sealed class OfficesController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Office), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(OfficeCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(Office office, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateOfficeDto office, CancellationToken cancellationToken)
     {
-        var command = new CreateOfficeCommand(
-            office.OwnerId,
-            office.Address,
-            office.City,
-            office.Country,
-            office.IsActive);
+        var command = new CreateOfficeCommand(office);
 
         var createdOffice = await _sender.Send(command, cancellationToken);
+
         return CreatedAtAction(nameof(GetById), new { id = createdOffice.Id }, createdOffice);
     }
 
@@ -92,7 +87,6 @@ public sealed class OfficesController : ControllerBase
     /// <summary>
     /// Updates an existing office by ID.
     /// </summary>
-    /// <param name="id">The ID of the office to update.</param>
     /// <param name="updatedOffice">The updated office data.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated office.</returns>
@@ -101,14 +95,13 @@ public sealed class OfficesController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Office), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OfficeUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, Office updatedOffice, CancellationToken cancellationToken)
+    [HttpPut]
+    public async Task<IActionResult> Update(UpdateOfficeDto updatedOffice, CancellationToken cancellationToken)
     {
-        var command = new UpdateOfficeCommand(
-            id, updatedOffice);
+        var command = new UpdateOfficeCommand(updatedOffice);
 
         var office = await _sender.Send(command, cancellationToken);
         return Ok(office);

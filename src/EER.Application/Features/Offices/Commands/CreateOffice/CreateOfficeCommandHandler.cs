@@ -1,34 +1,27 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using MediatR;
 
 namespace EER.Application.Features.Offices.Commands.CreateOffice;
 
-internal sealed class CreateOfficeCommandHandler : IRequestHandler<CreateOfficeCommand, Office>
+internal sealed class CreateOfficeCommandHandler : IRequestHandler<CreateOfficeCommand, OfficeCreatedDto>
 {
     private readonly IOfficeRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateOfficeCommandHandler(IOfficeRepository repository)
+    public CreateOfficeCommandHandler(IOfficeRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Office> Handle(CreateOfficeCommand command, CancellationToken cancellationToken)
+    public async Task<OfficeCreatedDto> Handle(CreateOfficeCommand command, CancellationToken cancellationToken)
     {
-        // TODO UpdatedBy
-        var office = new Office
-        {
-            OwnerId = command.OwnerId,
-            Address = command.Address,
-            City = command.City,
-            Country = command.Country,
-            IsActive = command.IsActive,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            CreatedBy = Guid.NewGuid(),
-            UpdatedBy = Guid.NewGuid(),
-        };
+        var office = _mapper.Map<Office>(command.CreateOfficeDto);
 
-        return await _repository.AddAsync(office, cancellationToken);
+        var createdOffice = await _repository.AddAsync(office, cancellationToken);
+
+        return _mapper.Map<OfficeCreatedDto>(createdOffice);
     }
 }

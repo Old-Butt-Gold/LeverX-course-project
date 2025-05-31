@@ -24,7 +24,7 @@ internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserComma
         if (user is null)
             throw new KeyNotFoundException("User with provided ID is not found");
 
-        _mapper.Map(command, user);
+        _mapper.Map(command.UpdateUserDto, user);
 
         // TODO check if updated Email is unique still
 

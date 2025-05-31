@@ -7,10 +7,8 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<UpdateUserCommand, User>()
+        CreateMap<UpdateUserDto, User>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.UpdateUserDto.Email))
-            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.UpdateUserDto.FullName))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
             .ForMember(dest => dest.UserRole, opt => opt.Ignore())

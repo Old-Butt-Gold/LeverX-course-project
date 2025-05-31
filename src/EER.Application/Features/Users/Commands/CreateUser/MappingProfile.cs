@@ -7,9 +7,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<CreateUserCommand, User>()
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.CreateUserDto.Email))
-            .ForMember(dest => dest.UserRole, opt => opt.MapFrom(src => src.CreateUserDto.UserRole))
+        CreateMap<CreateUserDto, User>()
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
