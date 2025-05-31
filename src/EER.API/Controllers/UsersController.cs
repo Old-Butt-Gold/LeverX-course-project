@@ -4,7 +4,6 @@ using EER.Application.Features.Users.Commands.DeleteUser;
 using EER.Application.Features.Users.Commands.UpdateUser;
 using EER.Application.Features.Users.Queries.GetAllUsers;
 using EER.Application.Features.Users.Queries.GetUserById;
-using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +28,7 @@ public sealed class UsersController : ControllerBase
     /// <response code="200">Returns the list of users.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<User>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -49,7 +48,7 @@ public sealed class UsersController : ControllerBase
     /// <response code="404">If the user with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:guid}")]
@@ -71,17 +70,13 @@ public sealed class UsersController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(User), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(UserCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(User user, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateUserDto user, CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand(
-            user.Email,
-            user.FullName,
-            user.PasswordHash,
-            user.UserRole);
+        var command = new CreateUserCommand(user);
 
         var createdUser = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
@@ -91,7 +86,6 @@ public sealed class UsersController : ControllerBase
     /// <summary>
     /// Updates an existing user by ID.
     /// </summary>
-    /// <param name="id">The ID of the user to update.</param>
     /// <param name="updatedUser">The updated user data. Note: If PasswordHash is provided, it should be the plain password, which will be hashed by the server.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated user.</returns>
@@ -100,13 +94,13 @@ public sealed class UsersController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, User updatedUser, CancellationToken cancellationToken)
+    [HttpPut]
+    public async Task<IActionResult> Update(UpdateUserDto updatedUser, CancellationToken cancellationToken)
     {
-        var user = await _sender.Send(new UpdateUserCommand(id, updatedUser), cancellationToken);
+        var user = await _sender.Send(new UpdateUserCommand(updatedUser), cancellationToken);
         return Ok(user);
     }
 
