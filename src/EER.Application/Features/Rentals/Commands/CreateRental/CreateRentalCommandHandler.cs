@@ -1,36 +1,30 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
-using EER.Domain.Enums;
 using MediatR;
 
 namespace EER.Application.Features.Rentals.Commands.CreateRental;
 
-internal sealed class CreateRentalCommandHandler : IRequestHandler<CreateRentalCommand, Rental>
+internal sealed class CreateRentalCommandHandler
+    : IRequestHandler<CreateRentalCommand, RentalCreatedDto>
 {
     private readonly IRentalRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateRentalCommandHandler(IRentalRepository repository)
+    public CreateRentalCommandHandler(IRentalRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Rental> Handle(CreateRentalCommand command, CancellationToken cancellationToken)
+    public async Task<RentalCreatedDto> Handle(CreateRentalCommand command, CancellationToken cancellationToken)
     {
-        // TODO UpdatedBy
-        var rental = new Rental
-        {
-            OwnerId = command.OwnerId,
-            CustomerId = command.CustomerId,
-            StartDate = command.StartDate,
-            EndDate = command.EndDate,
-            TotalPrice = command.TotalPrice,
-            Status = RentalStatus.Pending,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = Guid.NewGuid(),
-            UpdatedAt = DateTime.UtcNow,
-            UpdatedBy = Guid.NewGuid(),
-        };
+        // TODO work with equipmentItems ids and array, set their ItemState as Active and etc.
+        // Total Price will be send as
+        var rental = _mapper.Map<Rental>(command.CreateRentalDto);
 
-        return await _repository.AddAsync(rental, cancellationToken);
+        var createdRental = await _repository.AddAsync(rental, cancellationToken);
+
+        return _mapper.Map<RentalCreatedDto>(createdRental);
     }
 }

@@ -33,8 +33,10 @@ internal sealed class EfRentalRepository : IRentalRepository
         return entry.Entity;
     }
 
-    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, CancellationToken cancellationToken = default)
     {
+        var id = rentalToUpdate.Id;
+
         var entity = await _context.Rentals.FindAsync([id], cancellationToken);
 
         if (entity is null)
@@ -42,9 +44,9 @@ internal sealed class EfRentalRepository : IRentalRepository
             throw new InvalidOperationException($"entity with ID '{id}' was not found.");
         }
 
-        entity.Status = status;
-        entity.UpdatedBy = updatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.Status = rentalToUpdate.Status;
+        entity.UpdatedBy = rentalToUpdate.UpdatedBy;
+        entity.UpdatedAt = rentalToUpdate.UpdatedAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 
