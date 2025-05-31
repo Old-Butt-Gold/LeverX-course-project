@@ -21,6 +21,7 @@ public class UpdateEquipmentCommandValidator : AbstractValidator<UpdateEquipment
             .MaximumLength(3000);
 
         RuleFor(x => x.UpdateEquipmentDto.PricePerDay)
-            .GreaterThan(0).WithMessage("Price per day must be greater than 0");
+            .GreaterThan(0).WithMessage("Price per day must be greater than 0")
+            .LessThanOrEqualTo(99999.99m).WithMessage("Price per day cannot exceed 99999.99");
     }
 }

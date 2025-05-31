@@ -19,7 +19,7 @@ public class CreateRentalCommandValidator : AbstractValidator<CreateRentalComman
 
         RuleFor(x => x.CreateRentalDto.EndDate)
             .NotEmpty().WithMessage("End date is required")
-            .GreaterThan(x => x.CreateRentalDto.StartDate)
-            .WithMessage("End date must be after start date");
+            .Must((command, endDate) => endDate.Date > command.CreateRentalDto.StartDate.Date)
+            .WithMessage("End date must be at least 1 day after start date");
     }
 }

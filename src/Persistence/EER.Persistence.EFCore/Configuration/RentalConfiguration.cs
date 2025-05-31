@@ -36,7 +36,7 @@ public class RentalConfiguration : IEntityTypeConfiguration<Rental>
             .HasMaxLength(255)
             .HasDefaultValue(RentalStatus.Pending);
 
-        entity.Property(e => e.TotalPrice).HasColumnType("decimal(9, 2)");
+        entity.Property(e => e.TotalPrice).HasColumnType("decimal(10, 2)");
         entity.Property(e => e.UpdatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");
