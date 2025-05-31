@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
@@ -7,9 +8,9 @@ namespace EER.Persistence.Dapper.Repositories;
 
 internal sealed class DapperEquipmentRepository : IEquipmentRepository
 {
-    private readonly IDbConnection _connection;
+    private readonly DbConnection _connection;
 
-    public DapperEquipmentRepository(IDbConnection connection)
+    public DapperEquipmentRepository(DbConnection connection)
     {
         _connection = connection;
     }

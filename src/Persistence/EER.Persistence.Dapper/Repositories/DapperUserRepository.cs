@@ -8,9 +8,9 @@ namespace EER.Persistence.Dapper.Repositories;
 
 internal sealed class DapperUserRepository : IUserRepository
 {
-    private readonly IDbConnection _connection;
+    private readonly DbConnection _connection;
 
-    public DapperUserRepository(IDbConnection connection)
+    public DapperUserRepository(DbConnection connection)
     {
         _connection = connection;
     }
