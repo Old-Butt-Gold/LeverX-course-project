@@ -13,6 +13,7 @@ public static class ServiceExtensions
             config.RegisterServicesFromAssembly(typeof(AssemblyReference).Assembly);
 
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            config.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
     }
 
