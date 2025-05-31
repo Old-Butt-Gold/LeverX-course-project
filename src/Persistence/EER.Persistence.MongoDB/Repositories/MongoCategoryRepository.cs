@@ -50,7 +50,7 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
             .Set(c => c.Description, category.Description)
             .Set(c => c.Slug, category.Slug)
             .Set(c => c.UpdatedBy, category.UpdatedBy)
-            .Set(c => c.UpdatedAt, DateTime.UtcNow);
+            .Set(c => c.UpdatedAt, category.UpdatedAt);
 
         var options = new FindOneAndUpdateOptions<CategoryDocument>
         {

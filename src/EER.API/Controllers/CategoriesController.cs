@@ -29,7 +29,7 @@ public sealed class CategoriesController : ControllerBase
     /// <response code="200">Returns the list of categories.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(IEnumerable<Category>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ public sealed class CategoriesController : ControllerBase
     /// <response code="404">If the category with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Category), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CategoryDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
@@ -70,17 +70,13 @@ public sealed class CategoriesController : ControllerBase
     /// <response code="400">If the category data is invalid.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
-    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Category), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CategoryCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(Category category, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create([FromBody] CreateCategoryDto category, CancellationToken cancellationToken)
     {
-        var command = new CreateCategoryCommand(
-            category.Name,
-            category.Description,
-            category.Slug);
+        var command = new CreateCategoryCommand(category);
 
         var createdCategory = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
@@ -90,7 +86,6 @@ public sealed class CategoriesController : ControllerBase
     /// <summary>
     /// Updates an existing category by ID.
     /// </summary>
-    /// <param name="id">The ID of the category to update.</param>
     /// <param name="updatedCategory">The updated category data.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated category.</returns>
@@ -99,13 +94,15 @@ public sealed class CategoriesController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Category), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CategoryUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, Category updatedCategory, CancellationToken cancellationToken)
+    [HttpPut()]
+    public async Task<IActionResult> Update(UpdateCategoryDto updatedCategory, CancellationToken cancellationToken)
     {
-        var category = await _sender.Send(new UpdateCategoryCommand(id, updatedCategory), cancellationToken);
+        var command = new UpdateCategoryCommand(updatedCategory);
+
+        var category = await _sender.Send(command, cancellationToken);
         return Ok(category);
     }
 
