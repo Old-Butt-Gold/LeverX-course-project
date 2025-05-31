@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
@@ -27,13 +26,6 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
         const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Equipment>(
             new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
-    }
-
-    public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
-    {
-        const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE CategoryId = @CategoryId";
-        return await _connection.QueryAsync<Equipment>(
-            new CommandDefinition(sql, new { CategoryId = categoryId }, cancellationToken: cancellationToken));
     }
 
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)

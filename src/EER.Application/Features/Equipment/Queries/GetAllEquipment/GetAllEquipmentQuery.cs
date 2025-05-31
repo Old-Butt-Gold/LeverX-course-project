@@ -2,4 +2,4 @@
 
 namespace EER.Application.Features.Equipment.Queries.GetAllEquipment;
 
-public record GetAllEquipmentQuery : IRequest<IEnumerable<Domain.Entities.Equipment>>;
+public record GetAllEquipmentQuery : IRequest<IEnumerable<EquipmentDto>>;

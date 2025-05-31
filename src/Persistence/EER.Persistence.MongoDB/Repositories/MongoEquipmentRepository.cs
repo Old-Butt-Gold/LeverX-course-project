@@ -1,7 +1,6 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Equipment;
-using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -33,21 +32,15 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken ct = default)
-    {
-        var documents = await _collection
-            .Find(e => e.CategoryId == categoryId)
-            .ToListAsync(ct);
-
-        return documents.Select(MapToEntity);
-    }
-
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken ct = default)
     {
         equipment.Id = await _idGenerator.GetNextIdAsync(_settings.EquipmentCollection);
 
         var document = MapToDocument(equipment);
         await _collection.InsertOneAsync(document, cancellationToken: ct);
+
+        // TODO Update count in Category by plus 1
+
         return MapToEntity(document);
     }
 
@@ -58,11 +51,10 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         var update = Builders<EquipmentDocument>.Update
             .Set(e => e.Name, equipment.Name)
             .Set(e => e.CategoryId, equipment.CategoryId)
-            .Set(e => e.IsModerated, equipment.IsModerated)
             .Set(e => e.Description, equipment.Description)
             .Set(e => e.PricePerDay, equipment.PricePerDay)
             .Set(e => e.UpdatedBy, equipment.UpdatedBy)
-            .Set(e => e.UpdatedAt, DateTime.UtcNow);
+            .Set(e => e.UpdatedAt, equipment.UpdatedAt);
 
         var options = new FindOneAndUpdateOptions<EquipmentDocument>
         {
@@ -78,6 +70,9 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
         var result = await _collection.DeleteOneAsync(e => e.Id == id, ct);
+
+        // TODO Update count in Category by minus 1
+
         return result.DeletedCount > 0;
     }
 

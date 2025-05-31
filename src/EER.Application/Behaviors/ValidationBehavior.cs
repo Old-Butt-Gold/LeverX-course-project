@@ -3,8 +3,8 @@ using MediatR;
 
 namespace EER.Application.Behaviors;
 
-public class ValidationBehavior<TRequest, TRespone> : IPipelineBehavior<TRequest, TRespone>
-    where TRequest : IRequest<TRespone>
+public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 
@@ -13,7 +13,7 @@ public class ValidationBehavior<TRequest, TRespone> : IPipelineBehavior<TRequest
         _validators = validators;
     }
 
-    public async Task<TRespone> Handle(TRequest request, RequestHandlerDelegate<TRespone> next,
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         if (!_validators.Any())

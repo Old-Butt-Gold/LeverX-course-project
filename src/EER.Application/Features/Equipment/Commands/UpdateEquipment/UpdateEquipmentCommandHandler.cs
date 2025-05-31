@@ -1,37 +1,33 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.Equipment.Commands.UpdateEquipment;
 
-internal sealed class UpdateEquipmentCommandHandler : IRequestHandler<UpdateEquipmentCommand, Domain.Entities.Equipment>
+internal sealed class UpdateEquipmentCommandHandler : IRequestHandler<UpdateEquipmentCommand, EquipmentUpdatedDto>
 {
     private readonly IEquipmentRepository _repository;
+    private readonly IMapper _mapper;
 
-    public UpdateEquipmentCommandHandler(IEquipmentRepository repository)
+    public UpdateEquipmentCommandHandler(IEquipmentRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Domain.Entities.Equipment> Handle(
-        UpdateEquipmentCommand command,
-        CancellationToken cancellationToken)
+    public async Task<EquipmentUpdatedDto> Handle(UpdateEquipmentCommand command, CancellationToken cancellationToken)
     {
-        var equipment = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var updateDto = command.UpdateEquipmentDto;
+
+        var equipment = await _repository.GetByIdAsync(updateDto.Id, cancellationToken);
 
         if (equipment is null)
-            throw new KeyNotFoundException("Equipment with provided ID is not found");
+            throw new KeyNotFoundException($"Equipment with ID {updateDto.Id} not found");
 
-        var updatedEquipment = command.Equipment;
+        _mapper.Map(updateDto, equipment);
 
-        // TODO UpdatedBy
+        var updatedEquipment = await _repository.UpdateAsync(equipment, cancellationToken);
 
-        equipment.Name = updatedEquipment.Name;
-        equipment.CategoryId = updatedEquipment.CategoryId;
-        equipment.Description = updatedEquipment.Description;
-        equipment.PricePerDay = updatedEquipment.PricePerDay;
-        equipment.UpdatedAt = DateTime.UtcNow;
-        equipment.UpdatedBy = Guid.NewGuid();
-
-        return await _repository.UpdateAsync(equipment, cancellationToken);
+        return _mapper.Map<EquipmentUpdatedDto>(updatedEquipment);
     }
 }
