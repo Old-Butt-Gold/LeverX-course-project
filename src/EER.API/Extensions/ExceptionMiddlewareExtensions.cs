@@ -36,10 +36,8 @@ public static class ExceptionMiddlewareExtensions
                 var problemDetailsFactory = context.RequestServices.GetRequiredService<ProblemDetailsFactory>();
                 object pd;
 
-                // Специальная обработка для ValidationException
                 if (contextFeature.Error is ValidationException validationException)
                 {
-                    // Создаем словарь ошибок валидации
                     var modelStateDict = new ModelStateDictionary();
                     foreach (var error in validationException.Errors)
                     {
