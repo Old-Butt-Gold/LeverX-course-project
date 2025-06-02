@@ -1,34 +1,27 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.Equipment.Commands.CreateEquipment;
 
-internal sealed class CreateEquipmentCommandHandler : IRequestHandler<CreateEquipmentCommand, Domain.Entities.Equipment>
+internal sealed class CreateEquipmentCommandHandler : IRequestHandler<CreateEquipmentCommand, EquipmentCreatedDto>
 {
     private readonly IEquipmentRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateEquipmentCommandHandler(IEquipmentRepository repository)
+    public CreateEquipmentCommandHandler(IEquipmentRepository repository, IMapper mapper)
     {
         _repository = repository;
+
+        _mapper = mapper;
     }
 
-    public async Task<Domain.Entities.Equipment> Handle(CreateEquipmentCommand command, CancellationToken cancellationToken)
+    public async Task<EquipmentCreatedDto> Handle(CreateEquipmentCommand command, CancellationToken cancellationToken)
     {
-        // TODO UpdatedBy
-        var equipment = new Domain.Entities.Equipment
-        {
-            Name = command.Name,
-            CategoryId = command.CategoryId,
-            OwnerId = command.OwnerId,
-            Description = command.Description,
-            PricePerDay = command.PricePerDay,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            CreatedBy = Guid.NewGuid(),
-            UpdatedBy = Guid.NewGuid(),
-            IsModerated = false,
-        };
+        var equipment = _mapper.Map<Domain.Entities.Equipment>(command.CreateEquipmentDto);
 
-        return await _repository.AddAsync(equipment, cancellationToken);
+        var createdEquipment = await _repository.AddAsync(equipment, cancellationToken);
+
+        return _mapper.Map<EquipmentCreatedDto>(createdEquipment);
     }
 }

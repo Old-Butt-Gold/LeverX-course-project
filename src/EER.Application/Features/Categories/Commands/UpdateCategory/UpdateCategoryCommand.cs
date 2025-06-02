@@ -1,6 +1,5 @@
-﻿using EER.Domain.Entities;
-using MediatR;
+﻿using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
 
-public record UpdateCategoryCommand(int Id, Category Category) : IRequest<Category>;
+public record UpdateCategoryCommand(UpdateCategoryDto UpdateCategoryDto) : IRequest<CategoryUpdatedDto>;

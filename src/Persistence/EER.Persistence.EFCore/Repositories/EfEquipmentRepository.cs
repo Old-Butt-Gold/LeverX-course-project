@@ -23,11 +23,6 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
         return await _context.Equipment.FindAsync([id], cancellationToken);
     }
 
-    public async Task<IEnumerable<Equipment>> GetByCategoryAsync(int categoryId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Equipment.Where(e => e.CategoryId == categoryId).ToListAsync(cancellationToken);
-    }
-
     public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Equipment.AddAsync(equipment, cancellationToken);

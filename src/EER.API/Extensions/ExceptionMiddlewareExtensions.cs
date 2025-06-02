@@ -1,7 +1,11 @@
 ﻿using System.Net.Mime;
 using System.Xml.Serialization;
+using EER.API.ProblemDetailsXml;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Net.Http.Headers;
 
 namespace EER.API.Extensions;
@@ -21,6 +25,7 @@ public static class ExceptionMiddlewareExtensions
 
                 var statusCode = contextFeature.Error switch
                 {
+                    ValidationException => StatusCodes.Status400BadRequest,
                     KeyNotFoundException => StatusCodes.Status404NotFound,
                     OperationCanceledException => StatusCodes.Status499ClientClosedRequest,
                     _ => StatusCodes.Status500InternalServerError
@@ -29,38 +34,38 @@ public static class ExceptionMiddlewareExtensions
                 context.Response.StatusCode = statusCode;
 
                 var problemDetailsFactory = context.RequestServices.GetRequiredService<ProblemDetailsFactory>();
-                var pd = problemDetailsFactory.CreateProblemDetails(
-                    context,
-                    statusCode: statusCode,
-                    detail: contextFeature.Error.Message,
-                    instance: context.Request.Path
-                );
+                object pd;
+
+                if (contextFeature.Error is ValidationException validationException)
+                {
+                    var modelStateDict = new ModelStateDictionary();
+                    foreach (var error in validationException.Errors)
+                    {
+                        modelStateDict.AddModelError(error.PropertyName, error.ErrorMessage);
+                    }
+
+                    pd = problemDetailsFactory.CreateValidationProblemDetails(
+                        context,
+                        modelStateDict,
+                        statusCode: statusCode,
+                        detail: "Validation failed: ",
+                        instance: context.Request.Path
+                    );
+                }
+                else
+                {
+                    pd = problemDetailsFactory.CreateProblemDetails(
+                        context,
+                        statusCode: statusCode,
+                        detail: contextFeature.Error.Message,
+                        instance: context.Request.Path
+                    );
+                }
 
                 var acceptHeader = context.Request.Headers[HeaderNames.Accept].ToString();
                 if (acceptHeader.Contains(MediaTypeNames.Application.Xml, StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.ContentType = MediaTypeNames.Application.Xml;
-
-                    var xmlPd = new ProblemDetailsXml
-                    {
-                        Type = pd.Type,
-                        Title = pd.Title,
-                        Status = pd.Status,
-                        Detail = pd.Detail,
-                        Instance = pd.Instance,
-                        Extensions = pd.Extensions.Select(e => new ExtensionEntry
-                        {
-                            Key = e.Key,
-                            Value = e.Value?.ToString()
-                        })
-                            .ToList(),
-                    };
-
-                    await using var memoryStream = new MemoryStream();
-                    var xmlSerializer = new XmlSerializer(typeof(ProblemDetailsXml));
-                    xmlSerializer.Serialize(memoryStream, xmlPd);
-                    memoryStream.Position = 0;
-                    await memoryStream.CopyToAsync(context.Response.Body);
+                    await SerializeXmlResponse(context, pd);
                 }
                 else
                 {
@@ -71,24 +76,39 @@ public static class ExceptionMiddlewareExtensions
         });
     }
 
-    [XmlRoot("ProblemDetails")]
-    public class ProblemDetailsXml
+    private static async Task SerializeXmlResponse(HttpContext context, object problemDetails)
     {
-        public ProblemDetailsXml() { }
-        public string? Type { get; set; }
-        public string? Title { get; set; }
-        public int? Status { get; set; }
-        public string? Detail { get; set; }
-        public string? Instance { get; set; }
-        public List<ExtensionEntry>? Extensions { get; set; }
-    }
+        context.Response.ContentType = MediaTypeNames.Application.Xml;
+        var xmlPd = new ProblemDetailsXml.ProblemDetailsXml();
 
-    public class ExtensionEntry
-    {
-        [XmlAttribute("key")]
-        public string? Key { get; set; }
+        if (problemDetails is ProblemDetails basePd)
+        {
+            xmlPd.Type = basePd.Type;
+            xmlPd.Title = basePd.Title;
+            xmlPd.Status = basePd.Status;
+            xmlPd.Detail = basePd.Detail;
+            xmlPd.Instance = basePd.Instance;
 
-        [XmlText]
-        public string? Value { get; set; }
+            xmlPd.Extensions = basePd.Extensions
+                .Select(e => new ExtensionEntry { Key = e.Key, Value = e.Value?.ToString() })
+                .ToList();
+        }
+
+        if (problemDetails is ValidationProblemDetails validationPd && validationPd.Errors.Any())
+        {
+            xmlPd.ValidationErrors = validationPd.Errors
+                .Select(e => new ValidationErrorEntry
+                {
+                    Field = e.Key,
+                    Messages = e.Value
+                })
+                .ToList();
+        }
+
+        await using var memoryStream = new MemoryStream();
+        var xmlSerializer = new XmlSerializer(typeof(ProblemDetailsXml.ProblemDetailsXml));
+        xmlSerializer.Serialize(memoryStream, xmlPd);
+        memoryStream.Position = 0;
+        await memoryStream.CopyToAsync(context.Response.Body);
     }
 }

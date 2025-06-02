@@ -14,7 +14,7 @@ public class RentalItemConfiguration : IEntityTypeConfiguration<RentalItem>
 
         entity.HasIndex(e => e.EquipmentItemId, "FK_RentalItem_EquipmentItemId");
 
-        entity.Property(e => e.ActualPrice).HasColumnType("decimal(8, 2)");
+        entity.Property(e => e.ActualPrice).HasColumnType("decimal(7, 2)");
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");

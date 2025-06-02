@@ -1,20 +1,24 @@
-﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.Offices.Queries.GetAllOffices;
 
-internal sealed class GetAllOfficesQueryHandler : IRequestHandler<GetAllOfficesQuery, IEnumerable<Office>>
+internal sealed class GetAllOfficesQueryHandler : IRequestHandler<GetAllOfficesQuery, IEnumerable<OfficeDto>>
 {
     private readonly IOfficeRepository _repository;
+    private readonly IMapper _mapper;
 
-    public GetAllOfficesQueryHandler(IOfficeRepository repository)
+    public GetAllOfficesQueryHandler(IOfficeRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Office>> Handle(GetAllOfficesQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<OfficeDto>> Handle(GetAllOfficesQuery request, CancellationToken cancellationToken)
     {
-        return await _repository.GetAllAsync(cancellationToken);
+        var offices = await _repository.GetAllAsync(cancellationToken);
+
+        return _mapper.Map<IEnumerable<OfficeDto>>(offices);
     }
 }

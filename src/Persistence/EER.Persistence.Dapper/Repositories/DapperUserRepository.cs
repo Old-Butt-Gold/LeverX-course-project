@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
@@ -8,9 +7,9 @@ namespace EER.Persistence.Dapper.Repositories;
 
 internal sealed class DapperUserRepository : IUserRepository
 {
-    private readonly IDbConnection _connection;
+    private readonly DbConnection _connection;
 
-    public DapperUserRepository(IDbConnection connection)
+    public DapperUserRepository(DbConnection connection)
     {
         _connection = connection;
     }
@@ -31,16 +30,15 @@ internal sealed class DapperUserRepository : IUserRepository
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
     {
         const string sql = """
-                               INSERT INTO [Identity].[User] (Email, PasswordHash, FullName, UserRole)
+                               INSERT INTO [Identity].[User] (Email, PasswordHash, UserRole)
                                OUTPUT INSERTED.*
-                               VALUES (@Email, @PasswordHash, @FullName, @UserRole)
+                               VALUES (@Email, @PasswordHash, @UserRole)
                            """;
 
         var parameters = new
         {
             user.Email,
             user.PasswordHash,
-            user.FullName,
             UserRole = user.UserRole.ToString()
         };
 
@@ -55,7 +53,6 @@ internal sealed class DapperUserRepository : IUserRepository
                                 SET
                                     Email = @Email,
                                     FullName = @FullName,
-                                    UserRole = @UserRole,
                                     UpdatedAt = @UpdatedAt
                                 OUTPUT INSERTED.*
                                 WHERE Id = @Id
@@ -67,7 +64,6 @@ internal sealed class DapperUserRepository : IUserRepository
             user.Email,
             user.FullName,
             user.UpdatedAt,
-            UserRole = user.UserRole.ToString()
         };
 
         return await _connection.QuerySingleAsync<User>(

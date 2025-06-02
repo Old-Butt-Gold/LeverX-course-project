@@ -24,7 +24,8 @@ public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
         {
             var response = await next(cancellationToken);
             stopwatch.Stop();
-            _logger.LogInformation("[END] Handled {RequestName} successfully in {ElapsedMilliseconds:0.0000}ms", requestName, stopwatch.ElapsedMilliseconds);
+            _logger.LogInformation("[END] Handled {RequestName} successfully in {ElapsedMilliseconds:0.0000}ms",
+                requestName, stopwatch.Elapsed.TotalMilliseconds);
             return response;
         }
         catch

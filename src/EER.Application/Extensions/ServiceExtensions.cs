@@ -1,4 +1,5 @@
 ﻿using EER.Application.Behaviors;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EER.Application.Extensions;
@@ -12,6 +13,17 @@ public static class ServiceExtensions
             config.RegisterServicesFromAssembly(typeof(AssemblyReference).Assembly);
 
             config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+            config.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
+    }
+
+    public static void ConfigureAutoMapper(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddAutoMapper(typeof(AssemblyReference).Assembly);
+    }
+
+    public static void ConfigureFluentValidation(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddValidatorsFromAssemblyContaining(typeof(AssemblyReference));
     }
 }

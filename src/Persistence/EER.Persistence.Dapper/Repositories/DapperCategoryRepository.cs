@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
@@ -8,9 +9,9 @@ namespace EER.Persistence.Dapper.Repositories;
 // if need can inject interface of other repositories
 internal sealed class DapperCategoryRepository : ICategoryRepository
 {
-    private readonly IDbConnection _connection;
+    private readonly DbConnection _connection;
 
-    public DapperCategoryRepository(IDbConnection connection)
+    public DapperCategoryRepository(DbConnection connection)
     {
         _connection = connection;
     }

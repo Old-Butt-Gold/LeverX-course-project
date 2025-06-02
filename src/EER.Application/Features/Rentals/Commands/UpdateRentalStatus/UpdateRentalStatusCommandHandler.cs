@@ -1,29 +1,37 @@
-﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.Rentals.Commands.UpdateRentalStatus;
 
-internal sealed class UpdateRentalStatusCommandHandler : IRequestHandler<UpdateRentalStatusCommand, Rental>
+internal sealed class UpdateRentalStatusCommandHandler
+    : IRequestHandler<UpdateRentalStatusCommand, RentalUpdatedDto>
 {
     private readonly IRentalRepository _repository;
+    private readonly IMapper _mapper;
 
-    public UpdateRentalStatusCommandHandler(IRentalRepository repository)
+    public UpdateRentalStatusCommandHandler(IRentalRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Rental> Handle(UpdateRentalStatusCommand command, CancellationToken cancellationToken)
+    public async Task<RentalUpdatedDto> Handle(UpdateRentalStatusCommand command, CancellationToken cancellationToken)
     {
-        var existingRental = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var dto = command.UpdateRentalDto;
+
+        var existingRental = await _repository.GetByIdAsync(dto.Id, cancellationToken);
 
         if (existingRental is null)
-            throw new KeyNotFoundException("Rental with provided ID is not found");
+            throw new KeyNotFoundException($"Rental with provided ID {dto.Id} is not found");
 
-        // TODO UpdatedBy
+        // TODO Add if existingRental.Status is [Canceled, Completed] then throw exception that you can't change
+        // status of this rental anymore
 
-        return await _repository.UpdateStatusAsync(
-            command.Id, command.Status,
-            Guid.NewGuid(), cancellationToken);
+        _mapper.Map(dto, existingRental);
+
+        var updatedRental = await _repository.UpdateStatusAsync(existingRental, cancellationToken);
+
+        return _mapper.Map<RentalUpdatedDto>(updatedRental);
     }
 }

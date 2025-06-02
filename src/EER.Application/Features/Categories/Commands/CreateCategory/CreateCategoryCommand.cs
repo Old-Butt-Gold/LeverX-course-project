@@ -1,8 +1,6 @@
-﻿using EER.Domain.Entities;
+﻿using EER.Application.Features.Categories.Queries.GetAllCategories;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.CreateCategory;
 
-public record CreateCategoryCommand(string Name,
-    string Description,
-    string Slug) : IRequest<Category>;
+public record CreateCategoryCommand(CreateCategoryDto CreateCategoryDto) : IRequest<CategoryCreatedDto>;

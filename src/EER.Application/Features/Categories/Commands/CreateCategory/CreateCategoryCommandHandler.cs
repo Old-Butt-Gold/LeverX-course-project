@@ -1,32 +1,29 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using AutoMapper;
+using EER.Application.Features.Categories.Queries.GetAllCategories;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.CreateCategory;
 
-internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Category>
+internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryCreatedDto>
 {
     private readonly ICategoryRepository _repository;
+    private readonly IMapper _mapper;
 
-    public CreateCategoryCommandHandler(ICategoryRepository repository)
+    public CreateCategoryCommandHandler(ICategoryRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Category> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
+    public async Task<CategoryCreatedDto> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
     {
-        // TODO UpdatedBy
-        var category = new Category
-        {
-            Name = command.Name,
-            Description = command.Description,
-            Slug = command.Slug,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            CreatedBy = Guid.NewGuid(),
-            UpdatedBy = Guid.NewGuid(),
-        };
+        // TODO Later if Slug is unique check
+        var category = _mapper.Map<Category>(command.CreateCategoryDto);
 
-        return await _repository.AddAsync(category, cancellationToken);
+        var createdCategory = await _repository.AddAsync(category, cancellationToken);
+
+        return _mapper.Map<CategoryCreatedDto>(createdCategory);
     }
 }

@@ -3,7 +3,6 @@ using EER.Application.Features.Equipment.Commands.CreateEquipment;
 using EER.Application.Features.Equipment.Commands.DeleteEquipment;
 using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
-using EER.Application.Features.Equipment.Queries.GetEquipmentByCategory;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
 using EER.Domain.Entities;
 using MediatR;
@@ -31,7 +30,7 @@ public sealed class EquipmentController : ControllerBase
     /// <response code="200">Returns the list of equipment items.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<EquipmentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -51,7 +50,7 @@ public sealed class EquipmentController : ControllerBase
     /// <response code="404">If the equipment with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EquipmentDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
@@ -59,27 +58,6 @@ public sealed class EquipmentController : ControllerBase
     {
         var item = await _sender.Send(new GetEquipmentByIdQuery(id), cancellationToken);
         return item is not null ? Ok(item) : NotFound();
-    }
-
-    // GET: api/equipment/category/1
-    /// <summary>
-    /// Retrieves all equipment items by category ID.
-    /// </summary>
-    /// <param name="categoryId">The ID of the category to filter by.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A list of equipment items in the specified category.</returns>
-    /// <response code="200">Returns the list of equipment items in the category.</response>
-    /// <response code="404">If no equipment is found for the specified category.</response>
-    /// <response code="406">The requested content type is not supported.</response>
-    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<Equipment>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpGet("category/{categoryId:int}")]
-    public async Task<IActionResult> GetByCategory(int categoryId, CancellationToken cancellationToken)
-    {
-        var items = await _sender.Send(new GetEquipmentByCategoryQuery(categoryId), cancellationToken);
-        return items.Any() ? Ok(items) : NotFound();
     }
 
     // POST: api/equipment
@@ -94,19 +72,13 @@ public sealed class EquipmentController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Equipment), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(EquipmentCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(Equipment equipment, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateEquipmentDto equipment, CancellationToken cancellationToken)
     {
-        var command = new CreateEquipmentCommand(
-            equipment.Name,
-            equipment.CategoryId,
-            equipment.OwnerId,
-            equipment.Description,
-            equipment.PricePerDay);
-
+        var command = new CreateEquipmentCommand(equipment);
         var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
@@ -115,7 +87,6 @@ public sealed class EquipmentController : ControllerBase
     /// <summary>
     /// Updates an existing equipment item by ID.
     /// </summary>
-    /// <param name="id">The ID of the equipment to update.</param>
     /// <param name="updatedEquipment">The updated equipment data.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>The updated equipment item.</returns>
@@ -124,14 +95,15 @@ public sealed class EquipmentController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Equipment), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EquipmentUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, Equipment updatedEquipment, CancellationToken cancellationToken)
+    [HttpPut]
+    public async Task<IActionResult> Update(UpdateEquipmentDto updatedEquipment, CancellationToken cancellationToken)
     {
-        var updatedItem = await _sender.Send(new UpdateEquipmentCommand(id, updatedEquipment), cancellationToken);
-        return Ok(updatedItem);
+        var command = new UpdateEquipmentCommand(updatedEquipment);
+        var result = await _sender.Send(command, cancellationToken);
+        return Ok(result);
     }
 
     // DELETE: api/equipment/1

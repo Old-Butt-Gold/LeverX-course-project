@@ -1,37 +1,33 @@
-﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
+﻿using AutoMapper;
+using EER.Domain.DatabaseAbstractions;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
 
-internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, Category>
+internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, CategoryUpdatedDto>
 {
     private readonly ICategoryRepository _repository;
+    private readonly IMapper _mapper;
 
-    public UpdateCategoryCommandHandler(ICategoryRepository repository)
+    public UpdateCategoryCommandHandler(ICategoryRepository repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
-    public async Task<Category> Handle(
-        UpdateCategoryCommand command,
-        CancellationToken cancellationToken)
+    public async Task<CategoryUpdatedDto> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
     {
-        var category = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var category = await _repository.GetByIdAsync(command.UpdateCategoryDto.Id, cancellationToken);
 
         if (category is null)
-            throw new KeyNotFoundException("Category with provided ID is not found");
+            throw new KeyNotFoundException($"Category with ID {command.UpdateCategoryDto.Id} not found");
 
-        var updatedCategory = command.Category;
+        // TODO check if Slug is still unique
 
-        // TODO UpdatedBy
+        _mapper.Map(command.UpdateCategoryDto, category);
 
-        category.Name = updatedCategory.Name;
-        category.Description = updatedCategory.Description;
-        category.Slug = updatedCategory.Slug;
-        category.UpdatedBy = Guid.NewGuid();
-        category.UpdatedAt = DateTime.UtcNow;
+        var updatedCategory = await _repository.UpdateAsync(category, cancellationToken);
 
-        return await _repository.UpdateAsync(category, cancellationToken);
+        return _mapper.Map<CategoryUpdatedDto>(updatedCategory);
     }
 }

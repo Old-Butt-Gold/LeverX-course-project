@@ -1,6 +1,5 @@
-﻿using EER.Domain.Entities;
-using MediatR;
+﻿using MediatR;
 
 namespace EER.Application.Features.Rentals.Queries.GetRentalById;
 
-public record GetRentalByIdQuery(int Id) : IRequest<Rental?>;
+public record GetRentalByIdQuery(int Id) : IRequest<RentalDetailsDto?>;

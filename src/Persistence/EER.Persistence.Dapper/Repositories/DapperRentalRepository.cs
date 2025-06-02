@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
@@ -8,9 +9,9 @@ namespace EER.Persistence.Dapper.Repositories;
 
 internal sealed class DapperRentalRepository : IRentalRepository
 {
-    private readonly IDbConnection _connection;
+    private readonly DbConnection _connection;
 
-    public DapperRentalRepository(IDbConnection connection)
+    public DapperRentalRepository(DbConnection connection)
     {
         _connection = connection;
     }
@@ -59,7 +60,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
             new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
     }
 
-    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
@@ -102,10 +103,10 @@ internal sealed class DapperRentalRepository : IRentalRepository
         return await _connection.QuerySingleAsync<Rental>(
             new CommandDefinition(sql, new
             {
-                Id = id,
-                UpdatedAt = DateTime.UtcNow,
-                Status = status.ToString(),
-                UpdatedBy = updatedBy,
+                rentalToUpdate.Id,
+                rentalToUpdate.UpdatedAt,
+                Status = rentalToUpdate.Status.ToString(),
+                rentalToUpdate.UpdatedBy,
             }, cancellationToken: cancellationToken));
     }
 

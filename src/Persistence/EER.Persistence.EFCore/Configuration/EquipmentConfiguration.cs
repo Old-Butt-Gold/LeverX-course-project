@@ -21,6 +21,8 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
             tb.HasTrigger("TRG_Equipment_AfterUpdate");
         });
 
+        entity.HasIndex(e => e.IsModerated, "IX_Equipment_IsModerated");
+
         entity.HasIndex(e => e.CategoryId, "FK_Equipment_CategoryId");
 
         entity.HasIndex(e => e.OwnerId, "FK_Equipment_OwnerId");
@@ -39,7 +41,7 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
             .HasDefaultValueSql("(getutcdate())");
         entity.Property(e => e.Description).HasMaxLength(3000);
         entity.Property(e => e.Name).HasMaxLength(100);
-        entity.Property(e => e.PricePerDay).HasColumnType("decimal(8, 2)");
+        entity.Property(e => e.PricePerDay).HasColumnType("decimal(7, 2)");
         entity.Property(e => e.UpdatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");

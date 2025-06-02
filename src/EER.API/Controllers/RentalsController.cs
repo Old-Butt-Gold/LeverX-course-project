@@ -5,7 +5,6 @@ using EER.Application.Features.Rentals.Commands.UpdateRentalStatus;
 using EER.Application.Features.Rentals.Queries.GetAllRentals;
 using EER.Application.Features.Rentals.Queries.GetRentalById;
 using EER.Domain.Entities;
-using EER.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +29,7 @@ public sealed class RentalsController : ControllerBase
     /// <response code="200">Returns the list of rentals.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(List<Rental>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<RentalDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -50,7 +49,7 @@ public sealed class RentalsController : ControllerBase
     /// <response code="404">If the rental with the specified ID is not found.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RentalDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
@@ -72,18 +71,13 @@ public sealed class RentalsController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Rental), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(RentalCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    public async Task<IActionResult> Create(Rental rental, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateRentalDto rental, CancellationToken cancellationToken)
     {
-        var command = new CreateRentalCommand(
-            rental.OwnerId,
-            rental.CustomerId,
-            rental.StartDate,
-            rental.EndDate,
-            rental.TotalPrice);
+        var command = new CreateRentalCommand(rental);
 
         var createdRental = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
@@ -93,8 +87,7 @@ public sealed class RentalsController : ControllerBase
     /// <summary>
     /// Updates the status of an existing rental by ID.
     /// </summary>
-    /// <param name="id">The ID of the rental to update.</param>
-    /// <param name="status">The status that rental object will be setting as new status.</param>
+    /// <param name="rentalDto">The dto that required ID of rental and RentalStatus to change as new status.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated rental.</returns>
     /// <response code="200">Returns the updated rental.</response>
@@ -102,13 +95,14 @@ public sealed class RentalsController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(Rental), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RentalUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, [FromBody] RentalStatus status, CancellationToken cancellationToken)
+    [HttpPut]
+    public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
-        var command = new UpdateRentalStatusCommand(id, status);
+        var command = new UpdateRentalStatusCommand(rentalDto);
+
         var rental = await _sender.Send(command, cancellationToken);
         return Ok(rental);
     }

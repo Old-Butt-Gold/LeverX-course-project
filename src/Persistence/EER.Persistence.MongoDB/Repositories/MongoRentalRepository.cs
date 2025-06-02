@@ -42,14 +42,18 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return MapToEntity(document);
     }
 
-    public async Task<Rental> UpdateStatusAsync(int id, RentalStatus status, Guid updatedBy, CancellationToken ct = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, CancellationToken ct = default)
     {
+        var id = rentalToUpdate.Id;
+
         var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, id);
 
         var update = Builders<RentalDocument>.Update
-            .Set(r => r.Status, status)
-            .Set(r => r.UpdatedBy, updatedBy)
-            .Set(r => r.UpdatedAt, DateTime.UtcNow);
+            .Set(r => r.Status, rentalToUpdate.Status)
+            .Set(r => r.UpdatedBy, rentalToUpdate.UpdatedBy)
+            .Set(r => r.UpdatedAt, rentalToUpdate.UpdatedAt);
+
+        // TODO Handle changing EquipmentItems ItemState in Available after RentalStatus: [Canceled, Completed]
 
         var options = new FindOneAndUpdateOptions<RentalDocument>
         {

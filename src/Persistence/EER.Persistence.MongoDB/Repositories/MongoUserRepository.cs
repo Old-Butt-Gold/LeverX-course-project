@@ -44,7 +44,6 @@ internal sealed class MongoUserRepository : IUserRepository
         var update = Builders<UserDocument>.Update
             .Set(u => u.Email, user.Email)
             .Set(u => u.FullName, user.FullName)
-            .Set(u => u.UserRole, user.UserRole)
             .Set(u => u.UpdatedAt, DateTime.UtcNow);
 
         var options = new FindOneAndUpdateOptions<UserDocument>
