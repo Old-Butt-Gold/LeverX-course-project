@@ -20,7 +20,7 @@ internal sealed class CreateOfficeCommandHandler : IRequestHandler<CreateOfficeC
     {
         var office = _mapper.Map<Office>(command.CreateOfficeDto);
 
-        var createdOffice = await _repository.AddAsync(office, cancellationToken);
+        var createdOffice = await _repository.AddAsync(office, cancellationToken: cancellationToken);
 
         return _mapper.Map<OfficeCreatedDto>(createdOffice);
     }

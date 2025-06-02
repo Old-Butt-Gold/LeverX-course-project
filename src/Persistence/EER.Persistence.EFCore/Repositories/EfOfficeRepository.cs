@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +14,17 @@ internal sealed class EfOfficeRepository : IOfficeRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Office>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Offices.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Office?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Offices.FindAsync([id], cancellationToken);
     }
 
-    public async Task<Office> AddAsync(Office office, CancellationToken cancellationToken = default)
+    public async Task<Office> AddAsync(Office office, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Offices.AddAsync(office, cancellationToken);
 
@@ -32,7 +33,7 @@ internal sealed class EfOfficeRepository : IOfficeRepository
         return entry.Entity;
     }
 
-    public async Task<Office> UpdateAsync(Office office, CancellationToken cancellationToken = default)
+    public async Task<Office> UpdateAsync(Office office, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Offices.FindAsync([office.Id], cancellationToken);
 
@@ -53,7 +54,7 @@ internal sealed class EfOfficeRepository : IOfficeRepository
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var existing = await _context.Offices.FindAsync([id], cancellationToken);
         if (existing is null) return false;

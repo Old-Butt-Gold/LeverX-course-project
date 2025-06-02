@@ -17,7 +17,7 @@ internal sealed class GetAllOfficesQueryHandler : IRequestHandler<GetAllOfficesQ
 
     public async Task<IEnumerable<OfficeDto>> Handle(GetAllOfficesQuery request, CancellationToken cancellationToken)
     {
-        var offices = await _repository.GetAllAsync(cancellationToken);
+        var offices = await _repository.GetAllAsync(cancellationToken: cancellationToken);
 
         return _mapper.Map<IEnumerable<OfficeDto>>(offices);
     }

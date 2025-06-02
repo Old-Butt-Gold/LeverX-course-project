@@ -14,6 +14,6 @@ internal sealed class DeleteRentalCommandHandler : IRequestHandler<DeleteRentalC
 
     public async Task<bool> Handle(DeleteRentalCommand command, CancellationToken cancellationToken)
     {
-        return await _repository.DeleteAsync(command.Id, cancellationToken);
+        return await _repository.DeleteAsync(command.Id, cancellationToken: cancellationToken);
     }
 }

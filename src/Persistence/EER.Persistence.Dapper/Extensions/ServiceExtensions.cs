@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Persistence.Dapper.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -20,5 +21,7 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IOfficeRepository, DapperOfficeRepository>();
         serviceCollection.AddScoped<IRentalRepository, DapperRentalRepository>();
         serviceCollection.AddScoped<IUserRepository, DapperUserRepository>();
+
+        serviceCollection.AddScoped<ITransactionManager, DapperTransactionManager>();
     }
 }

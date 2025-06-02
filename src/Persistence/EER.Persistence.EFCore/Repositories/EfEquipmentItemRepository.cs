@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +14,17 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<EquipmentItem>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<EquipmentItem>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.EquipmentItems.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<EquipmentItem?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem?> GetByIdAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.EquipmentItems.FindAsync([id], cancellationToken);
     }
 
-    public async Task<EquipmentItem> AddAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> AddAsync(EquipmentItem item, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entry = await _context.EquipmentItems.AddAsync(item, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -31,7 +32,7 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         return entry.Entity;
     }
 
-    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken cancellationToken = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.EquipmentItems.FindAsync([item.Id], cancellationToken);
 
@@ -53,7 +54,7 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var existing = await _context.EquipmentItems.FindAsync([id], cancellationToken);
         if (existing is null) return false;

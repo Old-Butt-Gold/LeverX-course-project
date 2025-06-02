@@ -20,7 +20,7 @@ internal sealed class CreateEquipmentItemCommandHandler : IRequestHandler<Create
     {
         var item = _mapper.Map<EquipmentItem>(command.CreateEquipmentItemDto);
 
-        var createdItem = await _repository.AddAsync(item, cancellationToken);
+        var createdItem = await _repository.AddAsync(item, cancellationToken: cancellationToken);
 
         return _mapper.Map<EquipmentItemCreatedDto>(createdItem);
     }

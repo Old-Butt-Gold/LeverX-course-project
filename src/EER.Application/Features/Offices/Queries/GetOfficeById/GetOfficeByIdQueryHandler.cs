@@ -17,7 +17,7 @@ internal sealed class GetOfficeByIdQueryHandler : IRequestHandler<GetOfficeByIdQ
 
     public async Task<OfficeDetailsDto?> Handle(GetOfficeByIdQuery request, CancellationToken cancellationToken)
     {
-        var office = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var office = await _repository.GetByIdAsync(request.Id, cancellationToken: cancellationToken);
 
         return office is null
             ? null

@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,19 +14,19 @@ internal sealed class EfUserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<User>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Users.ToListAsync(cancellationToken);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByIdAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users.FindAsync([id], cancellationToken: cancellationToken);
 
         return user;
     }
 
-    public async Task<User> AddAsync(User entity, CancellationToken cancellationToken = default)
+    public async Task<User> AddAsync(User entity, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Users.AddAsync(entity, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
@@ -33,7 +34,7 @@ internal sealed class EfUserRepository : IUserRepository
         return entry.Entity;
     }
 
-    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         // FindAsync first looks in memory, after that in DB.
         // Exactly after checkout with Tracking in application layer
@@ -53,7 +54,7 @@ internal sealed class EfUserRepository : IUserRepository
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Users.FindAsync([id], cancellationToken);
 

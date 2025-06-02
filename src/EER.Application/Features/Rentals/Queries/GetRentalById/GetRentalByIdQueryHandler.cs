@@ -18,7 +18,7 @@ internal sealed class GetRentalByIdQueryHandler
 
     public async Task<RentalDetailsDto?> Handle(GetRentalByIdQuery request, CancellationToken cancellationToken)
     {
-        var rental = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var rental = await _repository.GetByIdAsync(request.Id, cancellationToken: cancellationToken);
 
         return rental is null
             ? null

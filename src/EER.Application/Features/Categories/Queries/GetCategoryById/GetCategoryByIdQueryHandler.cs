@@ -17,7 +17,7 @@ internal sealed class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryB
 
     public async Task<CategoryDetailsDto?> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
     {
-        var category = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var category = await _repository.GetByIdAsync(request.Id, cancellationToken: cancellationToken);
 
         return category is null
             ? null

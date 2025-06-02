@@ -16,6 +16,6 @@ internal sealed class DeleteCategoryCommandHandler : IRequestHandler<DeleteCateg
     {
         // TODO can't delete category if total count of equipment of this category is > 0
 
-        return await _repository.DeleteAsync(command.Id, cancellationToken);
+        return await _repository.DeleteAsync(command.Id, cancellationToken: cancellationToken);
     }
 }

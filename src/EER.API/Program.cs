@@ -15,9 +15,9 @@ builder.Services.ConfigureAutoMapper();
 
 // Persistence
 builder.Services.ConfigureMigrationService();
-builder.Services.ConfigureDapper(builder.Configuration);
+//builder.Services.ConfigureDapper(builder.Configuration);
 //builder.Services.ConfigureEntityFrameworkCore(builder.Configuration);
-//builder.Services.ConfigureMongo(builder.Configuration);
+builder.Services.ConfigureMongo(builder.Configuration);
 
 // Infrastructure
 builder.Services.ConfigureSecurity();
@@ -49,7 +49,7 @@ app.MapControllers();
 
 app.AssertAutoMapperConfigurationValid(app.Services);
 
-app.ApplyMigrations(app.Services);
-//await app.Services.InitializeMongoDb();
+//app.ApplyMigrations(app.Services);
+await app.Services.InitializeMongoDb();
 
 app.Run();

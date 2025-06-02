@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Office;
 using EER.Persistence.MongoDB.Settings;
@@ -20,28 +21,43 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
         _idGenerator = idGenerator;
     }
 
-    public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<Office>> GetAllAsync(ITransaction? transaction = null, CancellationToken ct = default)
     {
         var documents = await _collection.Find("{}").ToListAsync(ct);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<Office?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Office?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var document = await _collection.Find(o => o.Id == id).FirstOrDefaultAsync(ct);
         return document != null ? MapToEntity(document) : null;
     }
 
-    public async Task<Office> AddAsync(Office office, CancellationToken ct = default)
+    public async Task<Office> AddAsync(Office office, ITransaction? transaction = null, CancellationToken ct = default)
     {
         office.Id = await _idGenerator.GetNextIdAsync(_settings.OfficeCollection);
 
         var document = MapToDocument(office);
-        await _collection.InsertOneAsync(document, cancellationToken: ct);
+
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document,
+                options,
+                ct);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, ct);
+        }
+
         return MapToEntity(document);
     }
 
-    public async Task<Office> UpdateAsync(Office office, CancellationToken ct = default)
+    public async Task<Office> UpdateAsync(Office office, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var filter = Builders<OfficeDocument>.Filter.Eq(o => o.Id, office.Id);
 
@@ -58,15 +74,41 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, ct);
+        OfficeDocument document;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+
+            document = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, ct);
+        }
+        else
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                filter, update, options, ct);
+        }
 
         return MapToEntity(document);
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var result = await _collection.DeleteOneAsync(o => o.Id == id, ct);
+        var filter = Builders<OfficeDocument>.Filter.Eq(o => o.Id, id);
+        var options = new DeleteOptions();
+
+        DeleteResult result;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session, filter, options, ct);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(filter, ct);
+        }
+
         return result.DeletedCount > 0;
     }
 

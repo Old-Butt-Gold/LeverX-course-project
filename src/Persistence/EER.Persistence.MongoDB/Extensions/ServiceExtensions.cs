@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Persistence.MongoDB.Repositories;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +38,8 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IEquipmentRepository, MongoEquipmentRepository>();
         serviceCollection.AddScoped<IEquipmentItemRepository, MongoEquipmentItemRepository>();
         serviceCollection.AddScoped<ICategoryRepository, MongoCategoryRepository>();
+
+        serviceCollection.AddScoped<ITransactionManager, MongoTransactionManager>();
 
         MongoDbMappings.RegisterClassMaps();
     }

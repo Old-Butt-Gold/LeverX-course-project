@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
@@ -14,20 +15,22 @@ internal sealed class DapperUserRepository : IUserRepository
         _connection = connection;
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<User>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[User]";
-        return await _connection.QueryAsync<User>(new CommandDefinition(sql, cancellationToken: cancellationToken));
+        return await _connection.QueryAsync<User>(new CommandDefinition(sql, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+            cancellationToken: cancellationToken));
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByIdAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[User] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<User>(new CommandDefinition(sql,
-            new { Id = id }, cancellationToken: cancellationToken));
+            new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+            cancellationToken: cancellationToken));
     }
 
-    public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> AddAsync(User user, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                INSERT INTO [Identity].[User] (Email, PasswordHash, UserRole)
@@ -43,10 +46,11 @@ internal sealed class DapperUserRepository : IUserRepository
         };
 
         return await _connection.QuerySingleAsync<User>(
-            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                 UPDATE [Identity].[User]
@@ -67,14 +71,16 @@ internal sealed class DapperUserRepository : IUserRepository
         };
 
         return await _connection.QuerySingleAsync<User>(
-            new CommandDefinition(sql, parameters, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, parameters, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[User] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

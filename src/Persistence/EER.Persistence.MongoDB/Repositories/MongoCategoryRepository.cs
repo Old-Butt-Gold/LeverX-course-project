@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Category;
 using EER.Persistence.MongoDB.Settings;
@@ -20,28 +21,41 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
         _idGenerator = idGenerator;
     }
 
-    public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Category>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var documents = await _collection.Find("{}").ToListAsync(cancellationToken);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Category?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var document = await _collection.Find(c => c.Id == id).FirstOrDefaultAsync(cancellationToken);
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> AddAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         category.Id = await _idGenerator.GetNextIdAsync(_settings.CategoryCollection);
 
         var document = MapToDocument(category);
-        await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
+
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document, options, cancellationToken);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, cancellationToken);
+        }
+
         return MapToEntity(document);
     }
 
-    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var filter = Builders<CategoryDocument>.Filter.Eq(c => c.Id, category.Id);
 
@@ -57,15 +71,42 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, cancellationToken);
+        CategoryDocument document;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, cancellationToken);
+        }
+        else
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                filter, update, options, cancellationToken);
+        }
 
         return MapToEntity(document);
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteOneAsync(c => c.Id == id, cancellationToken);
+        var filter = Builders<CategoryDocument>.Filter.Eq(c => c.Id, id);
+
+        var options = new DeleteOptions();
+
+        DeleteResult result;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session,
+                filter, options, cancellationToken);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(filter, cancellationToken);
+        }
+
         return result.DeletedCount > 0;
     }
 

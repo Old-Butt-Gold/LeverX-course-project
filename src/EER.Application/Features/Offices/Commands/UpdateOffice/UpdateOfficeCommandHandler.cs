@@ -20,14 +20,14 @@ internal sealed class UpdateOfficeCommandHandler : IRequestHandler<UpdateOfficeC
     {
         var updatedDto = command.UpdateOfficeDto;
 
-        var office = await _repository.GetByIdAsync(updatedDto.Id, cancellationToken);
+        var office = await _repository.GetByIdAsync(updatedDto.Id, cancellationToken: cancellationToken);
 
         if (office is null)
             throw new KeyNotFoundException($"Office with ID {updatedDto.Id} not found");
 
         _mapper.Map(updatedDto, office);
 
-        var updatedOffice = await _repository.UpdateAsync(office, cancellationToken);
+        var updatedOffice = await _repository.UpdateAsync(office, cancellationToken: cancellationToken);
 
         return _mapper.Map<OfficeUpdatedDto>(updatedOffice);
     }

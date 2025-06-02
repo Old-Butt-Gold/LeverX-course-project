@@ -1,6 +1,6 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
-using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EER.Persistence.EFCore.Repositories;
@@ -14,17 +14,17 @@ internal sealed class EfRentalRepository : IRentalRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Rental>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Rental>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Rentals.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<Rental?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Rental?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Rentals.FindAsync([id], cancellationToken);
     }
 
-    public async Task<Rental> AddAsync(Rental rental, CancellationToken cancellationToken = default)
+    public async Task<Rental> AddAsync(Rental rental, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Rentals.AddAsync(rental, cancellationToken);
 
@@ -33,7 +33,7 @@ internal sealed class EfRentalRepository : IRentalRepository
         return entry.Entity;
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var id = rentalToUpdate.Id;
 
@@ -53,7 +53,7 @@ internal sealed class EfRentalRepository : IRentalRepository
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var existing = await _context.Rentals.FindAsync([id], cancellationToken);
         if (existing is null) return false;

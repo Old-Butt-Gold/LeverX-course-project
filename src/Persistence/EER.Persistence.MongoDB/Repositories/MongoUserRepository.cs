@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.User;
 using EER.Persistence.MongoDB.Settings;
@@ -18,26 +19,42 @@ internal sealed class MongoUserRepository : IUserRepository
         _collection = database.GetCollection<UserDocument>(settings.Value.UserCollection);
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<User>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
+        // TODO transactions with reading?
         var documents = await _collection.Find("{}").ToListAsync(cancellationToken);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByIdAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
+        // TODO transactions with reading?
         var document = await _collection.Find(u => u.Id == id).FirstOrDefaultAsync(cancellationToken);
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> AddAsync(User user, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var document = MapToDocument(user);
-        await _collection.InsertOneAsync(document, cancellationToken: cancellationToken);
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document,
+                options,
+                cancellationToken);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, cancellationToken);
+        }
+
         return MapToEntity(document);
     }
 
-    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<User> UpdateAsync(User user, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var filter = Builders<UserDocument>.Filter.Eq(u => u.Id, user.Id);
 
@@ -51,15 +68,39 @@ internal sealed class MongoUserRepository : IUserRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, cancellationToken);
+        UserDocument userDocument;
 
-        return MapToEntity(document);
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            userDocument = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, cancellationToken);
+        }
+        else
+        {
+            userDocument = await _collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
+        }
+
+        return MapToEntity(userDocument);
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        var result = await _collection.DeleteOneAsync(u => u.Id == id, cancellationToken);
+        DeleteResult result;
+        DeleteOptions deleteOptions = new();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session,
+                u => u.Id == id, deleteOptions, cancellationToken);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(
+                u => u.Id == id, cancellationToken);
+        }
+
         return result.DeletedCount > 0;
     }
 

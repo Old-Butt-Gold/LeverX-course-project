@@ -17,7 +17,7 @@ internal sealed class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCateg
 
     public async Task<IEnumerable<CategoryDto>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)
     {
-        var categories = await _repository.GetAllAsync(cancellationToken);
+        var categories = await _repository.GetAllAsync(cancellationToken: cancellationToken);
         return _mapper.Map<IEnumerable<CategoryDto>>(categories);
     }
 }
