@@ -1,5 +1,4 @@
 ﻿using EER.Domain.Entities;
-using EER.Domain.Enums;
 
 namespace EER.Domain.DatabaseAbstractions;
 
