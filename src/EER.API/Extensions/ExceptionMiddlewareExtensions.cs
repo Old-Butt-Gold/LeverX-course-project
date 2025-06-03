@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Xml.Serialization;
 using EER.API.ProblemDetailsXml;
+using EER.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,7 @@ public static class ExceptionMiddlewareExtensions
 
                 var statusCode = contextFeature.Error switch
                 {
+                    ConflictException => StatusCodes.Status409Conflict,
                     ValidationException => StatusCodes.Status400BadRequest,
                     KeyNotFoundException => StatusCodes.Status404NotFound,
                     OperationCanceledException => StatusCodes.Status499ClientClosedRequest,

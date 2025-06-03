@@ -70,6 +70,7 @@ public sealed class CategoriesController : ControllerBase
     /// <response code="400">If the category data is invalid.</response>
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(CategoryCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]

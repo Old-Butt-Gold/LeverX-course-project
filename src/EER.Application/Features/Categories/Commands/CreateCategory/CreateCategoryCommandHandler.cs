@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
+using EER.Domain.Exceptions;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.CreateCategory;
@@ -18,8 +19,13 @@ internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCateg
 
     public async Task<CategoryCreatedDto> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
     {
-        // TODO Later if Slug is unique check
+
         var category = _mapper.Map<Category>(command.CreateCategoryDto);
+
+        if (await _repository.IsSlugExists(category.Slug, cancellationToken: cancellationToken))
+        {
+            throw new ConflictException($"Slug '{category.Slug}' already exists.");
+        }
 
         var createdCategory = await _repository.AddAsync(category, cancellationToken: cancellationToken);
 

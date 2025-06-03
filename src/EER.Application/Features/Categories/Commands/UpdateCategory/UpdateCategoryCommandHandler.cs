@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.Exceptions;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
@@ -22,9 +23,12 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {command.UpdateCategoryDto.Id} not found");
 
-        // TODO check if Slug is still unique
-
         _mapper.Map(command.UpdateCategoryDto, category);
+
+        if (await _repository.IsSlugExists(category.Slug, cancellationToken: cancellationToken))
+        {
+            throw new ConflictException($"Slug '{category.Slug}' already exists.");
+        }
 
         var updatedCategory = await _repository.UpdateAsync(category, cancellationToken: cancellationToken);
 

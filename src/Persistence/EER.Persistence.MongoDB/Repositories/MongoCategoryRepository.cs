@@ -1,9 +1,11 @@
-﻿using EER.Domain.DatabaseAbstractions;
+﻿using System.Text.RegularExpressions;
+using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Category;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;
@@ -86,6 +88,24 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
         }
 
         return MapToEntity(document);
+    }
+
+    public async Task<bool> IsSlugExists(string slug, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<CategoryDocument>.Filter.Eq(
+            x => x.Slug, slug);
+
+        var options = new CountOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            return await _collection.CountDocumentsAsync(
+                mongoTransaction.Session,
+                filter, options, cancellationToken) > 0;
+        }
+
+        return await _collection.CountDocumentsAsync(
+            filter, options, cancellationToken) > 0;
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
