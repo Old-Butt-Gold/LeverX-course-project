@@ -4,6 +4,7 @@ using EER.Application.Features.Authentication.Commands.LoginUser;
 using EER.Application.Features.Authentication.Commands.Logout;
 using EER.Application.Features.Authentication.Commands.LogoutAll;
 using EER.Application.Features.Authentication.Commands.RefreshToken;
+using EER.Application.Features.Authentication.Commands.RegisterAdmin;
 using EER.Application.Features.Users.Commands.CreateUser;
 using EER.Application.Settings;
 using MediatR;
@@ -47,6 +48,17 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> Register(CreateUserDto user, CancellationToken cancellationToken)
     {
         var command = new CreateUserCommand(user);
+
+        await _sender.Send(command, cancellationToken);
+
+        return Created();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("register-admin")]
+    public async Task<IActionResult> RegisterAdmin(RegisterAdminDto adminDto, CancellationToken cancellationToken)
+    {
+        var command = new RegisterAdminCommand(adminDto);
 
         await _sender.Send(command, cancellationToken);
 

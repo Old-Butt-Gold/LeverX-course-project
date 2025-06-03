@@ -1,14 +1,13 @@
 ﻿using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Enums;
 using FluentValidation;
 
-namespace EER.Application.Features.Users.Commands.CreateUser;
+namespace EER.Application.Features.Authentication.Commands.RegisterAdmin;
 
-public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+public class RegisterAdminCommandValidator : AbstractValidator<RegisterAdminCommand>
 {
-    public CreateUserCommandValidator(IUserRepository userRepository)
+    public RegisterAdminCommandValidator(IUserRepository userRepository)
     {
-        RuleFor(x => x.CreateUserDto.Email)
+        RuleFor(x => x.AdminDto.Email)
             .NotEmpty()
             .EmailAddress()
             .MaximumLength(150)
@@ -16,15 +15,11 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
                 !await userRepository.IsEmailExists(email, cancellationToken: ct))
             .WithMessage("Email already exists");
 
-        RuleFor(x => x.CreateUserDto.Password)
+        RuleFor(x => x.AdminDto.Password)
             .NotEmpty()
             .MinimumLength(8)
             .Matches("[A-Z]").WithMessage("The password must contain at least one capital letter")
             .Matches("[a-z]").WithMessage("The password must contain at least one lowercase letter")
             .Matches("[0-9]").WithMessage("The password must contain at least one digit");
-
-        RuleFor(x => x.CreateUserDto.UserRole)
-            .IsInEnum()
-            .Must(x => x != Role.Admin);
     }
 }
