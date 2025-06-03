@@ -9,13 +9,15 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserLog
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
 
     public LoginUserCommandHandler(IUserRepository userRepository, IPasswordHasher passwordHasher,
-        IJwtTokenService jwtTokenService)
+        IJwtTokenService jwtTokenService, IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
     public async Task<UserLoggedDto> Handle(LoginUserCommand request, CancellationToken cancellationToken)
@@ -31,10 +33,16 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserLog
 
         var isIdentical = _passwordHasher.VerifyPassword(user.PasswordHash, dto.Password);
 
-        var accessToken = isIdentical
-            ? _jwtTokenService.GenerateAccessToken(user)
-            : "";
+        if (!isIdentical)
+            return new UserLoggedDto { AccessToken = "", RefreshToken = "", IsSuccess = false };
 
-        return new UserLoggedDto { AccessToken = accessToken, IsSuccess = isIdentical };
+        var accessToken = _jwtTokenService.GenerateAccessToken(user);
+        var refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+        var entity = _jwtTokenService.GenerateRefreshToken(user);
+
+        await _refreshTokenRepository.AddAsync(entity, cancellationToken);
+
+        return new UserLoggedDto { AccessToken = accessToken, RefreshToken = refreshToken, IsSuccess = isIdentical };
     }
 }
