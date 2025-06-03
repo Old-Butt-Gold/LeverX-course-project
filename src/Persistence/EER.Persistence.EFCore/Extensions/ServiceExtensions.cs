@@ -20,6 +20,7 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IOfficeRepository, EfOfficeRepository>();
         serviceCollection.AddScoped<IRentalRepository, EfRentalRepository>();
         serviceCollection.AddScoped<IUserRepository, EfUserRepository>();
+        serviceCollection.AddScoped<IRefreshTokenRepository, EfRefreshTokenRepository>();
 
         serviceCollection.AddScoped<ITransactionManager, EfTransactionManager>();
     }

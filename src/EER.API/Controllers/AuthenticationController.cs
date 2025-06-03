@@ -54,6 +54,7 @@ public class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(LoginUserDto loginDto, CancellationToken cancellationToken)
     {
         var command = new LoginUserCommand(loginDto);

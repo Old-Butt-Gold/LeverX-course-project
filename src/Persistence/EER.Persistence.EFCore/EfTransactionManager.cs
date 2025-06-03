@@ -23,7 +23,7 @@ public class EfTransactionManager : ITransactionManager
 
     internal class EfTransaction : ITransaction
     {
-        public IDbContextTransaction Transaction { get; set; }
+        public IDbContextTransaction Transaction { get; init; }
 
         public EfTransaction(IDbContextTransaction transaction)
         {
