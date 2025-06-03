@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using EER.Application.Features.Categories.Queries.GetAllCategories;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using MediatR;
@@ -22,7 +21,7 @@ internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCateg
         // TODO Later if Slug is unique check
         var category = _mapper.Map<Category>(command.CreateCategoryDto);
 
-        var createdCategory = await _repository.AddAsync(category, cancellationToken);
+        var createdCategory = await _repository.AddAsync(category, cancellationToken: cancellationToken);
 
         return _mapper.Map<CategoryCreatedDto>(createdCategory);
     }

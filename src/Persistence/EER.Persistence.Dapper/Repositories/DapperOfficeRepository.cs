@@ -1,7 +1,7 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
@@ -15,21 +15,23 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
         _connection = connection;
     }
 
-    public async Task<IEnumerable<Office>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Office>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[Office]";
         return await _connection.QueryAsync<Office>(
-            new CommandDefinition(sql, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Office?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Office?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Identity].[Office] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Office>(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Office> AddAsync(Office office, CancellationToken cancellationToken = default)
+    public async Task<Office> AddAsync(Office office, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                INSERT INTO [Identity].[Office] (
@@ -50,10 +52,11 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                 office.Country,
                 office.CreatedBy,
                 office.UpdatedBy
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Office> UpdateAsync(Office office, CancellationToken cancellationToken = default)
+    public async Task<Office> UpdateAsync(Office office, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                UPDATE [Identity].[Office]
@@ -80,14 +83,16 @@ internal sealed class DapperOfficeRepository : IOfficeRepository
                 office.IsActive,
                 office.UpdatedBy,
                 office.UpdatedAt
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[Office] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

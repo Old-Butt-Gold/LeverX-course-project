@@ -27,7 +27,7 @@ internal sealed class CreateUserCommandHandler : IRequestHandler<CreateUserComma
 
         user.PasswordHash = _passwordHasher.HashPassword(command.CreateUserDto.Password);
 
-        var createdUser = await _userRepository.AddAsync(user, cancellationToken);
+        var createdUser = await _userRepository.AddAsync(user, cancellationToken: cancellationToken);
 
         return _mapper.Map<UserCreatedDto>(createdUser);
     }

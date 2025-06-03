@@ -23,7 +23,7 @@ internal sealed class CreateRentalCommandHandler
         // Total Price will be send as
         var rental = _mapper.Map<Rental>(command.CreateRentalDto);
 
-        var createdRental = await _repository.AddAsync(rental, cancellationToken);
+        var createdRental = await _repository.AddAsync(rental, cancellationToken: cancellationToken);
 
         return _mapper.Map<RentalCreatedDto>(createdRental);
     }

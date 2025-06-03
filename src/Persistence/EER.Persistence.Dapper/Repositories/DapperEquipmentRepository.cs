@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
@@ -14,21 +15,23 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
         _connection = connection;
     }
 
-    public async Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Equipment>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Equipment]";
         return await _connection.QueryAsync<Equipment>(
-            new CommandDefinition(sql, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Equipment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Equipment?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Equipment>(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken cancellationToken = default)
+    public async Task<Equipment> AddAsync(Equipment equipment, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @InsertedTable TABLE (
@@ -79,10 +82,11 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.PricePerDay,
                 equipment.CreatedBy,
                 equipment.UpdatedBy,
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Equipment> UpdateAsync(Equipment equipment, CancellationToken cancellationToken = default)
+    public async Task<Equipment> UpdateAsync(Equipment equipment, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
@@ -137,14 +141,16 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.PricePerDay,
                 equipment.UpdatedBy,
                 equipment.UpdatedAt,
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Equipment] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

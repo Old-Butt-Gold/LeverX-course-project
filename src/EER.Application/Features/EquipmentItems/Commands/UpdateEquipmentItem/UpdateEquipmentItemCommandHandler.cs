@@ -19,14 +19,14 @@ internal sealed class UpdateEquipmentItemCommandHandler : IRequestHandler<Update
     {
         var dto = command.UpdateEquipmentItemDto;
 
-        var item = await _repository.GetByIdAsync(dto.Id, cancellationToken);
+        var item = await _repository.GetByIdAsync(dto.Id, cancellationToken: cancellationToken);
 
         if (item is null)
             throw new KeyNotFoundException($"EquipmentItem with ID {dto.Id} not found");
 
         _mapper.Map(dto, item);
 
-        var updatedItem = await _repository.UpdateAsync(item, cancellationToken);
+        var updatedItem = await _repository.UpdateAsync(item, cancellationToken: cancellationToken);
 
         return _mapper.Map<EquipmentItemUpdatedDto>(updatedItem);
     }

@@ -14,6 +14,6 @@ internal sealed class DeleteOfficeCommandHandler : IRequestHandler<DeleteOfficeC
 
     public async Task<bool> Handle(DeleteOfficeCommand command, CancellationToken cancellationToken)
     {
-        return await _repository.DeleteAsync(command.Id, cancellationToken);
+        return await _repository.DeleteAsync(command.Id, cancellationToken: cancellationToken);
     }
 }

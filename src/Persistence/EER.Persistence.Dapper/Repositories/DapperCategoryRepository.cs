@@ -1,7 +1,7 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
 using Dapper;
 using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 
 namespace EER.Persistence.Dapper.Repositories;
@@ -16,21 +16,25 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
         _connection = connection;
     }
 
-    public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Category>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Category]";
         return await _connection.QueryAsync<Category>(
-            new CommandDefinition(sql, cancellationToken: cancellationToken));
+            new CommandDefinition(sql,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Category?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "SELECT * FROM [Supplies].[Category] WHERE Id = @Id";
         return await _connection.QuerySingleOrDefaultAsync<Category>(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> AddAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                INSERT INTO [Supplies].[Category] (Name, Description, Slug, CreatedBy, UpdatedBy)
@@ -46,10 +50,11 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                 category.Slug,
                 category.CreatedBy,
                 category.UpdatedBy
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                UPDATE [Supplies].[Category]
@@ -72,14 +77,16 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                 category.Slug,
                 category.UpdatedBy,
                 category.UpdatedAt,
-            }, cancellationToken: cancellationToken));
+            }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Category] WHERE Id = @Id";
         var affectedRows = await _connection.ExecuteAsync(
-            new CommandDefinition(sql, new { Id = id }, cancellationToken: cancellationToken));
+            new CommandDefinition(sql, new { Id = id }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
         return affectedRows > 0;
     }
 }

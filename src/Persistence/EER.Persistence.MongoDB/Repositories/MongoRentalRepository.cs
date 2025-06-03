@@ -1,6 +1,6 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
-using EER.Domain.Enums;
 using EER.Persistence.MongoDB.Documents.Rental;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
@@ -21,28 +21,43 @@ internal sealed class MongoRentalRepository : IRentalRepository
         _idGenerator = idGenerator;
     }
 
-    public async Task<IEnumerable<Rental>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<Rental>> GetAllAsync(ITransaction? transaction = null, CancellationToken ct = default)
     {
         var documents = await _collection.Find("{}").ToListAsync(ct);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<Rental?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Rental?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var document = await _collection.Find(r => r.Id == id).FirstOrDefaultAsync(ct);
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<Rental> AddAsync(Rental rental, CancellationToken ct = default)
+    public async Task<Rental> AddAsync(Rental rental, ITransaction? transaction = null, CancellationToken ct = default)
     {
         rental.Id = await _idGenerator.GetNextIdAsync(_settings.RentalCollection);
 
         var document = MapToDocument(rental);
-        await _collection.InsertOneAsync(document, cancellationToken: ct);
+
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document,
+                options,
+                ct);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, ct);
+        }
+
         return MapToEntity(document);
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, CancellationToken ct = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var id = rentalToUpdate.Id;
 
@@ -60,14 +75,41 @@ internal sealed class MongoRentalRepository : IRentalRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
+        RentalDocument document;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, ct);
+        }
+        else
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                filter, update, options, ct);
+        }
 
         return MapToEntity(document);
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var result = await _collection.DeleteOneAsync(r => r.Id == id, ct);
+        var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, id);
+        var options = new DeleteOptions();
+
+        DeleteResult result;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session,
+                filter, options, ct);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(filter, ct);
+        }
+
         return result.DeletedCount > 0;
     }
 

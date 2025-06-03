@@ -17,7 +17,7 @@ internal sealed class GetAllEquipmentItemsQueryHandler : IRequestHandler<GetAllE
 
     public async Task<IEnumerable<EquipmentItemDto>> Handle(GetAllEquipmentItemsQuery request, CancellationToken cancellationToken)
     {
-        var items = await _repository.GetAllAsync(cancellationToken);
+        var items = await _repository.GetAllAsync(cancellationToken: cancellationToken);
 
         return _mapper.Map<IEnumerable<EquipmentItemDto>>(items);
     }

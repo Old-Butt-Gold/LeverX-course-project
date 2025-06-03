@@ -17,7 +17,7 @@ internal sealed class GetEquipmentByIdQueryHandler : IRequestHandler<GetEquipmen
 
     public async Task<EquipmentDetailsDto?> Handle(GetEquipmentByIdQuery request, CancellationToken cancellationToken)
     {
-        var equipment = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var equipment = await _repository.GetByIdAsync(request.Id, cancellationToken: cancellationToken);
 
         return equipment is null
             ? null

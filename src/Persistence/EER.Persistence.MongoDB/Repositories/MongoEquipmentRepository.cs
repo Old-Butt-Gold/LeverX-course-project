@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Equipment;
 using EER.Persistence.MongoDB.Settings;
@@ -20,31 +21,43 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         _idGenerator = idGenerator;
     }
 
-    public async Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<Equipment>> GetAllAsync(ITransaction? transaction = null, CancellationToken ct = default)
     {
         var documents = await _collection.Find("{}").ToListAsync(ct);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<Equipment?> GetByIdAsync(int id, CancellationToken ct = default)
+    public async Task<Equipment?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var document = await _collection.Find(e => e.Id == id).FirstOrDefaultAsync(ct);
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<Equipment> AddAsync(Equipment equipment, CancellationToken ct = default)
+    public async Task<Equipment> AddAsync(Equipment equipment, ITransaction? transaction = null, CancellationToken ct = default)
     {
         equipment.Id = await _idGenerator.GetNextIdAsync(_settings.EquipmentCollection);
 
         var document = MapToDocument(equipment);
-        await _collection.InsertOneAsync(document, cancellationToken: ct);
+
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document, options, ct);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, ct);
+        }
 
         // TODO Update count in Category by plus 1
 
         return MapToEntity(document);
     }
 
-    public async Task<Equipment> UpdateAsync(Equipment equipment, CancellationToken ct = default)
+    public async Task<Equipment> UpdateAsync(Equipment equipment, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var filter = Builders<EquipmentDocument>.Filter.Eq(e => e.Id, equipment.Id);
 
@@ -61,16 +74,40 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(
-            filter, update, options, ct);
+        EquipmentDocument document;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, ct);
+        }
+        else
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                filter, update, options, ct);
+        }
 
         return MapToEntity(document);
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var result = await _collection.DeleteOneAsync(e => e.Id == id, ct);
+        var filter = Builders<EquipmentDocument>.Filter.Eq(e => e.Id, id);
+        var options = new DeleteOptions();
 
+        DeleteResult result;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session,
+                filter, options, ct);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(filter, ct);
+        }
         // TODO Update count in Category by minus 1
 
         return result.DeletedCount > 0;

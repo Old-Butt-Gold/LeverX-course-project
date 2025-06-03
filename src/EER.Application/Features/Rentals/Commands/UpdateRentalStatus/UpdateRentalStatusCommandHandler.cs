@@ -20,7 +20,7 @@ internal sealed class UpdateRentalStatusCommandHandler
     {
         var dto = command.UpdateRentalDto;
 
-        var existingRental = await _repository.GetByIdAsync(dto.Id, cancellationToken);
+        var existingRental = await _repository.GetByIdAsync(dto.Id, cancellationToken: cancellationToken);
 
         if (existingRental is null)
             throw new KeyNotFoundException($"Rental with provided ID {dto.Id} is not found");
@@ -30,7 +30,7 @@ internal sealed class UpdateRentalStatusCommandHandler
 
         _mapper.Map(dto, existingRental);
 
-        var updatedRental = await _repository.UpdateStatusAsync(existingRental, cancellationToken);
+        var updatedRental = await _repository.UpdateStatusAsync(existingRental, cancellationToken: cancellationToken);
 
         return _mapper.Map<RentalUpdatedDto>(updatedRental);
     }

@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Settings;
@@ -20,28 +21,41 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
         _idGenerator = idGenerator;
     }
 
-    public async Task<IEnumerable<EquipmentItem>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<EquipmentItem>> GetAllAsync(ITransaction? transaction = null, CancellationToken ct = default)
     {
         var documents = await _collection.Find("{}").ToListAsync(ct);
         return documents.Select(MapToEntity);
     }
 
-    public async Task<EquipmentItem?> GetByIdAsync(long id, CancellationToken ct = default)
+    public async Task<EquipmentItem?> GetByIdAsync(long id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var document = await _collection.Find(i => i.Id == id).FirstOrDefaultAsync(ct);
         return document is not null ? MapToEntity(document) : null;
     }
 
-    public async Task<EquipmentItem> AddAsync(EquipmentItem item, CancellationToken ct = default)
+    public async Task<EquipmentItem> AddAsync(EquipmentItem item, ITransaction? transaction = null, CancellationToken ct = default)
     {
         item.Id = await _idGenerator.GetNextLongIdAsync(_settings.EquipmentItemCollection);
 
         var document = MapToDocument(item);
-        await _collection.InsertOneAsync(document, cancellationToken: ct);
+
+        var options = new InsertOneOptions();
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            await _collection.InsertOneAsync(
+                mongoTransaction.Session,
+                document, options, ct);
+        }
+        else
+        {
+            await _collection.InsertOneAsync(document, options, ct);
+        }
+
         return MapToEntity(document);
     }
 
-    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, CancellationToken ct = default)
+    public async Task<EquipmentItem> UpdateAsync(EquipmentItem item, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var filter = Builders<EquipmentItemDocument>.Filter.Eq(i => i.Id, item.Id);
 
@@ -61,14 +75,41 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
             ReturnDocument = ReturnDocument.After
         };
 
-        var document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
+        EquipmentItemDocument document;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                mongoTransaction.Session,
+                filter, update, options, ct);
+        }
+        else
+        {
+            document = await _collection.FindOneAndUpdateAsync(
+                filter, update, options, ct);
+        }
 
         return MapToEntity(document);
     }
 
-    public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var result = await _collection.DeleteOneAsync(i => i.Id == id, ct);
+        var filter = Builders<EquipmentItemDocument>.Filter.Eq(i => i.Id, id);
+        var options = new DeleteOptions();
+
+        DeleteResult result;
+
+        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        {
+            result = await _collection.DeleteOneAsync(
+                mongoTransaction.Session,
+                filter, options, ct);
+        }
+        else
+        {
+            result = await _collection.DeleteOneAsync(filter, ct);
+        }
+
         return result.DeletedCount > 0;
     }
 

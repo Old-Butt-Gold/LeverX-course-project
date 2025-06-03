@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Persistence.EFCore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,5 +20,7 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IOfficeRepository, EfOfficeRepository>();
         serviceCollection.AddScoped<IRentalRepository, EfRentalRepository>();
         serviceCollection.AddScoped<IUserRepository, EfUserRepository>();
+
+        serviceCollection.AddScoped<ITransactionManager, EfTransactionManager>();
     }
 }

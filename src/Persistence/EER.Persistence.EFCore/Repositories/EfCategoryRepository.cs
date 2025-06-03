@@ -1,4 +1,5 @@
 ﻿using EER.Domain.DatabaseAbstractions;
+using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,17 +15,17 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Category>> GetAllAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Categories.AsNoTracking().ToListAsync(cancellationToken);
     }
 
-    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Category?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.Categories.FindAsync([id], cancellationToken);
     }
 
-    public async Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> AddAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entry = await _context.Categories.AddAsync(category, cancellationToken);
 
@@ -33,7 +34,7 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         return entry.Entity;
     }
 
-    public async Task<Category> UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    public async Task<Category> UpdateAsync(Category category, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Categories.FindAsync([category.Id], cancellationToken);
 
@@ -53,7 +54,7 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var existing = await _context.Categories.FindAsync([id], cancellationToken);
 

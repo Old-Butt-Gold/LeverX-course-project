@@ -17,7 +17,7 @@ internal sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery
 
     public async Task<IEnumerable<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.GetAllAsync(cancellationToken);
+        var users = await _userRepository.GetAllAsync(cancellationToken: cancellationToken);
 
         return _mapper.Map<IEnumerable<UserDto>>(users);
     }

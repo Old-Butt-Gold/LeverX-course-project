@@ -17,7 +17,7 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
 
     public async Task<CategoryUpdatedDto> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken)
     {
-        var category = await _repository.GetByIdAsync(command.UpdateCategoryDto.Id, cancellationToken);
+        var category = await _repository.GetByIdAsync(command.UpdateCategoryDto.Id, cancellationToken: cancellationToken);
 
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {command.UpdateCategoryDto.Id} not found");
@@ -26,7 +26,7 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
 
         _mapper.Map(command.UpdateCategoryDto, category);
 
-        var updatedCategory = await _repository.UpdateAsync(category, cancellationToken);
+        var updatedCategory = await _repository.UpdateAsync(category, cancellationToken: cancellationToken);
 
         return _mapper.Map<CategoryUpdatedDto>(updatedCategory);
     }

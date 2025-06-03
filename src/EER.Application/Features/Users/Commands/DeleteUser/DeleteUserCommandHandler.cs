@@ -14,6 +14,6 @@ internal sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserComma
 
     public async Task<bool> Handle(DeleteUserCommand command, CancellationToken cancellationToken)
     {
-        return await _userRepository.DeleteAsync(command.Id, cancellationToken);
+        return await _userRepository.DeleteAsync(command.Id, cancellationToken: cancellationToken);
     }
 }
