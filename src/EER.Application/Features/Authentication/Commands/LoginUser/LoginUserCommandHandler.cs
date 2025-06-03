@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Authentication.Commands.LoginUser;
 
-public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserLoggedDto>
+internal sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserLoggedDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
@@ -37,12 +37,11 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, UserLog
             return new UserLoggedDto { AccessToken = "", RefreshToken = "", IsSuccess = false };
 
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
-        var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
         var entity = _jwtTokenService.GenerateRefreshToken(user);
 
-        await _refreshTokenRepository.AddAsync(entity, cancellationToken);
+        await _refreshTokenRepository.AddAsync(entity, cancellationToken: cancellationToken);
 
-        return new UserLoggedDto { AccessToken = accessToken, RefreshToken = refreshToken, IsSuccess = isIdentical };
+        return new UserLoggedDto { AccessToken = accessToken, RefreshToken = entity.Token, IsSuccess = isIdentical };
     }
 }

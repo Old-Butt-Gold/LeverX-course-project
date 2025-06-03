@@ -18,7 +18,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Offices, opt => opt.Ignore())
             .ForMember(dest => dest.RentalCustomers, opt => opt.Ignore())
             .ForMember(dest => dest.RentalOwners, opt => opt.Ignore())
-            .ForMember(dest => dest.Reviews, opt => opt.Ignore());
+            .ForMember(dest => dest.Reviews, opt => opt.Ignore())
+            .ForMember(dest => dest.RefreshTokens, opt => opt.Ignore());
 
         CreateMap<User, UserUpdatedDto>();
     }

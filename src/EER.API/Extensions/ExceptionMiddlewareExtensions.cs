@@ -27,7 +27,7 @@ public static class ExceptionMiddlewareExtensions
 
                 var statusCode = contextFeature.Error switch
                 {
-                    SecurityTokenException => StatusCodes.Status400BadRequest,
+                    UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
                     ConflictException => StatusCodes.Status409Conflict,
                     ValidationException => StatusCodes.Status400BadRequest,
                     KeyNotFoundException => StatusCodes.Status404NotFound,

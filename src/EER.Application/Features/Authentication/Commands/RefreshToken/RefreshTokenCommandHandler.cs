@@ -2,11 +2,10 @@
 using EER.Application.Abstractions.Security;
 using EER.Domain.DatabaseAbstractions;
 using MediatR;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EER.Application.Features.Authentication.Commands.RefreshToken;
 
-public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResultDto>
+internal sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResultDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtTokenService _jwtTokenService;
@@ -28,19 +27,19 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         var userId = principal?.FindFirstValue(ClaimTypes.Sid);
 
         if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userIdGuid))
-            throw new SecurityTokenException("Invalid token");
+            throw new UnauthorizedAccessException("Invalid token");
 
         var user = await _userRepository.GetByIdAsync(userIdGuid, cancellationToken: cancellationToken);
 
         if (user is null)
-            throw new SecurityTokenException("User not found");
+            throw new UnauthorizedAccessException("User not found");
 
-        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken, cancellationToken);
+        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken, cancellationToken: cancellationToken);
 
         if (refreshToken == null || refreshToken.UserId != userIdGuid ||
             refreshToken.IsExpired || refreshToken.RevokedAt != null)
         {
-            throw new SecurityTokenException("Invalid refresh token");
+            throw new UnauthorizedAccessException("Invalid refresh token");
         }
 
         var newAccessToken = _jwtTokenService.GenerateAccessToken(user);

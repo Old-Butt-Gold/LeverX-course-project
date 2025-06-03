@@ -89,7 +89,7 @@ public class JwtTokenService : IJwtTokenService
         if (securityToken is not JwtSecurityToken jwtSecurityToken ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new SecurityTokenException("Invalid token");
+            throw new UnauthorizedAccessException("Invalid token");
         }
 
         return principal;

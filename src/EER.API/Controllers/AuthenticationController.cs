@@ -1,5 +1,8 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Authentication.Commands.LoginUser;
+using EER.Application.Features.Authentication.Commands.Logout;
+using EER.Application.Features.Authentication.Commands.LogoutAll;
 using EER.Application.Features.Authentication.Commands.RefreshToken;
 using EER.Application.Features.Users.Commands.CreateUser;
 using EER.Application.Settings;
@@ -12,7 +15,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[AllowAnonymous]
+[Authorize]
 public class AuthenticationController : ControllerBase
 {
     private readonly ISender _sender;
@@ -40,6 +43,7 @@ public class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register(CreateUserDto user, CancellationToken cancellationToken)
     {
         var command = new CreateUserCommand(user);
@@ -64,17 +68,18 @@ public class AuthenticationController : ControllerBase
             HttpOnly = true,
             Secure = true,
             Expires = DateTime.UtcNow.AddSeconds(_jwtSettings.RefreshExpirySeconds),
-            SameSite = SameSiteMode.Strict
+            SameSite = SameSiteMode.Strict,
         });
 
         return Ok(new { result.AccessToken });
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken(string accessToken, CancellationToken cancellationToken)
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken([FromBody] string accessToken, CancellationToken cancellationToken)
     {
         if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
-            return Unauthorized("No refresh token was provided");
+            return Unauthorized("Refresh token not found");
 
         var dto = new RefreshTokenDto
         {
@@ -96,5 +101,37 @@ public class AuthenticationController : ControllerBase
         return Ok(new { result.AccessToken });
     }
 
-    // TODO logout from one device and logout from all devices
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            return BadRequest("Refresh token not found");
+
+        await _sender.Send(new LogoutCommand(refreshToken), cancellationToken);
+
+        Response.Cookies.Delete("refreshToken", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
+
+        return NoContent();
+    }
+
+    [HttpPost("logout-all")]
+    public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        await _sender.Send(new LogoutAllCommand(userId), cancellationToken);
+
+        Response.Cookies.Delete("refreshToken", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
+
+        return NoContent();
+    }
 }
