@@ -18,6 +18,15 @@ public static class MongoDbMappings
     {
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
+        if (!BsonClassMap.IsClassMapRegistered(typeof(RefreshTokenEmbedded)))
+        {
+            BsonClassMap.RegisterClassMap<RefreshTokenEmbedded>(cm =>
+            {
+                cm.AutoMap();
+                cm.SetIgnoreExtraElements(true);
+            });
+        }
+
         if (!BsonClassMap.IsClassMapRegistered(typeof(UserDocument)))
         {
             BsonClassMap.RegisterClassMap<UserDocument>(cm =>
