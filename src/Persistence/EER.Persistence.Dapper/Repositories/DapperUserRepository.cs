@@ -75,6 +75,26 @@ internal sealed class DapperUserRepository : IUserRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task<bool> IsEmailExists(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               SELECT COUNT(1)
+                               FROM [Identity].[User]
+                               WHERE Email = @Email
+                           """;
+
+        var count = await _connection.ExecuteScalarAsync<int>(
+            new CommandDefinition(
+                sql,
+                new { Email = email },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
+
+        return count > 0;
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[User] WHERE Id = @Id";

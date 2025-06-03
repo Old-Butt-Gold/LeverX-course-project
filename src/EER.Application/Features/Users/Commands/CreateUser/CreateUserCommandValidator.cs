@@ -1,15 +1,19 @@
-﻿using FluentValidation;
+﻿using EER.Domain.DatabaseAbstractions;
+using FluentValidation;
 
 namespace EER.Application.Features.Users.Commands.CreateUser;
 
 public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
-    public CreateUserCommandValidator()
+    public CreateUserCommandValidator(IUserRepository userRepository)
     {
         RuleFor(x => x.CreateUserDto.Email)
             .NotEmpty()
             .EmailAddress()
-            .MaximumLength(150);
+            .MaximumLength(150)
+            .MustAsync(async (email, ct) =>
+                !await userRepository.IsEmailExists(email, cancellationToken: ct))
+            .WithMessage("Email already exists");
 
         RuleFor(x => x.CreateUserDto.Password)
             .NotEmpty()

@@ -25,11 +25,6 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
 
         _mapper.Map(command.UpdateCategoryDto, category);
 
-        if (await _repository.IsSlugExists(category.Slug, cancellationToken: cancellationToken))
-        {
-            throw new ConflictException($"Slug '{category.Slug}' already exists.");
-        }
-
         var updatedCategory = await _repository.UpdateAsync(category, cancellationToken: cancellationToken);
 
         return _mapper.Map<CategoryUpdatedDto>(updatedCategory);

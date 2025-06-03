@@ -54,6 +54,13 @@ internal sealed class EfUserRepository : IUserRepository
         return entity;
     }
 
+    public async Task<bool> IsEmailExists(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .AnyAsync(c => c.Email == email, cancellationToken);
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Users.FindAsync([id], cancellationToken);

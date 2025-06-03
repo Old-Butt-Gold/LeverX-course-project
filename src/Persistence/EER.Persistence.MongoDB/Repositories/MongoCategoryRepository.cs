@@ -43,11 +43,11 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
 
         var options = new InsertOneOptions();
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            await _collection.InsertOneAsync(
-                mongoTransaction.Session,
-                document, options, cancellationToken);
+            await _collection.InsertOneAsync(session, document, options, cancellationToken);
         }
         else
         {
@@ -75,16 +75,15 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
 
         CategoryDocument document;
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            document = await _collection.FindOneAndUpdateAsync(
-                mongoTransaction.Session,
-                filter, update, options, cancellationToken);
+            document = await _collection.FindOneAndUpdateAsync(session, filter, update, options, cancellationToken);
         }
         else
         {
-            document = await _collection.FindOneAndUpdateAsync(
-                filter, update, options, cancellationToken);
+            document = await _collection.FindOneAndUpdateAsync(filter, update, options, cancellationToken);
         }
 
         return MapToEntity(document);
@@ -97,15 +96,14 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
 
         var options = new CountOptions();
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            return await _collection.CountDocumentsAsync(
-                mongoTransaction.Session,
-                filter, options, cancellationToken) > 0;
+            return await _collection.CountDocumentsAsync(session, filter, options, cancellationToken) > 0;
         }
 
-        return await _collection.CountDocumentsAsync(
-            filter, options, cancellationToken) > 0;
+        return await _collection.CountDocumentsAsync(filter, options, cancellationToken) > 0;
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
@@ -116,11 +114,11 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
 
         DeleteResult result;
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            result = await _collection.DeleteOneAsync(
-                mongoTransaction.Session,
-                filter, options, cancellationToken);
+            result = await _collection.DeleteOneAsync(session, filter, options, cancellationToken);
         }
         else
         {

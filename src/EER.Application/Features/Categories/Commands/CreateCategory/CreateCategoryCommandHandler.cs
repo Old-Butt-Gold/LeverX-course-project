@@ -22,11 +22,6 @@ internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCateg
 
         var category = _mapper.Map<Category>(command.CreateCategoryDto);
 
-        if (await _repository.IsSlugExists(category.Slug, cancellationToken: cancellationToken))
-        {
-            throw new ConflictException($"Slug '{category.Slug}' already exists.");
-        }
-
         var createdCategory = await _repository.AddAsync(category, cancellationToken: cancellationToken);
 
         return _mapper.Map<CategoryCreatedDto>(createdCategory);

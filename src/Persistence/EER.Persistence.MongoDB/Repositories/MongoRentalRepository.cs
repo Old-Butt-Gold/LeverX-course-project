@@ -41,13 +41,11 @@ internal sealed class MongoRentalRepository : IRentalRepository
 
         var options = new InsertOneOptions();
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            await _collection.InsertOneAsync(
-                mongoTransaction.Session,
-                document,
-                options,
-                ct);
+            await _collection.InsertOneAsync(session, document, options, ct);
         }
         else
         {
@@ -77,16 +75,15 @@ internal sealed class MongoRentalRepository : IRentalRepository
 
         RentalDocument document;
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            document = await _collection.FindOneAndUpdateAsync(
-                mongoTransaction.Session,
-                filter, update, options, ct);
+            document = await _collection.FindOneAndUpdateAsync(session, filter, update, options, ct);
         }
         else
         {
-            document = await _collection.FindOneAndUpdateAsync(
-                filter, update, options, ct);
+            document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
         }
 
         return MapToEntity(document);
@@ -99,11 +96,11 @@ internal sealed class MongoRentalRepository : IRentalRepository
 
         DeleteResult result;
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            result = await _collection.DeleteOneAsync(
-                mongoTransaction.Session,
-                filter, options, ct);
+            result = await _collection.DeleteOneAsync(session, filter, options, ct);
         }
         else
         {

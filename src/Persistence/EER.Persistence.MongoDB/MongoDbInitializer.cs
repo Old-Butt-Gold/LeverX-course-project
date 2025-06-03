@@ -47,6 +47,8 @@ public class MongoDbInitializer
         var equipment = _database.GetCollection<EquipmentDocument>(_settings.EquipmentCollection);
         await equipment.Indexes.CreateManyAsync([
             new CreateIndexModel<EquipmentDocument>(
+                Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.IsModerated), new CreateIndexOptions { Name = "IX_Equipment_IsModerated"}),
+            new CreateIndexModel<EquipmentDocument>(
                 Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.CategoryId)),
             new CreateIndexModel<EquipmentDocument>(
                 Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.OwnerId)),
