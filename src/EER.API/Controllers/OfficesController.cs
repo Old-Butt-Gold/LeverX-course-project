@@ -5,12 +5,14 @@ using EER.Application.Features.Offices.Commands.UpdateOffice;
 using EER.Application.Features.Offices.Queries.GetAllOffices;
 using EER.Application.Features.Offices.Queries.GetOfficeById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public sealed class OfficesController : ControllerBase
 {
     private readonly ISender _sender;

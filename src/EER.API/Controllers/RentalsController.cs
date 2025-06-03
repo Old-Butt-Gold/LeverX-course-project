@@ -6,12 +6,14 @@ using EER.Application.Features.Rentals.Queries.GetAllRentals;
 using EER.Application.Features.Rentals.Queries.GetRentalById;
 using EER.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public sealed class RentalsController : ControllerBase
 {
     private readonly ISender _sender;

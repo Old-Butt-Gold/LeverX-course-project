@@ -99,6 +99,33 @@ internal sealed class MongoUserRepository : IUserRepository
         return await _collection.CountDocumentsAsync(filter, options, cancellationToken) > 0;
     }
 
+    public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<UserDocument>.Filter.Regex(
+            u => u.Email, email);
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        UserDocument? document;
+
+        if (session != null)
+        {
+            document = await _collection
+                .Find(session, filter)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+        else
+        {
+            document = await _collection
+                .Find(filter)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        return document is not null
+            ? MapToEntity(document)
+            : null;
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         DeleteResult result;

@@ -5,12 +5,14 @@ using EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
 using EER.Application.Features.EquipmentItems.Queries.GetAllEquipmentItems;
 using EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public sealed class EquipmentItemsController : ControllerBase
 {
     private readonly ISender _sender;

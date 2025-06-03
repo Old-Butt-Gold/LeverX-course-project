@@ -95,6 +95,24 @@ internal sealed class DapperUserRepository : IUserRepository
         return count > 0;
     }
 
+    public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               SELECT *
+                               FROM [Identity].[User]
+                               WHERE Email = @Email
+                           """;
+
+        return await _connection.QuerySingleOrDefaultAsync<User>(
+            new CommandDefinition(
+                sql,
+                new { Email = email },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[User] WHERE Id = @Id";

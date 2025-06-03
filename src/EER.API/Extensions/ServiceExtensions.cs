@@ -2,8 +2,10 @@
 using System.Text;
 using EER.API.CustomAttributes;
 using EER.API.Filters;
-using EER.API.Settings;
 using EER.API.SwaggerSchemaFilters;
+using EER.Application.Abstractions.Security;
+using EER.Application.Services.Security;
+using EER.Application.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -79,7 +81,8 @@ public static class ServiceExtensions
             {
                 Type = SecuritySchemeType.Http,
                 Description = "JWT Authorization header using the Bearer scheme.\n\n" +
-                              "Enter 'Bearer' [space] and then your token.\n\n" +
+                              "In Swagger just add your Token.\n\n" +
+                              "on other services enter 'Bearer' [space] and then your token.\n\n" +
                               "Example: \"Bearer 12345abcdef\"",
                 Name = "Authorization",
                 In = ParameterLocation.Header,
@@ -132,5 +135,7 @@ public static class ServiceExtensions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey))
                 };
             });
+
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
     }
 }
