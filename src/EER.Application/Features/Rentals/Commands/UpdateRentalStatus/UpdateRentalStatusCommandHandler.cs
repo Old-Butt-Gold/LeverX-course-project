@@ -29,6 +29,7 @@ internal sealed class UpdateRentalStatusCommandHandler
         // status of this rental anymore
 
         _mapper.Map(dto, existingRental);
+        existingRental.UpdatedBy = command.Manipulator;
 
         var updatedRental = await _repository.UpdateStatusAsync(existingRental, cancellationToken: cancellationToken);
 

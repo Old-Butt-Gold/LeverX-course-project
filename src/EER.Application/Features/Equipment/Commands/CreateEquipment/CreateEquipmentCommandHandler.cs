@@ -19,6 +19,8 @@ internal sealed class CreateEquipmentCommandHandler : IRequestHandler<CreateEqui
     public async Task<EquipmentCreatedDto> Handle(CreateEquipmentCommand command, CancellationToken cancellationToken)
     {
         var equipment = _mapper.Map<Domain.Entities.Equipment>(command.CreateEquipmentDto);
+        equipment.CreatedBy = command.Manipulator;
+        equipment.UpdatedBy = command.Manipulator;
 
         var createdEquipment = await _repository.AddAsync(equipment, cancellationToken: cancellationToken);
 

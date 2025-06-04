@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.EquipmentItems.Commands.CreateEquipmentItem;
 using EER.Application.Features.EquipmentItems.Commands.DeleteEquipmentItem;
 using EER.Application.Features.EquipmentItems.Commands.UpdateEquipmentItem;
@@ -78,7 +79,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateEquipmentItemDto item, CancellationToken cancellationToken)
     {
-        var command = new CreateEquipmentItemCommand(item);
+        var command = new CreateEquipmentItemCommand(item, User.GetUserId());
 
         var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
@@ -102,7 +103,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateEquipmentItemDto updatedItem, CancellationToken cancellationToken)
     {
-        var command = new UpdateEquipmentItemCommand(updatedItem);
+        var command = new UpdateEquipmentItemCommand(updatedItem, User.GetUserId());
 
         var item = await _sender.Send(command, cancellationToken);
         return Ok(item);

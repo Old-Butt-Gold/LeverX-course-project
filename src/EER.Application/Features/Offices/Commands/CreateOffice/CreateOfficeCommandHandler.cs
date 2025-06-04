@@ -19,6 +19,8 @@ internal sealed class CreateOfficeCommandHandler : IRequestHandler<CreateOfficeC
     public async Task<OfficeCreatedDto> Handle(CreateOfficeCommand command, CancellationToken cancellationToken)
     {
         var office = _mapper.Map<Office>(command.CreateOfficeDto);
+        office.CreatedBy = command.Manipulator;
+        office.UpdatedBy = command.Manipulator;
 
         var createdOffice = await _repository.AddAsync(office, cancellationToken: cancellationToken);
 

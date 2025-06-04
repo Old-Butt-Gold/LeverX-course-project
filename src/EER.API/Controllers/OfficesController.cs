@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Offices.Commands.CreateOffice;
 using EER.Application.Features.Offices.Commands.DeleteOffice;
 using EER.Application.Features.Offices.Commands.UpdateOffice;
@@ -78,7 +79,7 @@ public sealed class OfficesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateOfficeDto office, CancellationToken cancellationToken)
     {
-        var command = new CreateOfficeCommand(office);
+        var command = new CreateOfficeCommand(office, User.GetUserId());
 
         var createdOffice = await _sender.Send(command, cancellationToken);
 
@@ -103,7 +104,7 @@ public sealed class OfficesController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateOfficeDto updatedOffice, CancellationToken cancellationToken)
     {
-        var command = new UpdateOfficeCommand(updatedOffice);
+        var command = new UpdateOfficeCommand(updatedOffice, User.GetUserId());
 
         var office = await _sender.Send(command, cancellationToken);
         return Ok(office);

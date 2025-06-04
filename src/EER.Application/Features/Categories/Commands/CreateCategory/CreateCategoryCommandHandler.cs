@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
-using EER.Domain.Exceptions;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.CreateCategory;
@@ -21,6 +20,8 @@ internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCateg
     {
 
         var category = _mapper.Map<Category>(command.CreateCategoryDto);
+        category.CreatedBy = command.Manipulator;
+        category.UpdatedBy = command.Manipulator;
 
         var createdCategory = await _repository.AddAsync(category, cancellationToken: cancellationToken);
 

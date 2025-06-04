@@ -2,4 +2,4 @@
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
 
-public record UpdateCategoryCommand(UpdateCategoryDto UpdateCategoryDto) : IRequest<CategoryUpdatedDto>;
+public record UpdateCategoryCommand(UpdateCategoryDto UpdateCategoryDto, Guid Manipulator) : IRequest<CategoryUpdatedDto>;

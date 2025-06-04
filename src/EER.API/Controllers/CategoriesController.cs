@@ -1,10 +1,10 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Categories.Commands.CreateCategory;
 using EER.Application.Features.Categories.Commands.DeleteCategory;
 using EER.Application.Features.Categories.Commands.UpdateCategory;
 using EER.Application.Features.Categories.Queries.GetAllCategories;
 using EER.Application.Features.Categories.Queries.GetCategoryById;
-using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -79,7 +79,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCategoryDto category, CancellationToken cancellationToken)
     {
-        var command = new CreateCategoryCommand(category);
+        var command = new CreateCategoryCommand(category, User.GetUserId());
 
         var createdCategory = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
@@ -103,7 +103,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpPut()]
     public async Task<IActionResult> Update(UpdateCategoryDto updatedCategory, CancellationToken cancellationToken)
     {
-        var command = new UpdateCategoryCommand(updatedCategory);
+        var command = new UpdateCategoryCommand(updatedCategory, User.GetUserId());
 
         var category = await _sender.Send(command, cancellationToken);
         return Ok(category);

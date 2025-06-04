@@ -1,10 +1,10 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Equipment.Commands.CreateEquipment;
 using EER.Application.Features.Equipment.Commands.DeleteEquipment;
 using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
-using EER.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -80,7 +80,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateEquipmentDto equipment, CancellationToken cancellationToken)
     {
-        var command = new CreateEquipmentCommand(equipment);
+        var command = new CreateEquipmentCommand(equipment, User.GetUserId());
         var createdItem = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
@@ -103,7 +103,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateEquipmentDto updatedEquipment, CancellationToken cancellationToken)
     {
-        var command = new UpdateEquipmentCommand(updatedEquipment);
+        var command = new UpdateEquipmentCommand(updatedEquipment, User.GetUserId());
         var result = await _sender.Send(command, cancellationToken);
         return Ok(result);
     }

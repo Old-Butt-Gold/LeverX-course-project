@@ -2,4 +2,4 @@
 
 namespace EER.Application.Features.Offices.Commands.CreateOffice;
 
-public record CreateOfficeCommand(CreateOfficeDto CreateOfficeDto) : IRequest<OfficeCreatedDto>;
+public record CreateOfficeCommand(CreateOfficeDto CreateOfficeDto, Guid Manipulator) : IRequest<OfficeCreatedDto>;
