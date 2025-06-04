@@ -12,6 +12,15 @@
             createdBy: "UUID"
         }
     ],
+    refreshTokens: [
+        {
+            Id: "long",
+            Token: string,
+            CreatedAt: "DateTime",
+            ExpiresAt: "DateTime",
+            RevokedAt: "DateTime | null"
+        }
+    ],
     officeIds: ["int"],
     createdAt: "Date",
     updatedAt: "Date",
