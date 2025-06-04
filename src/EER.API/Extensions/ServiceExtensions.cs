@@ -6,6 +6,7 @@ using EER.API.SwaggerSchemaFilters;
 using EER.Application.Abstractions.Security;
 using EER.Application.Services.Security;
 using EER.Application.Settings;
+using EER.Domain.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -137,5 +138,38 @@ public static class ServiceExtensions
             });
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy("AnyRole", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Admin.ToString(), Role.Customer.ToString(), Role.Owner.ToString());
+            })
+            .AddPolicy("AdminOnly", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Admin.ToString());
+            })
+            .AddPolicy("OwnerOnly", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Owner.ToString());
+            })
+            .AddPolicy("OwnerOrAdmin", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Admin.ToString(), Role.Owner.ToString());
+            })
+            .AddPolicy("CustomerOrOwner", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Customer.ToString(), Role.Owner.ToString());
+            })
+            .AddPolicy("CustomerOnly", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireRole(Role.Customer.ToString());
+            });
+
     }
 }

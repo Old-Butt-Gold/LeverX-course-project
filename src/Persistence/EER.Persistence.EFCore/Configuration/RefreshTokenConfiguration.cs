@@ -14,6 +14,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         entity.HasIndex(e => e.Token, "UQ_RefreshToken_Token").IsUnique();
 
+        entity.HasIndex(e => e.UserId, "FK_RefreshToken_UserId");
+
         entity.Property(e => e.CreatedAt)
             .HasPrecision(2)
             .HasDefaultValueSql("(getutcdate())");
