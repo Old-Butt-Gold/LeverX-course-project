@@ -17,7 +17,6 @@ internal sealed class EfRefreshTokenRepository : IRefreshTokenRepository
     public async Task<RefreshToken?> GetByTokenAsync(string token, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         return await _context.RefreshTokens
-            .AsNoTracking()
             .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
     }
 

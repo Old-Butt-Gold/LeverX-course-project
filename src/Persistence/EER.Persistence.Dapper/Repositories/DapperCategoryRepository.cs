@@ -81,18 +81,19 @@ internal sealed class DapperCategoryRepository : ICategoryRepository
                 cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> IsSlugExists(string slug, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsSlugExistsAsync(string slug, int? excludeCategoryId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                SELECT COUNT(1)
                                FROM [Supplies].[Category]
                                WHERE Slug = @Slug
+                               AND (@ExcludeId IS NULL OR Id != @ExcludeId)
                            """;
 
         var count = await _connection.ExecuteScalarAsync<int>(
             new CommandDefinition(
                 sql,
-                new { Slug = slug },
+                new { Slug = slug, ExcludeId = excludeCategoryId },
                 transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken
             )

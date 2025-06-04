@@ -12,7 +12,7 @@ public class RegisterAdminCommandValidator : AbstractValidator<RegisterAdminComm
             .EmailAddress()
             .MaximumLength(150)
             .MustAsync(async (email, ct) =>
-                !await userRepository.IsEmailExists(email, cancellationToken: ct))
+                !await userRepository.IsEmailExistsAsync(email, cancellationToken: ct))
             .WithMessage("Email already exists");
 
         RuleFor(x => x.AdminDto.Password)

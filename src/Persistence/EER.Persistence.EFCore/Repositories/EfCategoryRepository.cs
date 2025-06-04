@@ -54,11 +54,18 @@ internal sealed class EfCategoryRepository : ICategoryRepository
         return entity;
     }
 
-    public async Task<bool> IsSlugExists(string slug, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsSlugExistsAsync(string slug, int? excludeCategoryId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        return await _context.Categories
+        var query = _context.Categories
             .AsNoTracking()
-            .AnyAsync(c => c.Slug == slug, cancellationToken);
+            .Where(c => c.Slug == slug);
+
+        if (excludeCategoryId.HasValue)
+        {
+            query = query.Where(c => c.Id != excludeCategoryId.Value);
+        }
+
+        return await query.AnyAsync(cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

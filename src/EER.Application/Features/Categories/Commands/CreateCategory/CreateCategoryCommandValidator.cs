@@ -20,7 +20,7 @@ public class CreateCategoryCommandValidator : AbstractValidator<CreateCategoryCo
             .Length(3, 100)
             .Matches("^[a-z0-9-]+$").WithMessage("Slug can only contain lowercase letters, numbers and hyphens")
             .MustAsync(async (slug, ct) =>
-                    !await categoryRepository.IsSlugExists(slug, cancellationToken: ct))
+                    !await categoryRepository.IsSlugExistsAsync(slug, cancellationToken: ct))
             .WithMessage("Slug already exists");
     }
 }

@@ -75,18 +75,19 @@ internal sealed class DapperUserRepository : IUserRepository
                 cancellationToken: cancellationToken));
     }
 
-    public async Task<bool> IsEmailExists(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsEmailExistsAsync(string email, Guid? excludeUserId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                SELECT COUNT(1)
                                FROM [Identity].[User]
                                WHERE Email = @Email
+                               AND (@ExcludeId IS NULL OR Id != @ExcludeId)
                            """;
 
         var count = await _connection.ExecuteScalarAsync<int>(
             new CommandDefinition(
                 sql,
-                new { Email = email },
+                new { Email = email, ExcludeId = excludeUserId },
                 transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken
             )

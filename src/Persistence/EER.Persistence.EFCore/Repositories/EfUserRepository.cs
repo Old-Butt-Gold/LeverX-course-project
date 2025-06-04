@@ -54,11 +54,18 @@ internal sealed class EfUserRepository : IUserRepository
         return entity;
     }
 
-    public async Task<bool> IsEmailExists(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsEmailExistsAsync(string email, Guid? excludeUserId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        return await _context.Users
+        var query = _context.Users
             .AsNoTracking()
-            .AnyAsync(c => c.Email == email, cancellationToken);
+            .Where(u => u.Email == email);
+
+        if (excludeUserId.HasValue)
+        {
+            query = query.Where(u => u.Id != excludeUserId.Value);
+        }
+
+        return await query.AnyAsync(cancellationToken);
     }
 
     public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)

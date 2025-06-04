@@ -14,8 +14,8 @@ public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
             .NotEmpty()
             .EmailAddress()
             .MaximumLength(150)
-            .MustAsync(async (email, ct) =>
-                !await userRepository.IsEmailExists(email, cancellationToken: ct))
+            .MustAsync(async (dto, email, ct) =>
+                !await userRepository.IsEmailExistsAsync(email, excludeUserId: dto.UpdateUserDto.Id, cancellationToken: ct))
             .WithMessage("Email already exists");
 
         RuleFor(x => x.UpdateUserDto.FullName)

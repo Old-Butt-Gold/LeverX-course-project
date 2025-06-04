@@ -82,9 +82,14 @@ internal sealed class MongoUserRepository : IUserRepository
         return MapToEntity(userDocument);
     }
 
-    public async Task<bool> IsEmailExists(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsEmailExistsAsync(string email, Guid? excludeUserId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var filter = Builders<UserDocument>.Filter.Eq(u => u.Email, email);
+
+        if (excludeUserId.HasValue)
+        {
+            filter &= Builders<UserDocument>.Filter.Ne(c => c.Id, excludeUserId.Value);
+        }
 
         var options = new CountOptions();
 

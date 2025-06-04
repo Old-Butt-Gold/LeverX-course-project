@@ -89,10 +89,15 @@ internal sealed class MongoCategoryRepository : ICategoryRepository
         return MapToEntity(document);
     }
 
-    public async Task<bool> IsSlugExists(string slug, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<bool> IsSlugExistsAsync(string slug, int? excludeCategoryId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var filter = Builders<CategoryDocument>.Filter.Eq(
             x => x.Slug, slug);
+
+        if (excludeCategoryId.HasValue)
+        {
+            filter &= Builders<CategoryDocument>.Filter.Ne(c => c.Id, excludeCategoryId.Value);
+        }
 
         var options = new CountOptions();
 

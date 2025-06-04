@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Exceptions;
 using MediatR;
 
 namespace EER.Application.Features.Categories.Commands.UpdateCategory;
