@@ -13,4 +13,5 @@ public class DatabaseSettings
     public string CategoryCollection { get; set; } = null!;
     public string RentalCollection { get; set; } = null!;
     public string ImagesEmbedded { get; set; } = null!;
+    public string RefreshTokensEmbedded { get; set; } = null!;
 }

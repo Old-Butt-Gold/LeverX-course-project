@@ -24,4 +24,6 @@ public class User : BaseEntity<Guid>
     public virtual ICollection<Rental> RentalOwners { get; set; } = [];
 
     public virtual ICollection<Review> Reviews { get; set; } = [];
+
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = [];
 }

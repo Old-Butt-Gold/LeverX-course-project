@@ -2,5 +2,5 @@
 
 namespace EER.Application.Features.Rentals.Commands.CreateRental;
 
-public record CreateRentalCommand(CreateRentalDto CreateRentalDto)
+public record CreateRentalCommand(CreateRentalDto CreateRentalDto, Guid Manipulator)
     : IRequest<RentalCreatedDto>;

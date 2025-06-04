@@ -22,6 +22,8 @@ internal sealed class CreateRentalCommandHandler
         // TODO work with equipmentItems ids and array, set their ItemState as Active and etc.
         // Total Price will be send as
         var rental = _mapper.Map<Rental>(command.CreateRentalDto);
+        rental.CreatedBy = command.Manipulator;
+        rental.UpdatedBy = command.Manipulator;
 
         var createdRental = await _repository.AddAsync(rental, cancellationToken: cancellationToken);
 

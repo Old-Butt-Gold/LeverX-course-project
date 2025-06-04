@@ -1,17 +1,19 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Rentals.Commands.CreateRental;
 using EER.Application.Features.Rentals.Commands.DeleteRental;
 using EER.Application.Features.Rentals.Commands.UpdateRentalStatus;
 using EER.Application.Features.Rentals.Queries.GetAllRentals;
 using EER.Application.Features.Rentals.Queries.GetRentalById;
-using EER.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public sealed class RentalsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -77,7 +79,7 @@ public sealed class RentalsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateRentalDto rental, CancellationToken cancellationToken)
     {
-        var command = new CreateRentalCommand(rental);
+        var command = new CreateRentalCommand(rental, User.GetUserId());
 
         var createdRental = await _sender.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
@@ -101,7 +103,7 @@ public sealed class RentalsController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
-        var command = new UpdateRentalStatusCommand(rentalDto);
+        var command = new UpdateRentalStatusCommand(rentalDto, User.GetUserId());
 
         var rental = await _sender.Send(command, cancellationToken);
         return Ok(rental);

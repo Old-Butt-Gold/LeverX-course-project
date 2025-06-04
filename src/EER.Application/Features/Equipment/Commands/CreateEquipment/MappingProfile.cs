@@ -12,10 +12,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TotalReviews, opt => opt.MapFrom(_ => 0))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
-            // TODO Fix Later
-            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            // TODO Fix Later
-            .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(_ => Guid.NewGuid()))
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.IsModerated, opt => opt.MapFrom(_ => false))
             .ForMember(dest => dest.Category, opt => opt.Ignore())
             .ForMember(dest => dest.EquipmentImages, opt => opt.Ignore())

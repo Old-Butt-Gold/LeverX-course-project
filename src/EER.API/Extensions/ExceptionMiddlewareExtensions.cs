@@ -1,11 +1,13 @@
 ﻿using System.Net.Mime;
 using System.Xml.Serialization;
 using EER.API.ProblemDetailsXml;
+using EER.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
 namespace EER.API.Extensions;
@@ -25,6 +27,8 @@ public static class ExceptionMiddlewareExtensions
 
                 var statusCode = contextFeature.Error switch
                 {
+                    UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+                    ConflictException => StatusCodes.Status409Conflict,
                     ValidationException => StatusCodes.Status400BadRequest,
                     KeyNotFoundException => StatusCodes.Status404NotFound,
                     OperationCanceledException => StatusCodes.Status499ClientClosedRequest,

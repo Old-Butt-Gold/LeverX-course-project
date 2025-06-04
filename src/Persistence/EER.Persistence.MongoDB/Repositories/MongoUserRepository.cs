@@ -38,13 +38,11 @@ internal sealed class MongoUserRepository : IUserRepository
         var document = MapToDocument(user);
         var options = new InsertOneOptions();
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            await _collection.InsertOneAsync(
-                mongoTransaction.Session,
-                document,
-                options,
-                cancellationToken);
+            await _collection.InsertOneAsync(session, document, options, cancellationToken);
         }
         else
         {
@@ -70,11 +68,11 @@ internal sealed class MongoUserRepository : IUserRepository
 
         UserDocument userDocument;
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
-            userDocument = await _collection.FindOneAndUpdateAsync(
-                mongoTransaction.Session,
-                filter, update, options, cancellationToken);
+            userDocument = await _collection.FindOneAndUpdateAsync(session, filter, update, options, cancellationToken);
         }
         else
         {
@@ -84,21 +82,70 @@ internal sealed class MongoUserRepository : IUserRepository
         return MapToEntity(userDocument);
     }
 
+    public async Task<bool> IsEmailExistsAsync(string email, Guid? excludeUserId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<UserDocument>.Filter.Eq(u => u.Email, email);
+
+        if (excludeUserId.HasValue)
+        {
+            filter &= Builders<UserDocument>.Filter.Ne(c => c.Id, excludeUserId.Value);
+        }
+
+        var options = new CountOptions();
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
+        {
+            return await _collection.CountDocumentsAsync(
+                session, filter, options, cancellationToken) > 0;
+        }
+
+        return await _collection.CountDocumentsAsync(filter, options, cancellationToken) > 0;
+    }
+
+    public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<UserDocument>.Filter.Regex(
+            u => u.Email, email);
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        UserDocument? document;
+
+        if (session != null)
+        {
+            document = await _collection
+                .Find(session, filter)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+        else
+        {
+            document = await _collection
+                .Find(filter)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        return document is not null
+            ? MapToEntity(document)
+            : null;
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         DeleteResult result;
         DeleteOptions deleteOptions = new();
 
-        if (transaction is MongoTransactionManager.MongoTransaction mongoTransaction)
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
         {
             result = await _collection.DeleteOneAsync(
-                mongoTransaction.Session,
-                u => u.Id == id, deleteOptions, cancellationToken);
+                session, u => u.Id == id, deleteOptions, cancellationToken);
         }
         else
         {
-            result = await _collection.DeleteOneAsync(
-                u => u.Id == id, cancellationToken);
+            result = await _collection.DeleteOneAsync(u => u.Id == id, cancellationToken);
         }
 
         return result.DeletedCount > 0;

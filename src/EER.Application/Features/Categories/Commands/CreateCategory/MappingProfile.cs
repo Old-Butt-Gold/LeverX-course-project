@@ -12,10 +12,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TotalEquipment, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
-            // TODO Later fix
-            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            // TODO Later fix
-            .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(_ => Guid.NewGuid()))
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
             .ForMember(dest => dest.Equipment, opt => opt.Ignore());
 
         CreateMap<Category, CategoryCreatedDto>();

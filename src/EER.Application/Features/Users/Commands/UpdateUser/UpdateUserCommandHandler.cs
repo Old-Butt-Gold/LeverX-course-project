@@ -26,8 +26,6 @@ internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserComma
 
         _mapper.Map(command.UpdateUserDto, user);
 
-        // TODO check if updated Email is unique still
-
         var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken: cancellationToken);
         return _mapper.Map<UserUpdatedDto>(updatedUser);
     }

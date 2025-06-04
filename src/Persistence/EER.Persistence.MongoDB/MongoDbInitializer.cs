@@ -41,11 +41,25 @@ public class MongoDbInitializer
             new CreateIndexModel<UserDocument>(
                 Builders<UserDocument>.IndexKeys.Ascending("Favorites.EquipmentId")),
             new CreateIndexModel<UserDocument>(
-                Builders<UserDocument>.IndexKeys.Ascending("Favorites.CreatedAt"))
+                Builders<UserDocument>.IndexKeys.Ascending("Favorites.CreatedAt")),
+            new CreateIndexModel<UserDocument>(
+                Builders<UserDocument>.IndexKeys.Ascending("RefreshTokens.Token"),
+                new CreateIndexOptions { Name = "IX_RefreshTokens_Token", Unique = true, }),
+            new CreateIndexModel<UserDocument>(
+                Builders<UserDocument>.IndexKeys
+                    .Ascending(u => u.Id)
+                    .Ascending("RefreshTokens.RevokedAt"),
+                new CreateIndexOptions { Name = "IX_User_RefreshTokens" }
+            ),
+            new CreateIndexModel<UserDocument>(Builders<UserDocument>.IndexKeys
+                .Ascending("RefreshTokens.ExpiresAt"),
+                new CreateIndexOptions { Name = "TTL_RefreshTokens", ExpireAfter = TimeSpan.FromDays(14), }),
         ]);
 
         var equipment = _database.GetCollection<EquipmentDocument>(_settings.EquipmentCollection);
         await equipment.Indexes.CreateManyAsync([
+            new CreateIndexModel<EquipmentDocument>(
+                Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.IsModerated), new CreateIndexOptions { Name = "IX_Equipment_IsModerated"}),
             new CreateIndexModel<EquipmentDocument>(
                 Builders<EquipmentDocument>.IndexKeys.Ascending(e => e.CategoryId)),
             new CreateIndexModel<EquipmentDocument>(
@@ -117,7 +131,8 @@ public class MongoDbInitializer
             (_settings.OfficeCollection, 1, 0),
             (_settings.RentalCollection, 1, 0),
             (_settings.EquipmentItemCollection, 0, 1),
-            (_settings.ImagesEmbedded, 1, 0)
+            (_settings.ImagesEmbedded, 1, 0),
+            (_settings.RefreshTokensEmbedded, 0, 1)
         };
 
         var collection = _database.GetCollection<SequenceDocument>("sequences");

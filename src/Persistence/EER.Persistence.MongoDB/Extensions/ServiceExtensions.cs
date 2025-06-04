@@ -38,6 +38,7 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IEquipmentRepository, MongoEquipmentRepository>();
         serviceCollection.AddScoped<IEquipmentItemRepository, MongoEquipmentItemRepository>();
         serviceCollection.AddScoped<ICategoryRepository, MongoCategoryRepository>();
+        serviceCollection.AddScoped<IRefreshTokenRepository, MongoRefreshTokenRepository>();
 
         serviceCollection.AddScoped<ITransactionManager, MongoTransactionManager>();
 

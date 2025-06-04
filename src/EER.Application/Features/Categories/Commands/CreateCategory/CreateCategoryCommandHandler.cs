@@ -18,8 +18,10 @@ internal sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCateg
 
     public async Task<CategoryCreatedDto> Handle(CreateCategoryCommand command, CancellationToken cancellationToken)
     {
-        // TODO Later if Slug is unique check
+
         var category = _mapper.Map<Category>(command.CreateCategoryDto);
+        category.CreatedBy = command.Manipulator;
+        category.UpdatedBy = command.Manipulator;
 
         var createdCategory = await _repository.AddAsync(category, cancellationToken: cancellationToken);
 

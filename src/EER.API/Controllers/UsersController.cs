@@ -1,16 +1,17 @@
 ﻿using System.Net.Mime;
-using EER.Application.Features.Users.Commands.CreateUser;
 using EER.Application.Features.Users.Commands.DeleteUser;
 using EER.Application.Features.Users.Commands.UpdateUser;
 using EER.Application.Features.Users.Queries.GetAllUsers;
 using EER.Application.Features.Users.Queries.GetUserById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public sealed class UsersController : ControllerBase
 {
     private readonly ISender _sender;
@@ -56,30 +57,6 @@ public sealed class UsersController : ControllerBase
     {
         var user = await _sender.Send(new GetUserByIdQuery(id), cancellationToken);
         return user is not null ? Ok(user) : NotFound();
-    }
-
-    // POST: api/users
-    /// <summary>
-    /// Creates a new user.
-    /// </summary>
-    /// <param name="user">The user to create. Note: PasswordHash should contain the plain password, which will be hashed by the server.</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The created user.</returns>
-    /// <response code="201">Returns the created user ID.</response>
-    /// <response code="400">If the user data is invalid.</response>
-    /// <response code="406">The requested content type is not supported.</response>
-    [Consumes(MediaTypeNames.Application.Json)]
-    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(UserCreatedDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateUserDto user, CancellationToken cancellationToken)
-    {
-        var command = new CreateUserCommand(user);
-
-        var createdUser = await _sender.Send(command, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
 
     // PUT: api/users/1

@@ -22,9 +22,8 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {command.UpdateCategoryDto.Id} not found");
 
-        // TODO check if Slug is still unique
-
         _mapper.Map(command.UpdateCategoryDto, category);
+        category.UpdatedBy = command.Manipulator;
 
         var updatedCategory = await _repository.UpdateAsync(category, cancellationToken: cancellationToken);
 

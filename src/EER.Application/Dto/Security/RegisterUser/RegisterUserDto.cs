@@ -1,8 +1,8 @@
 ﻿using EER.Domain.Enums;
 
-namespace EER.Application.Features.Users.Commands.CreateUser;
+namespace EER.Application.Dto.Security.RegisterUser;
 
-public record CreateUserDto
+public record RegisterUserDto
 {
     public required string Email { get; init; }
     public required string Password { get; init; }

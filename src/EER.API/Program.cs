@@ -27,6 +27,7 @@ builder.Services.ConfigureControllers();
 builder.Services.ConfigureCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
+builder.Services.ConfigureJwt(builder.Configuration);
 
 var app = builder.Build();
 
@@ -43,6 +44,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("CorsGlobalPolicy");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

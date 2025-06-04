@@ -1,24 +1,22 @@
-﻿using FluentValidation;
+﻿using EER.Application.Dto.Security.Login;
+using FluentValidation;
 
-namespace EER.Application.Features.Users.Commands.CreateUser;
+namespace EER.Application.Validators.Security;
 
-public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+public class LoginUserValidator : AbstractValidator<LoginUserDto>
 {
-    public CreateUserCommandValidator()
+    public LoginUserValidator()
     {
-        RuleFor(x => x.CreateUserDto.Email)
+        RuleFor(x => x.Email)
             .NotEmpty()
             .EmailAddress()
             .MaximumLength(150);
 
-        RuleFor(x => x.CreateUserDto.Password)
+        RuleFor(x => x.Password)
             .NotEmpty()
             .MinimumLength(8)
             .Matches("[A-Z]").WithMessage("The password must contain at least one capital letter")
             .Matches("[a-z]").WithMessage("The password must contain at least one lowercase letter")
             .Matches("[0-9]").WithMessage("The password must contain at least one digit");
-
-        RuleFor(x => x.CreateUserDto.UserRole)
-            .IsInEnum();
     }
 }

@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
 
     public virtual DbSet<EquipmentImages> EquipmentImages { get; set; }
 
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
     public virtual DbSet<EquipmentItem> EquipmentItems { get; set; }
 
     public virtual DbSet<Favorites> Favorites { get; set; }
@@ -47,6 +49,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new RentalItemConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
-
+        modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 }

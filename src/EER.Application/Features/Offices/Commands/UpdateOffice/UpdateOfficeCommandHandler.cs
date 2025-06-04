@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using EER.Domain.DatabaseAbstractions;
-using EER.Domain.Entities;
 using MediatR;
 
 namespace EER.Application.Features.Offices.Commands.UpdateOffice;
@@ -26,6 +25,7 @@ internal sealed class UpdateOfficeCommandHandler : IRequestHandler<UpdateOfficeC
             throw new KeyNotFoundException($"Office with ID {updatedDto.Id} not found");
 
         _mapper.Map(updatedDto, office);
+        office.UpdatedBy = command.Manipulator;
 
         var updatedOffice = await _repository.UpdateAsync(office, cancellationToken: cancellationToken);
 

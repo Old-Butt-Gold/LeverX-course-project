@@ -2,5 +2,5 @@
 
 namespace EER.Application.Features.EquipmentItems.Commands.CreateEquipmentItem;
 
-public record CreateEquipmentItemCommand(CreateEquipmentItemDto CreateEquipmentItemDto)
+public record CreateEquipmentItemCommand(CreateEquipmentItemDto CreateEquipmentItemDto, Guid Manipulator)
     : IRequest<EquipmentItemCreatedDto>;
