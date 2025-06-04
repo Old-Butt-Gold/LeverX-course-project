@@ -1,4 +1,4 @@
-﻿namespace EER.Application.Features.Authentication.Commands.RegisterAdmin;
+﻿namespace EER.Application.Dto.Security.RegisterAdmin;
 
 public record RegisterAdminDto
 {

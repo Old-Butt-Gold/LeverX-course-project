@@ -1,4 +1,4 @@
-﻿namespace EER.Application.Features.Authentication.Commands.RefreshToken;
+﻿namespace EER.Application.Dto.Security.RefreshToken;
 
 public class RefreshTokenResultDto
 {

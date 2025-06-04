@@ -1,4 +1,4 @@
-﻿namespace EER.Application.Features.Authentication.Commands.LoginUser;
+﻿namespace EER.Application.Dto.Security.Login;
 
 public class UserLoggedDto
 {

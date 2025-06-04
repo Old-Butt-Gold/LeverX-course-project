@@ -1,13 +1,11 @@
 ﻿using System.Net.Mime;
+using EER.Application.Abstractions.Security;
+using EER.Application.Dto.Security.Login;
+using EER.Application.Dto.Security.RefreshToken;
+using EER.Application.Dto.Security.RegisterAdmin;
+using EER.Application.Dto.Security.RegisterUser;
 using EER.Application.Extensions;
-using EER.Application.Features.Authentication.Commands.LoginUser;
-using EER.Application.Features.Authentication.Commands.Logout;
-using EER.Application.Features.Authentication.Commands.LogoutAll;
-using EER.Application.Features.Authentication.Commands.RefreshToken;
-using EER.Application.Features.Authentication.Commands.RegisterAdmin;
-using EER.Application.Features.Users.Commands.CreateUser;
 using EER.Application.Settings;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -19,13 +17,13 @@ namespace EER.API.Controllers;
 [Authorize(Policy = "AnyRole")]
 public class AuthenticationController : ControllerBase
 {
-    private readonly ISender _sender;
+    private readonly IAuthenticationService _authenticationService;
     private readonly JwtSettings _jwtSettings;
 
-    public AuthenticationController(ISender sender, IOptions<JwtSettings> options)
+    public AuthenticationController(IAuthenticationService authenticationService, IOptions<JwtSettings> options)
     {
-        _sender = sender;
         _jwtSettings = options.Value;
+        _authenticationService = authenticationService;
     }
 
     // POST: api/authentication/register
@@ -43,17 +41,14 @@ public class AuthenticationController : ControllerBase
     /// <response code="406">The requested content type is not supported.</response>
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
-    [ProducesResponseType(typeof(UserCreatedDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost("register")]
     [AllowAnonymous]
-    public async Task<IActionResult> Register(CreateUserDto user, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register(RegisterUserDto user, CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand(user);
-
-        await _sender.Send(command, cancellationToken);
-
+        await _authenticationService.RegisterUserAsync(user, cancellationToken);
         return Created();
     }
 
@@ -82,9 +77,7 @@ public class AuthenticationController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> RegisterAdmin(RegisterAdminDto adminDto, CancellationToken cancellationToken)
     {
-        var command = new RegisterAdminCommand(adminDto);
-
-        await _sender.Send(command, cancellationToken);
+        await _authenticationService.RegisterAdminAsync(adminDto, cancellationToken);
 
         return Created();
     }
@@ -112,9 +105,7 @@ public class AuthenticationController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginUserDto loginDto, CancellationToken cancellationToken)
     {
-        var command = new LoginUserCommand(loginDto);
-
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await _authenticationService.LoginAsync(loginDto, cancellationToken);
 
         if (!result.IsSuccess)
             return Unauthorized();
@@ -160,8 +151,7 @@ public class AuthenticationController : ControllerBase
             RefreshToken = refreshToken,
         };
 
-        var command = new RefreshTokenCommand(dto);
-        var result = await _sender.Send(command, cancellationToken);
+        var result = await _authenticationService.RefreshTokenAsync(dto, cancellationToken);
 
         Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
         {
@@ -195,7 +185,7 @@ public class AuthenticationController : ControllerBase
         if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
             return BadRequest("Refresh token not found");
 
-        await _sender.Send(new LogoutCommand(refreshToken), cancellationToken);
+        await _authenticationService.LogoutAsync(refreshToken, cancellationToken);
 
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {
@@ -224,7 +214,7 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        await _sender.Send(new LogoutAllCommand(userId), cancellationToken);
+        await _authenticationService.LogoutAllAsync(userId, cancellationToken);
 
         Response.Cookies.Delete("refreshToken", new CookieOptions
         {

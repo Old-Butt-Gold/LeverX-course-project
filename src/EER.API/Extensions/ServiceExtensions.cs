@@ -138,6 +138,7 @@ public static class ServiceExtensions
             });
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         services.AddAuthorizationBuilder()
             .AddPolicy("AnyRole", policy =>
