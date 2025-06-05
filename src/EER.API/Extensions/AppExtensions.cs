@@ -41,10 +41,5 @@ public static class AppExtensions
                 [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
             }
         });
-
-        app.UseHealthChecksUI(options =>
-        {
-            options.UIPath = "/health-ui";
-        });
     }
 }

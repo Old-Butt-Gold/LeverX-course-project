@@ -20,10 +20,16 @@ public static class ExceptionMiddlewareExtensions
         {
             appError.Run(async context =>
             {
+                var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
 
+                logger.LogError("Exception handler triggered for request {Path}", context.Request.Path);
+
                 if (contextFeature is null)
+                {
+                    logger.LogWarning("Exception handler called but no exception found");
                     return;
+                }
 
                 var statusCode = contextFeature.Error switch
                 {

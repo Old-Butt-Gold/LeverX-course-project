@@ -8,14 +8,15 @@ using EER.Application.Abstractions.Security;
 using EER.Application.Services.Security;
 using EER.Application.Settings;
 using EER.Domain.Enums;
-using EER.Persistence.MongoDB.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace EER.API.Extensions;
 
@@ -256,12 +257,28 @@ public static class ServiceExtensions
                     description: $"Working set: {memory / 1024 / 1024} MB",
                     data: new Dictionary<string, object> { ["limit"] = oneGb });
             }, tags: ["system", "memory"]);
+    }
 
-        services.AddHealthChecksUI(setup =>
-            {
-                setup.AddHealthCheckEndpoint("API", "/health");
-                setup.SetEvaluationTimeInSeconds(3600);
-                setup.SetMinimumSecondsBetweenFailureNotifications(60);
-            }).AddInMemoryStorage();
+    public static void ConfigureSerilog(this IServiceCollection services)
+    {
+        services.AddSerilog(config =>
+        {
+            config.MinimumLevel.Is(LogEventLevel.Verbose)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Diagnostics", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Information)
+                .Enrich.FromLogContext();
+
+            config.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}",
+                restrictedToMinimumLevel: LogEventLevel.Information, theme: AnsiConsoleTheme.Code);
+
+            config.WriteTo.File(path: Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "logs"), "logfile-.txt"),
+                rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7,
+                restrictedToMinimumLevel: LogEventLevel.Information, fileSizeLimitBytes: 10 * 1024 * 1024,
+                rollOnFileSizeLimit: true,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} | {Level:u} | [{SourceContext}] | {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}");
+        });
     }
 }
