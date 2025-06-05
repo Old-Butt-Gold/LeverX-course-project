@@ -17,10 +17,12 @@ namespace EER.API.Controllers;
 public sealed class CategoriesController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ILogger<CategoriesController> _logger;
 
-    public CategoriesController(ISender sender)
+    public CategoriesController(ISender sender, ILogger<CategoriesController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
     // GET: api/categories
@@ -36,6 +38,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested all categories", User.GetUserId());
         var categories = await _sender.Send(new GetAllCategoriesQuery(), cancellationToken);
         return Ok(categories);
     }
@@ -57,6 +60,7 @@ public sealed class CategoriesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested category ID: {CategoryId}", User.GetUserId(), id);
         var category = await _sender.Send(new GetCategoryByIdQuery(id), cancellationToken);
         return category is not null ? Ok(category) : NotFound();
     }
@@ -79,9 +83,13 @@ public sealed class CategoriesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCategoryDto category, CancellationToken cancellationToken)
     {
-        var command = new CreateCategoryCommand(category, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} creating new category: {@CategoryData}", userId, category);
+        var command = new CreateCategoryCommand(category, userId);
 
         var createdCategory = await _sender.Send(command, cancellationToken);
+        _logger.LogInformation("User {UserId} created category ID: {CategoryId}", userId, createdCategory.Id);
+
         return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
     }
 
@@ -103,9 +111,13 @@ public sealed class CategoriesController : ControllerBase
     [HttpPut()]
     public async Task<IActionResult> Update(UpdateCategoryDto updatedCategory, CancellationToken cancellationToken)
     {
-        var command = new UpdateCategoryCommand(updatedCategory, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} updating category ID: {CategoryId}", userId, updatedCategory.Id);
 
+        var command = new UpdateCategoryCommand(updatedCategory, userId);
         var category = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} updated category ID: {CategoryId}", userId, updatedCategory.Id);
         return Ok(category);
     }
 
@@ -126,6 +138,9 @@ public sealed class CategoriesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} deleting category ID: {CategoryId}", userId, id);
+
         var result = await _sender.Send(new DeleteCategoryCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
     }

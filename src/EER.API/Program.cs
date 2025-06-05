@@ -9,7 +9,7 @@ using EER.Persistence.MongoDB.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // API
-builder.Services.ConfigureSerilog();
+builder.Services.ConfigureSerilog(builder.Environment);
 builder.Services.ConfigureControllers();
 builder.Services.ConfigureCors();
 builder.Services.AddEndpointsApiExplorer();

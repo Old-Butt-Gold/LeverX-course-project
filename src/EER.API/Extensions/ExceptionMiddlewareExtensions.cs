@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using System.Security.Claims;
 using System.Xml.Serialization;
 using EER.API.ProblemDetailsXml;
 using EER.Domain.Exceptions;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
 namespace EER.API.Extensions;
@@ -22,8 +22,6 @@ public static class ExceptionMiddlewareExtensions
             {
                 var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-
-                logger.LogError("Exception handler triggered for request {Path}", context.Request.Path);
 
                 if (contextFeature is null)
                 {
@@ -42,6 +40,11 @@ public static class ExceptionMiddlewareExtensions
                 };
 
                 context.Response.StatusCode = statusCode;
+
+                var userId = context.User.FindFirst(ClaimTypes.Sid)?.Value ?? "Anonymous";
+
+                logger.LogError("Exception: {ExceptionType} | User: {UserId} | Path: {Path} | Method: {Method} | StatusCode: {StatusCode}",
+                    contextFeature.Error.GetType().Name, userId, context.Request.Path, context.Request.Method, statusCode);
 
                 var problemDetailsFactory = context.RequestServices.GetRequiredService<ProblemDetailsFactory>();
                 object pd;

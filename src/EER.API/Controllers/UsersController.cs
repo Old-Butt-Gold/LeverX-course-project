@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.Application.Extensions;
 using EER.Application.Features.Users.Commands.DeleteUser;
 using EER.Application.Features.Users.Commands.UpdateUser;
 using EER.Application.Features.Users.Queries.GetAllUsers;
@@ -15,10 +16,12 @@ namespace EER.API.Controllers;
 public sealed class UsersController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(ISender sender)
+    public UsersController(ISender sender, ILogger<UsersController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
     // GET: api/users
@@ -34,6 +37,7 @@ public sealed class UsersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested all users", User.GetUserId());
         var users = await _sender.Send(new GetAllUsersQuery(), cancellationToken);
         return Ok(users);
     }
@@ -55,6 +59,7 @@ public sealed class UsersController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested user ID: {TargetUserId}", User.GetUserId(), id);
         var user = await _sender.Send(new GetUserByIdQuery(id), cancellationToken);
         return user is not null ? Ok(user) : NotFound();
     }
@@ -77,7 +82,12 @@ public sealed class UsersController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateUserDto updatedUser, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} updating user ID: {TargetUserId}", userId, updatedUser.Id);
+
         var user = await _sender.Send(new UpdateUserCommand(updatedUser), cancellationToken);
+
+        _logger.LogInformation("User {UserId} updated user ID: {TargetUserId}", userId, updatedUser.Id);
         return Ok(user);
     }
 
@@ -97,6 +107,9 @@ public sealed class UsersController : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} deleting user ID: {TargetUserId}", userId, id);
+
         var result = await _sender.Send(new DeleteUserCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
     }
