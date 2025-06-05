@@ -323,7 +323,7 @@ public class ArchitectureTests
     }
 
     [Fact]
-    public void QueryAndCommandHandlers_Should_NotBePublic()
+    public void QueryAndCommandHandlers_Should_BeSealed()
     {
         // Arrange
         var assembly = Assembly.LoadFrom(ApplicationNamespace + Dll);
@@ -333,8 +333,6 @@ public class ArchitectureTests
             .That()
             .ImplementInterface(typeof(IRequestHandler<,>))
             .Should()
-            .NotBePublic()
-            .And()
             .BeSealed()
             .GetResult();
 

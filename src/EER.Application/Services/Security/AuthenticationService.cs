@@ -60,7 +60,10 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<UserLoggedDto> LoginAsync(LoginUserDto loginUserDto, CancellationToken ct = default)
     {
-        await _loginUserDtoValidator.ValidateAndThrowAsync(loginUserDto, cancellationToken: ct);
+        // easier to Moq
+        var result = await _loginUserDtoValidator.ValidateAsync(loginUserDto, ct);
+        if (!result.IsValid)
+            throw new ValidationException(result.Errors);
 
         var user = await _userRepository.GetByEmailAsync(loginUserDto.Email, cancellationToken: ct);
 

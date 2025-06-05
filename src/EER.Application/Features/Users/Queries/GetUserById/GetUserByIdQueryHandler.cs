@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Queries.GetUserById;
 
-internal sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDetailsDto?>
+public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDetailsDto?>
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
