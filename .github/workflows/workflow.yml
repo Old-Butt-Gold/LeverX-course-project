@@ -44,4 +44,4 @@ jobs:
         run: dotnet restore
 
       - name: Run Tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --verbosity normal
