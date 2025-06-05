@@ -28,6 +28,7 @@ builder.Services.ConfigureCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureJwt(builder.Configuration);
+builder.Services.ConfigureHealthChecks(builder.Configuration);
 
 var app = builder.Build();
 
@@ -43,6 +44,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("CorsGlobalPolicy");
+
+app.UseHealthChecks();
 
 app.UseAuthentication();
 app.UseAuthorization();

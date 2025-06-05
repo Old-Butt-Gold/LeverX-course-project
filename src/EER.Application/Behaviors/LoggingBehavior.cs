@@ -19,7 +19,7 @@ public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRe
         var requestName = typeof(TRequest).Name;
         var stopwatch = Stopwatch.StartNew();
 
-        _logger.LogInformation("[START] Handling {RequestName} with data: {@Request}", requestName, request);
+        _logger.LogInformation("[START] Handling {RequestName}", requestName);
         try
         {
             var response = await next(cancellationToken);
