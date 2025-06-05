@@ -80,8 +80,13 @@ public class AuthenticationService : IAuthenticationService
 
         await _refreshTokenRepository.AddAsync(entity, cancellationToken: ct);
 
-        return new UserLoggedDto { AccessToken = accessToken, RefreshToken = entity.Token,
-            IsSuccess = isIdentical, UserId = entity.UserId };
+        return new UserLoggedDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = entity.Token,
+            IsSuccess = isIdentical,
+            UserId = entity.UserId
+        };
     }
 
     public async Task<RefreshTokenResultDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto, CancellationToken ct = default)
