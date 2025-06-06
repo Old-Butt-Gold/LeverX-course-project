@@ -3,14 +3,13 @@ using EER.Application.Abstractions.Security;
 using EER.Application.Dto.Security.Login;
 using EER.Application.Dto.Security.RegisterAdmin;
 using EER.Application.Dto.Security.RegisterUser;
-using EER.Application.Services.Security;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 
-namespace EER.Unit.Tests.Services;
+namespace EER.Unit.Tests.Services.Security;
 
 public class AuthenticationServiceTests
 {
@@ -23,11 +22,11 @@ public class AuthenticationServiceTests
     private readonly Mock<IPasswordHasher> _passwordHasherMock = new();
     private readonly Mock<IJwtTokenService> _jwtTokenServiceMock = new();
 
-    private readonly AuthenticationService _authService;
+    private readonly Application.Services.Security.AuthenticationService _authService;
 
     public AuthenticationServiceTests()
     {
-        _authService = new AuthenticationService(
+        _authService = new(
             _mapperMock.Object,
             _loginValidatorMock.Object,
             _registerAdminValidatorMock.Object,

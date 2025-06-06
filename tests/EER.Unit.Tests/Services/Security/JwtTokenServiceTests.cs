@@ -1,12 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using EER.Application.Services.Security;
 using EER.Application.Settings;
 using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Microsoft.Extensions.Options;
 
-namespace EER.Unit.Tests.Services;
+namespace EER.Unit.Tests.Services.Security;
 
 public class JwtTokenServiceTests
 {
@@ -31,7 +30,7 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ShouldIncludeCorrectClaims()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var token = service.GenerateAccessToken(_user);
@@ -50,7 +49,7 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ShouldHaveCorrectExpiration()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var token = service.GenerateAccessToken(_user);
@@ -67,7 +66,7 @@ public class JwtTokenServiceTests
     public void GenerateRefreshToken_ShouldReturnValidEntity()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var refreshToken = service.GenerateRefreshToken(_user);
@@ -92,7 +91,7 @@ public class JwtTokenServiceTests
             ExpirySeconds = -10
         };
 
-        var service = new JwtTokenService(Options.Create(jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(jwtSettings));
 
         var expiredToken = service.GenerateAccessToken(_user);
 
@@ -111,7 +110,7 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ShouldContainCorrectRole(Role role)
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
         _user.UserRole = role;
 
         // Act
