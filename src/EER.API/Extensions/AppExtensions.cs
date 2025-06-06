@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using EER.API.Middleware;
 using EER.Domain.DatabaseAbstractions;
-using EER.Persistence.Migrations;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -41,5 +41,10 @@ public static class AppExtensions
                 [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
             }
         });
+    }
+
+    public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder app)
+    {
+        return app.UseMiddleware<ExceptionHandlerMiddleware>();
     }
 }
