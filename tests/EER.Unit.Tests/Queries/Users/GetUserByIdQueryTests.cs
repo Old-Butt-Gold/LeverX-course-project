@@ -5,7 +5,7 @@ using EER.Domain.Entities;
 using EER.Domain.Enums;
 using Moq;
 
-namespace EER.Unit.Tests.Queries;
+namespace EER.Unit.Tests.Queries.Users;
 
 public class GetUserByIdQueryTests
 {
