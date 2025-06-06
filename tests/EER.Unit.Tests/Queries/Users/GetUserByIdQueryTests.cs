@@ -56,6 +56,7 @@ public class GetUserByIdQueryTests
         result.Id.Should().Be(userId);
         result.Email.Should().Be("test@example.com");
         result.UserRole.Should().Be(Role.Customer);
+        _mapperMock.Verify(m => m.Map<UserDetailsDto>(user), Times.Once);
     }
 
     [Fact]
@@ -75,7 +76,6 @@ public class GetUserByIdQueryTests
 
         // Assert
         result.Should().BeNull();
+        _mapperMock.Verify(m => m.Map<UserDetailsDto>(It.IsAny<User>()), Times.Never);
     }
-
-
 }

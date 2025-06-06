@@ -3,7 +3,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Commands.DeleteUser;
 
-internal sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
+public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
 {
     private readonly IUserRepository _userRepository;
 

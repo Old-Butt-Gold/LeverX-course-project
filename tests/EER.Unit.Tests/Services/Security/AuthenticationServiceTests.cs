@@ -1,8 +1,6 @@
-﻿using System.Security.Claims;
-using AutoMapper;
+﻿using AutoMapper;
 using EER.Application.Abstractions.Security;
 using EER.Application.Dto.Security.Login;
-using EER.Application.Dto.Security.RefreshToken;
 using EER.Application.Dto.Security.RegisterAdmin;
 using EER.Application.Dto.Security.RegisterUser;
 using EER.Domain.DatabaseAbstractions;
