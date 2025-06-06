@@ -17,10 +17,12 @@ namespace EER.API.Controllers;
 public sealed class OfficesController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ILogger<OfficesController> _logger;
 
-    public OfficesController(ISender sender)
+    public OfficesController(ISender sender, ILogger<OfficesController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
     // GET: api/offices
@@ -36,6 +38,7 @@ public sealed class OfficesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested all offices", User.GetUserId());
         var offices = await _sender.Send(new GetAllOfficesQuery(), cancellationToken);
         return Ok(offices);
     }
@@ -57,6 +60,7 @@ public sealed class OfficesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested office ID: {OfficeId}", User.GetUserId(), id);
         var office = await _sender.Send(new GetOfficeByIdQuery(id), cancellationToken);
         return office is not null ? Ok(office) : NotFound();
     }
@@ -79,9 +83,13 @@ public sealed class OfficesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateOfficeDto office, CancellationToken cancellationToken)
     {
-        var command = new CreateOfficeCommand(office, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} creating new office: {@OfficeData}", userId, office);
 
+        var command = new CreateOfficeCommand(office, userId);
         var createdOffice = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} created office ID: {OfficeId}", userId, createdOffice.Id);
 
         return CreatedAtAction(nameof(GetById), new { id = createdOffice.Id }, createdOffice);
     }
@@ -104,9 +112,13 @@ public sealed class OfficesController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateOfficeDto updatedOffice, CancellationToken cancellationToken)
     {
-        var command = new UpdateOfficeCommand(updatedOffice, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} updating office ID: {OfficeId}", userId, updatedOffice.Id);
 
+        var command = new UpdateOfficeCommand(updatedOffice, userId);
         var office = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} updated office ID: {OfficeId}", userId, updatedOffice.Id);
         return Ok(office);
     }
 
@@ -127,6 +139,9 @@ public sealed class OfficesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} deleting office ID: {OfficeId}", userId, id);
+
         var result = await _sender.Send(new DeleteOfficeCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
     }

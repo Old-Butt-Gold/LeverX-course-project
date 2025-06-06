@@ -17,10 +17,12 @@ namespace EER.API.Controllers;
 public sealed class RentalsController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ILogger<RentalsController> _logger;
 
-    public RentalsController(ISender sender)
+    public RentalsController(ISender sender, ILogger<RentalsController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
     // GET: api/rentals
@@ -36,6 +38,7 @@ public sealed class RentalsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested all rentals", User.GetUserId());
         var rentals = await _sender.Send(new GetAllRentalsQuery(), cancellationToken);
         return Ok(rentals);
     }
@@ -57,6 +60,7 @@ public sealed class RentalsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested rental ID: {RentalId}", User.GetUserId(), id);
         var rental = await _sender.Send(new GetRentalByIdQuery(id), cancellationToken);
         return rental is not null ? Ok(rental) : NotFound();
     }
@@ -79,9 +83,13 @@ public sealed class RentalsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateRentalDto rental, CancellationToken cancellationToken)
     {
-        var command = new CreateRentalCommand(rental, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} creating new rental: {@RentalData}", userId, rental);
 
+        var command = new CreateRentalCommand(rental, userId);
         var createdRental = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} created rental ID: {RentalId}", userId, createdRental.Id);
         return CreatedAtAction(nameof(GetById), new { id = createdRental.Id }, createdRental);
     }
 
@@ -103,9 +111,14 @@ public sealed class RentalsController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
-        var command = new UpdateRentalStatusCommand(rentalDto, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} updating rental ID: {RentalId} to status: {Status}",
+            userId, rentalDto.Id, rentalDto.Status);
 
+        var command = new UpdateRentalStatusCommand(rentalDto, userId);
         var rental = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} updated rental ID: {RentalId}", userId, rentalDto.Id);
         return Ok(rental);
     }
 
@@ -126,6 +139,9 @@ public sealed class RentalsController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} deleting rental ID: {RentalId}", userId, id);
+
         var result = await _sender.Send(new DeleteRentalCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
     }

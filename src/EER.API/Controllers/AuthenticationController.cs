@@ -19,11 +19,14 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly JwtSettings _jwtSettings;
+    private readonly ILogger<AuthenticationController> _logger;
 
-    public AuthenticationController(IAuthenticationService authenticationService, IOptions<JwtSettings> options)
+    public AuthenticationController(IAuthenticationService authenticationService, IOptions<JwtSettings> options,
+        ILogger<AuthenticationController> logger)
     {
         _jwtSettings = options.Value;
         _authenticationService = authenticationService;
+        _logger = logger;
     }
 
     // POST: api/authentication/register
@@ -48,6 +51,7 @@ public class AuthenticationController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterUserDto user, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Registration user with email: {Email} and role: {Role}", user.Email, user.UserRole.ToString());
         await _authenticationService.RegisterUserAsync(user, cancellationToken);
         return Created();
     }
@@ -77,6 +81,7 @@ public class AuthenticationController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> RegisterAdmin(RegisterAdminDto adminDto, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Registration admin with email: {Email}", adminDto.Email);
         await _authenticationService.RegisterAdminAsync(adminDto, cancellationToken);
 
         return Created();
@@ -108,7 +113,12 @@ public class AuthenticationController : ControllerBase
         var result = await _authenticationService.LoginAsync(loginDto, cancellationToken);
 
         if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Login failed for email: {Email}", loginDto.Email);
             return Unauthorized();
+        }
+
+        _logger.LogInformation("User logged in. Email: {Email}, UserId: {UserId}", loginDto.Email, result.UserId);
 
         Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
         {
@@ -143,7 +153,10 @@ public class AuthenticationController : ControllerBase
     public async Task<IActionResult> RefreshToken([FromBody] string accessToken, CancellationToken cancellationToken)
     {
         if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
-            return Unauthorized("Refresh token not found");
+        {
+            _logger.LogWarning("Logout failed: Refresh token not found");
+            return BadRequest("Refresh token not found");
+        }
 
         var dto = new RefreshTokenDto
         {
@@ -160,6 +173,8 @@ public class AuthenticationController : ControllerBase
             Expires = DateTime.UtcNow.AddSeconds(_jwtSettings.RefreshExpirySeconds),
             SameSite = SameSiteMode.Strict
         });
+
+        _logger.LogInformation("User logged out. UserId: {UserId}", User.GetUserId());
 
         return Ok(new { result.AccessToken });
     }

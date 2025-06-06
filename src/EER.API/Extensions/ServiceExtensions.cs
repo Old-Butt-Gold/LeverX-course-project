@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using EER.API.CustomAttributes;
 using EER.API.Filters;
@@ -8,9 +9,14 @@ using EER.Application.Services.Security;
 using EER.Application.Settings;
 using EER.Domain.Enums;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace EER.API.Extensions;
 
@@ -172,5 +178,108 @@ public static class ServiceExtensions
                 policy.RequireRole(Role.Customer.ToString());
             });
 
+    }
+
+    public static void ConfigureHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        var healthChecks = services.AddHealthChecks();
+
+        var sqlConnectionString = configuration.GetConnectionString("MSConnection");
+        if (!string.IsNullOrEmpty(sqlConnectionString))
+        {
+            healthChecks.AddSqlServer(
+                connectionString: sqlConnectionString,
+                name: "SQL Server",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["db", "persistence"]
+            );
+        }
+        else
+        {
+            healthChecks.AddCheck("SQL Server Configuration",
+                () => HealthCheckResult.Unhealthy("SQL Server connection string is missing"),
+                tags: ["db", "persistence"]);
+        }
+
+        var mongoConnectionString = configuration["Mongo:ConnectionString"];
+        if (!string.IsNullOrEmpty(mongoConnectionString))
+        {
+            healthChecks.AddMongoDb(
+                clientFactory: _ => new MongoClient(mongoConnectionString),
+                name: "MongoDB",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["db", "nosql", "persistence"]
+            );
+        }
+        else
+        {
+            healthChecks.AddCheck("MongoDB Configuration",
+                () => HealthCheckResult.Unhealthy("MongoDB connection string is missing"),
+                tags: ["db", "nosql", "persistence"]);
+        }
+
+        const long oneGb = 1024 * 1024 * 1024;
+
+        healthChecks.AddProcessAllocatedMemoryHealthCheck(1024,
+                name: "Allocated Memory",
+                failureStatus: HealthStatus.Degraded,
+                tags: ["system", "memory"])
+            .AddDiskStorageHealthCheck(opt =>
+                {
+                    opt.WithCheckAllDrives();
+                },
+                name: "Disk Storage",
+                failureStatus: HealthStatus.Degraded,
+                tags: ["system", "storage"])
+            .AddCheck("Private Memory", () =>
+            {
+                var process = Process.GetCurrentProcess();
+                var memory = process.PrivateMemorySize64;
+                var status = memory < oneGb
+                    ? HealthStatus.Healthy
+                    : HealthStatus.Degraded;
+
+                return new HealthCheckResult(
+                    status,
+                    description: $"Private memory: {memory / 1024 / 1024} MB",
+                    data: new Dictionary<string, object> { ["limit"] = oneGb });
+            }, tags: ["system", "memory"])
+            .AddCheck("Working Set Memory", () =>
+            {
+                var process = Process.GetCurrentProcess();
+                var memory = process.WorkingSet64;
+                var status = memory < oneGb
+                    ? HealthStatus.Healthy
+                    : HealthStatus.Degraded;
+
+                return new HealthCheckResult(
+                    status,
+                    description: $"Working set: {memory / 1024 / 1024} MB",
+                    data: new Dictionary<string, object> { ["limit"] = oneGb });
+            }, tags: ["system", "memory"]);
+    }
+
+    public static void ConfigureSerilog(this IServiceCollection services, IHostEnvironment hostEnvironment)
+    {
+        services.AddSerilog(config =>
+        {
+            config.MinimumLevel.Is(LogEventLevel.Verbose)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Diagnostics", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware", LogEventLevel.Fatal)
+                .Enrich.FromLogContext();
+
+            config.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}",
+                restrictedToMinimumLevel: LogEventLevel.Information, theme: AnsiConsoleTheme.Code);
+
+            config.WriteTo.File(path: Path.Combine(Path.Combine(Directory.GetCurrentDirectory(), "logs"), "logfile-.txt"),
+                rollingInterval: RollingInterval.Day, retainedFileCountLimit: 7,
+                restrictedToMinimumLevel: LogEventLevel.Information, fileSizeLimitBytes: 10 * 1024 * 1024,
+                rollOnFileSizeLimit: true,
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} | {Level:u} | [{SourceContext}] | {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}");
+        });
     }
 }

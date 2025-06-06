@@ -17,10 +17,12 @@ namespace EER.API.Controllers;
 public sealed class EquipmentController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly ILogger<EquipmentController> _logger;
 
-    public EquipmentController(ISender sender)
+    public EquipmentController(ISender sender, ILogger<EquipmentController> logger)
     {
         _sender = sender;
+        _logger = logger;
     }
 
 
@@ -37,6 +39,7 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested all equipment", User.GetUserId());
         var equipment = await _sender.Send(new GetAllEquipmentQuery(), cancellationToken);
         return Ok(equipment);
     }
@@ -58,7 +61,9 @@ public sealed class EquipmentController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("User {UserId} requested equipment ID: {EquipmentId}", User.GetUserId(), id);
         var item = await _sender.Send(new GetEquipmentByIdQuery(id), cancellationToken);
+
         return item is not null ? Ok(item) : NotFound();
     }
 
@@ -80,8 +85,13 @@ public sealed class EquipmentController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateEquipmentDto equipment, CancellationToken cancellationToken)
     {
-        var command = new CreateEquipmentCommand(equipment, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} creating new equipment: {@EquipmentData}", userId, equipment);
+
+        var command = new CreateEquipmentCommand(equipment, userId);
         var createdItem = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} created equipment ID: {EquipmentId}", userId, createdItem.Id);
         return CreatedAtAction(nameof(GetById), new { id = createdItem.Id }, createdItem);
     }
 
@@ -103,8 +113,13 @@ public sealed class EquipmentController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> Update(UpdateEquipmentDto updatedEquipment, CancellationToken cancellationToken)
     {
-        var command = new UpdateEquipmentCommand(updatedEquipment, User.GetUserId());
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} updating equipment ID: {EquipmentId}", userId, updatedEquipment.Id);
+
+        var command = new UpdateEquipmentCommand(updatedEquipment, userId);
         var result = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} updated equipment ID: {EquipmentId}", userId, updatedEquipment.Id);
         return Ok(result);
     }
 
@@ -125,7 +140,11 @@ public sealed class EquipmentController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} deleting equipment ID: {EquipmentId}", userId, id);
+
         var result = await _sender.Send(new DeleteEquipmentCommand(id), cancellationToken);
+
         return result ? NoContent() : NotFound();
     }
 }

@@ -60,21 +60,22 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<UserLoggedDto> LoginAsync(LoginUserDto loginUserDto, CancellationToken ct = default)
     {
-        await _loginUserDtoValidator.ValidateAndThrowAsync(loginUserDto, cancellationToken: ct);
+        // easier to Moq
+        var result = await _loginUserDtoValidator.ValidateAsync(loginUserDto, ct);
+        if (!result.IsValid)
+            throw new ValidationException(result.Errors);
 
-        var dto = loginUserDto;
-
-        var user = await _userRepository.GetByEmailAsync(dto.Email, cancellationToken: ct);
+        var user = await _userRepository.GetByEmailAsync(loginUserDto.Email, cancellationToken: ct);
 
         if (user is null)
         {
             throw new KeyNotFoundException("User with provided email wasn't found");
         }
 
-        var isIdentical = _passwordHasher.VerifyPassword(user.PasswordHash, dto.Password);
+        var isIdentical = _passwordHasher.VerifyPassword(user.PasswordHash, loginUserDto.Password);
 
         if (!isIdentical)
-            return new UserLoggedDto { AccessToken = "", RefreshToken = "", IsSuccess = false };
+            return new UserLoggedDto { AccessToken = "", RefreshToken = "", IsSuccess = false, UserId = Guid.Empty };
 
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
 
@@ -82,7 +83,13 @@ public class AuthenticationService : IAuthenticationService
 
         await _refreshTokenRepository.AddAsync(entity, cancellationToken: ct);
 
-        return new UserLoggedDto { AccessToken = accessToken, RefreshToken = entity.Token, IsSuccess = isIdentical };
+        return new UserLoggedDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = entity.Token,
+            IsSuccess = isIdentical,
+            UserId = entity.UserId
+        };
     }
 
     public async Task<RefreshTokenResultDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto, CancellationToken ct = default)

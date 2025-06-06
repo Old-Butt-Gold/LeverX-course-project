@@ -6,7 +6,7 @@ public class RefreshToken : BaseEntity<long>
 {
     public Guid UserId { get; set; }
 
-    public required string Token { get; set; }
+    public string Token { get; set; } = null!;
 
     public DateTime ExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; }

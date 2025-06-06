@@ -1,4 +1,3 @@
-
 ## 🏗️ LeverX Course Project - Equipment Rental API
 
 REST API for equipment rental management with booking system, reviews, and role-based authentication.
@@ -51,7 +50,7 @@ REST API for equipment rental management with booking system, reviews, and role-
 ```
 
 4. The application will be available at:
-`http://localhost:5000` or `https://localhost:5001`
+`http://localhost:5050` or `https://localhost:5051`
 
 5. To stop the containers:
 ```bash

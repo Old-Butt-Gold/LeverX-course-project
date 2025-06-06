@@ -24,6 +24,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EER.Persistence.EFCore", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EER.Persistence.MongoDB", "src\Persistence\EER.Persistence.MongoDB\EER.Persistence.MongoDB.csproj", "{59C600E6-CEF2-4993-9546-4FDF5C43142C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EER.Unit.Tests", "tests\EER.Unit.Tests\EER.Unit.Tests.csproj", "{2FBC43C6-945C-451C-8D96-4B7E1CF391CE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3056FA4B-BE5A-4165-80F1-B8C6846E0C57}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +73,10 @@ Global
 		{59C600E6-CEF2-4993-9546-4FDF5C43142C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59C600E6-CEF2-4993-9546-4FDF5C43142C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59C600E6-CEF2-4993-9546-4FDF5C43142C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FBC43C6-945C-451C-8D96-4B7E1CF391CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FBC43C6-945C-451C-8D96-4B7E1CF391CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FBC43C6-945C-451C-8D96-4B7E1CF391CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FBC43C6-945C-451C-8D96-4B7E1CF391CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C4792ADB-B63A-429E-A28E-2DECC834980C} = {15082686-E85F-4F4E-BBA1-3054EF31E45E}
@@ -78,5 +89,6 @@ Global
 		{53BCE337-B211-41DE-AC54-9FB8B34C6982} = {7A3A2DC1-D13B-4D54-875D-8A1248C5371A}
 		{BD8177D9-6C6D-4CE4-BA65-AB2391070ED7} = {7A3A2DC1-D13B-4D54-875D-8A1248C5371A}
 		{59C600E6-CEF2-4993-9546-4FDF5C43142C} = {7A3A2DC1-D13B-4D54-875D-8A1248C5371A}
+		{2FBC43C6-945C-451C-8D96-4B7E1CF391CE} = {2352F989-C3C3-44CB-9D6A-47C7BF9327A2}
 	EndGlobalSection
 EndGlobal

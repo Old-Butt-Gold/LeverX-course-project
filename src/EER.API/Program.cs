@@ -8,6 +8,15 @@ using EER.Persistence.MongoDB.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// API
+builder.Services.ConfigureSerilog(builder.Environment);
+builder.Services.ConfigureControllers();
+builder.Services.ConfigureCors();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.ConfigureSwaggerGen();
+builder.Services.ConfigureJwt(builder.Configuration);
+builder.Services.ConfigureHealthChecks(builder.Configuration);
+
 // Application
 builder.Services.ConfigureMediatR();
 builder.Services.ConfigureFluentValidation();
@@ -21,13 +30,6 @@ builder.Services.ConfigureDapper(builder.Configuration);
 
 // Infrastructure
 builder.Services.ConfigureSecurity();
-
-// API
-builder.Services.ConfigureControllers();
-builder.Services.ConfigureCors();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.ConfigureSwaggerGen();
-builder.Services.ConfigureJwt(builder.Configuration);
 
 var app = builder.Build();
 
@@ -43,6 +45,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("CorsGlobalPolicy");
+
+app.UseHealthChecks();
 
 app.UseAuthentication();
 app.UseAuthorization();

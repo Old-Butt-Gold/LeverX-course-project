@@ -7,7 +7,7 @@ internal sealed class BCryptPasswordHasher : IPasswordHasher
     public string HashPassword(string password)
     {
         // It fits in 60 characters, there are 64 characters size in the database.
-        return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+        return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 8);
     }
 
     public bool VerifyPassword(string hashedPassword, string providedPassword)

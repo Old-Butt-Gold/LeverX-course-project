@@ -6,7 +6,7 @@ public class EquipmentImages : BaseEntity<int>
 {
     public int EquipmentId { get; set; }
     public int DisplayOrder { get; set; }
-    public required string ImageUrl { get; set; }
+    public string ImageUrl { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }

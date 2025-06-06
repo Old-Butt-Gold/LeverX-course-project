@@ -6,8 +6,8 @@ public class Equipment : BaseEntity<int>
 {
     public int CategoryId { get; set; }
     public Guid OwnerId { get; set; }
-    public required string Name { get; set; }
-    public required string Description { get; set; }
+    public string Name { get; set; } = null!;
+    public string Description { get; set; } = null!;
     public decimal PricePerDay { get; set; }
     public decimal AverageRating { get; set; }
     public int TotalReviews { get; set; }
