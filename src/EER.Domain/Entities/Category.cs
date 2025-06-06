@@ -4,9 +4,9 @@ namespace EER.Domain.Entities;
 
 public class Category : BaseEntity<int>
 {
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-    public required string Slug { get; set; }
+    public string Name { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public string Slug { get; set; } = null!;
     public int TotalEquipment { get; set; }
 
     public DateTime CreatedAt { get; set; }

@@ -5,8 +5,8 @@ namespace EER.Domain.Entities;
 
 public class User : BaseEntity<Guid>
 {
-    public required string Email { get; set; }
-    public required string PasswordHash { get; set; }
+    public string Email { get; set; } = null!;
+    public string PasswordHash { get; set; } = null!;
     public string? FullName { get; set; }
     public Role UserRole { get; set; }
 

@@ -4,10 +4,10 @@ namespace EER.Domain.Entities;
 
 public class Office : BaseEntity<int>
 {
-    public required Guid OwnerId { get; set; }
-    public required string Address { get; set; }
-    public required string City { get; set; }
-    public required string Country { get; set; }
+    public Guid OwnerId { get; set; }
+    public string Address { get; set; } = null!;
+    public string City { get; set; } = null!;
+    public string Country { get; set; } = null!;
     public bool IsActive { get; set; }
 
     public DateTime CreatedAt { get; set; }

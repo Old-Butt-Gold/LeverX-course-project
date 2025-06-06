@@ -7,7 +7,7 @@ public class EquipmentItem : BaseEntity<long>
 {
     public int EquipmentId { get; set; }
     public int? OfficeId { get; set; }
-    public required string SerialNumber { get; set; }
+    public string SerialNumber { get; set; } = null!;
     public ItemStatus ItemStatus { get; set; }
     public DateTime? MaintenanceDate { get; set; } // DateOnly
     public DateTime PurchaseDate { get; set; } // DateOnly
