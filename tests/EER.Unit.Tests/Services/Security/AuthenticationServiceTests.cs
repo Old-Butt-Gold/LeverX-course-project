@@ -3,14 +3,15 @@ using EER.Application.Abstractions.Security;
 using EER.Application.Dto.Security.Login;
 using EER.Application.Dto.Security.RegisterAdmin;
 using EER.Application.Dto.Security.RegisterUser;
-using EER.Application.Services.Security;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
+using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 
-namespace EER.Unit.Tests.Services;
+namespace EER.Unit.Tests.Services.Security;
 
 public class AuthenticationServiceTests
 {
@@ -23,11 +24,11 @@ public class AuthenticationServiceTests
     private readonly Mock<IPasswordHasher> _passwordHasherMock = new();
     private readonly Mock<IJwtTokenService> _jwtTokenServiceMock = new();
 
-    private readonly AuthenticationService _authService;
+    private readonly Application.Services.Security.AuthenticationService _authService;
 
     public AuthenticationServiceTests()
     {
-        _authService = new AuthenticationService(
+        _authService = new(
             _mapperMock.Object,
             _loginValidatorMock.Object,
             _registerAdminValidatorMock.Object,
@@ -58,20 +59,16 @@ public class AuthenticationServiceTests
         SetupValidLogin();
         SetupTokenGeneration();
 
-        var loginDto = new LoginUserDto
-        {
-            Email = _testUser.Email,
-            Password = ValidPassword
-        };
+        var loginDto = new LoginUserDto { Email = _testUser.Email, Password = ValidPassword };
 
         // Act
         var result = await _authService.LoginAsync(loginDto);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(AccessToken, result.AccessToken);
-        Assert.Equal(RefreshToken, result.RefreshToken);
-        Assert.Equal(_testUser.Id, result.UserId);
+        result.IsSuccess.Should().BeTrue();
+        result.AccessToken.Should().Be(AccessToken);
+        result.RefreshToken.Should().Be(RefreshToken);
+        result.UserId.Should().Be(_testUser.Id);
 
         VerifyTokenSaved();
     }
@@ -84,20 +81,16 @@ public class AuthenticationServiceTests
         _passwordHasherMock.Setup(h => h.VerifyPassword(_testUser.PasswordHash, InvalidPassword))
             .Returns(false);
 
-        var loginDto = new LoginUserDto
-        {
-            Email = _testUser.Email,
-            Password = InvalidPassword
-        };
+        var loginDto = new LoginUserDto { Email = _testUser.Email, Password = InvalidPassword };
 
         // Act
         var result = await _authService.LoginAsync(loginDto);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(string.Empty, result.AccessToken);
-        Assert.Equal(string.Empty, result.RefreshToken);
-        Assert.Equal(Guid.Empty, result.UserId);
+        result.IsSuccess.Should().BeFalse();
+        result.AccessToken.Should().BeEmpty();
+        result.RefreshToken.Should().BeEmpty();
+        result.UserId.Should().Be(Guid.Empty);
 
         VerifyNoTokenGenerated();
         VerifyNoTokenSaved();
@@ -115,14 +108,11 @@ public class AuthenticationServiceTests
                 nonExistingEmail, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync((User?)null);
 
-        var loginDto = new LoginUserDto
-        {
-            Email = nonExistingEmail,
-            Password = "AnyPassword"
-        };
+        var loginDto = new LoginUserDto { Email = nonExistingEmail, Password = "AnyPassword" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => _authService.LoginAsync(loginDto));
+        var act = async () => await _authService.LoginAsync(loginDto);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
     }
 
     [Fact]
@@ -134,27 +124,109 @@ public class AuthenticationServiceTests
 
         var validationFailures = new List<ValidationFailure>
         {
-            new("Email", "Invalid email format"),
-            new("Password", "Password too short")
+            new("Email", "Invalid email format"), new("Password", "Password too short")
         };
 
         SetupValidationFailure(validationFailures);
 
-        var loginDto = new LoginUserDto
-        {
-            Email = invalidEmail,
-            Password = shortPassword
-        };
+        var loginDto = new LoginUserDto { Email = invalidEmail, Password = shortPassword };
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() =>
-            _authService.LoginAsync(loginDto));
+        var act = async () => await _authService.LoginAsync(loginDto);
+        var exceptionAssertions = await act.Should().ThrowAsync<ValidationException>();
 
-        Assert.Equal(2, ex.Errors.Count());
-        Assert.Contains(ex.Errors, e => e.ErrorMessage == "Invalid email format");
-        Assert.Contains(ex.Errors, e => e.ErrorMessage == "Password too short");
+        exceptionAssertions.Which.Errors.Should().HaveCount(2);
+        exceptionAssertions.Which.Errors.Select(e => e.ErrorMessage)
+            .Should().Contain("Invalid email format", "Password too short");
 
         VerifyUserNotSearched();
+    }
+
+    [Fact]
+    public async Task RegisterUserAsync_ValidInput_ShouldAddUser()
+    {
+        // Arrange
+        var dto = new RegisterUserDto
+        {
+            Email = "user@example.com",
+            Password = "Password123!",
+            UserRole = Role.Customer
+        };
+
+        var user = new User { Id = Guid.NewGuid(), Email = dto.Email };
+
+        _registerUserValidatorMock.Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _mapperMock.Setup(m => m.Map<User>(dto)).Returns(user);
+        _passwordHasherMock.Setup(h => h.HashPassword(dto.Password)).Returns("hashed_password");
+        _userRepoMock.Setup(r => r.AddAsync(It.IsAny<User>(), null, It.IsAny<CancellationToken>()));
+
+        // Act
+        await _authService.RegisterUserAsync(dto);
+
+        // Assert
+        _mapperMock.Verify(m => m.Map<User>(dto), Times.Once);
+        _passwordHasherMock.Verify(h => h.HashPassword(dto.Password), Times.Once);
+        _userRepoMock.Verify(r => r.AddAsync(
+                It.Is<User>(u =>
+                    u.Email == dto.Email && u.PasswordHash == "hashed_password"),
+                null, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterAdminAsync_ValidInput_ShouldAddAdmin()
+    {
+        // Arrange
+        var dto = new RegisterAdminDto { Email = "admin@example.com", Password = "AdminPassword123!" };
+
+        var admin = new User { Id = Guid.NewGuid(), Email = dto.Email, UserRole = Role.Admin };
+
+        _registerAdminValidatorMock.Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _mapperMock.Setup(m => m.Map<User>(dto)).Returns(admin);
+        _passwordHasherMock.Setup(h => h.HashPassword(dto.Password)).Returns("hashed_password");
+        _userRepoMock.Setup(r => r.AddAsync(It.IsAny<User>(),
+            null, It.IsAny<CancellationToken>()));
+
+        // Act
+        await _authService.RegisterAdminAsync(dto);
+
+        // Assert
+        _userRepoMock.Verify(r => r.AddAsync(
+                It.Is<User>(u => u.Email == dto.Email && u.UserRole == Role.Admin),
+                null, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task LogoutAsync_ShouldRevokeToken()
+    {
+        // Arrange
+        const string refreshToken = "token_to_revoke";
+
+        // Act
+        await _authService.LogoutAsync(refreshToken);
+
+        // Assert
+        _refreshTokenRepoMock.Verify(r => r.RevokeTokenAsync(refreshToken,
+            null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LogoutAllAsync_ShouldRevokeAllTokensForUser()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        // Act
+        await _authService.LogoutAllAsync(userId);
+
+        // Assert
+        _refreshTokenRepoMock.Verify(r => r.RevokeAllForUserAsync(userId,
+            null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private void SetupValidLogin()
@@ -173,11 +245,7 @@ public class AuthenticationServiceTests
         _jwtTokenServiceMock.Setup(s => s.GenerateAccessToken(_testUser))
             .Returns(AccessToken);
         _jwtTokenServiceMock.Setup(s => s.GenerateRefreshToken(_testUser))
-            .Returns(new RefreshToken
-            {
-                Token = RefreshToken,
-                UserId = _testUser.Id
-            });
+            .Returns(new RefreshToken { Token = RefreshToken, UserId = _testUser.Id });
     }
 
     private void SetupValidationSuccess()

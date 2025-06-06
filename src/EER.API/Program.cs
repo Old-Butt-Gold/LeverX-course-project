@@ -33,7 +33,7 @@ builder.Services.ConfigureSecurity();
 
 var app = builder.Build();
 
-app.ConfigureExceptionHandler();
+app.UseExceptionHandlerMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -3,9 +3,10 @@ using EER.Application.Features.Users.Queries.GetUserById;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using EER.Domain.Enums;
+using FluentAssertions;
 using Moq;
 
-namespace EER.Unit.Tests.Queries;
+namespace EER.Unit.Tests.Queries.Users;
 
 public class GetUserByIdQueryTests
 {
@@ -51,10 +52,11 @@ public class GetUserByIdQueryTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(userId, result.Id);
-        Assert.Equal("test@example.com", result.Email);
-        Assert.Equal(Role.Customer, result.UserRole);
+        result.Should().NotBeNull();
+        result.Id.Should().Be(userId);
+        result.Email.Should().Be("test@example.com");
+        result.UserRole.Should().Be(Role.Customer);
+        _mapperMock.Verify(m => m.Map<UserDetailsDto>(user), Times.Once);
     }
 
     [Fact]
@@ -73,8 +75,7 @@ public class GetUserByIdQueryTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        Assert.Null(result);
+        result.Should().BeNull();
+        _mapperMock.Verify(m => m.Map<UserDetailsDto>(It.IsAny<User>()), Times.Never);
     }
-
-
 }

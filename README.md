@@ -61,8 +61,8 @@ REST API for equipment rental management with booking system, reviews, and role-
 
 Detailed documentation and interactive testing of each endpoint is available through the Swagger UI.
 1. Open your browser and go to:
-- `http://localhost:5000/swagger`
-- or `https://localhost:5001/swagger`
+- `http://localhost:5050/swagger`
+- or `https://localhost:5051/swagger`
 2. In the `Authorize` tab, enter your JWT token to access the protected methods:
 ```bash
 Bearer <Your_Token>

@@ -94,8 +94,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<RefreshTokenResultDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto, CancellationToken ct = default)
     {
-        var dto = refreshTokenDto;
-        var principal = _jwtTokenService.GetPrincipalFromExpiredToken(dto.AccessToken);
+        var principal = _jwtTokenService.GetPrincipalFromExpiredToken(refreshTokenDto.AccessToken);
 
         var userId = principal?.FindFirstValue(ClaimTypes.Sid);
 
@@ -107,7 +106,7 @@ public class AuthenticationService : IAuthenticationService
         if (user is null)
             throw new UnauthorizedAccessException("User not found");
 
-        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(dto.RefreshToken, cancellationToken: ct);
+        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(refreshTokenDto.RefreshToken, cancellationToken: ct);
 
         if (refreshToken == null || refreshToken.UserId != userIdGuid ||
             refreshToken.IsExpired || refreshToken.RevokedAt != null)

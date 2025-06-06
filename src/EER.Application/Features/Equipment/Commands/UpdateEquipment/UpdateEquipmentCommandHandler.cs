@@ -24,10 +24,10 @@ internal sealed class UpdateEquipmentCommandHandler : IRequestHandler<UpdateEqui
         if (equipment is null)
             throw new KeyNotFoundException($"Equipment with ID {updateDto.Id} not found");
 
-        _mapper.Map(updateDto, equipment);
+        var mappedEquipment = _mapper.Map(updateDto, equipment);
         equipment.UpdatedBy = command.Manipulator;
 
-        var updatedEquipment = await _repository.UpdateAsync(equipment, cancellationToken: cancellationToken);
+        var updatedEquipment = await _repository.UpdateAsync(mappedEquipment, cancellationToken: cancellationToken);
 
         return _mapper.Map<EquipmentUpdatedDto>(updatedEquipment);
     }

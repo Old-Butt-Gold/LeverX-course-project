@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Commands.UpdateUser;
 
-internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserUpdatedDto>
+public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserUpdatedDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
@@ -24,9 +24,9 @@ internal sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserComma
         if (user is null)
             throw new KeyNotFoundException("User with provided ID is not found");
 
-        _mapper.Map(command.UpdateUserDto, user);
+        var mappedUser = _mapper.Map(command.UpdateUserDto, user);
 
-        var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken: cancellationToken);
+        var updatedUser = await _userRepository.UpdateAsync(mappedUser, cancellationToken: cancellationToken);
         return _mapper.Map<UserUpdatedDto>(updatedUser);
     }
 }

@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Users.Queries.GetAllUsers;
 
-internal sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserDto>>
+public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserDto>>
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;

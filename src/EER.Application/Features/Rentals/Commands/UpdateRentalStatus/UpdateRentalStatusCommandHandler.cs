@@ -28,10 +28,10 @@ internal sealed class UpdateRentalStatusCommandHandler
         // TODO Add if existingRental.Status is [Canceled, Completed] then throw exception that you can't change
         // status of this rental anymore
 
-        _mapper.Map(dto, existingRental);
+        var mappedRental = _mapper.Map(dto, existingRental);
         existingRental.UpdatedBy = command.Manipulator;
 
-        var updatedRental = await _repository.UpdateStatusAsync(existingRental, cancellationToken: cancellationToken);
+        var updatedRental = await _repository.UpdateStatusAsync(mappedRental, cancellationToken: cancellationToken);
 
         return _mapper.Map<RentalUpdatedDto>(updatedRental);
     }
