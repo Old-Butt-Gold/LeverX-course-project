@@ -44,7 +44,9 @@ public class AuthenticationServiceTests
 
     private readonly User _testUser = new()
     {
-        Id = Guid.NewGuid(), Email = "test@example.com", PasswordHash = "hashed_password"
+        Id = Guid.NewGuid(),
+        Email = "test@example.com",
+        PasswordHash = "hashed_password"
     };
 
     private const string ValidPassword = "ValidPassword123!";
@@ -148,7 +150,9 @@ public class AuthenticationServiceTests
         // Arrange
         var dto = new RegisterUserDto
         {
-            Email = "user@example.com", Password = "Password123!", UserRole = Role.Customer
+            Email = "user@example.com",
+            Password = "Password123!",
+            UserRole = Role.Customer
         };
 
         var user = new User { Id = Guid.NewGuid(), Email = dto.Email };
