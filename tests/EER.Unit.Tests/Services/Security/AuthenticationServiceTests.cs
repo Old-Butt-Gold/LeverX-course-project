@@ -5,6 +5,7 @@ using EER.Application.Dto.Security.RegisterAdmin;
 using EER.Application.Dto.Security.RegisterUser;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
+using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using Moq;
@@ -67,10 +68,10 @@ public class AuthenticationServiceTests
         var result = await _authService.LoginAsync(loginDto);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(AccessToken, result.AccessToken);
-        Assert.Equal(RefreshToken, result.RefreshToken);
-        Assert.Equal(_testUser.Id, result.UserId);
+        result.IsSuccess.Should().BeTrue();
+        result.AccessToken.Should().Be(AccessToken);
+        result.RefreshToken.Should().Be(RefreshToken);
+        result.UserId.Should().Be(_testUser.Id);
 
         VerifyTokenSaved();
     }
@@ -93,10 +94,10 @@ public class AuthenticationServiceTests
         var result = await _authService.LoginAsync(loginDto);
 
         // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(string.Empty, result.AccessToken);
-        Assert.Equal(string.Empty, result.RefreshToken);
-        Assert.Equal(Guid.Empty, result.UserId);
+        result.IsSuccess.Should().BeFalse();
+        result.AccessToken.Should().BeEmpty();
+        result.RefreshToken.Should().BeEmpty();
+        result.UserId.Should().Be(Guid.Empty);
 
         VerifyNoTokenGenerated();
         VerifyNoTokenSaved();
@@ -121,7 +122,8 @@ public class AuthenticationServiceTests
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => _authService.LoginAsync(loginDto));
+        var act = async () => await _authService.LoginAsync(loginDto);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
     }
 
     [Fact]
@@ -146,12 +148,12 @@ public class AuthenticationServiceTests
         };
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(() =>
-            _authService.LoginAsync(loginDto));
+        var act = async () => await _authService.LoginAsync(loginDto);
+        var exceptionAssertions = await act.Should().ThrowAsync<ValidationException>();
 
-        Assert.Equal(2, ex.Errors.Count());
-        Assert.Contains(ex.Errors, e => e.ErrorMessage == "Invalid email format");
-        Assert.Contains(ex.Errors, e => e.ErrorMessage == "Password too short");
+        exceptionAssertions.Which.Errors.Should().HaveCount(2);
+        exceptionAssertions.Which.Errors.Select(e => e.ErrorMessage)
+            .Should().Contain("Invalid email format", "Password too short");
 
         VerifyUserNotSearched();
     }
