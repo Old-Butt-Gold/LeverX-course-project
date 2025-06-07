@@ -145,6 +145,16 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task<IEnumerable<Equipment>> GetUnmoderatedAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE IsModerated = 0";
+
+        return await _connection.QueryAsync<Equipment>(
+            new CommandDefinition(sql,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[Equipment] WHERE Id = @Id";

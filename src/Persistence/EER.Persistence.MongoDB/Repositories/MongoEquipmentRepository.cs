@@ -101,6 +101,15 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         return MapToEntity(document);
     }
 
+    public async Task<IEnumerable<Equipment>> GetUnmoderatedAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var documents = await _collection
+            .Find(e => e.IsModerated == false)
+            .ToListAsync(cancellationToken);
+
+        return documents.Select(MapToEntity);
+    }
+
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var equipment = await GetByIdAsync(id, transaction, ct);

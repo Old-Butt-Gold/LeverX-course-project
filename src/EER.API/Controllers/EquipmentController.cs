@@ -5,6 +5,7 @@ using EER.Application.Features.Equipment.Commands.DeleteEquipment;
 using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
+using EER.Application.Features.Equipment.Queries.GetUnmoderatedEquipment;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,6 @@ public sealed class EquipmentController : ControllerBase
         _sender = sender;
         _logger = logger;
     }
-
 
     // GET: api/equipment
     /// <summary>
@@ -146,5 +146,20 @@ public sealed class EquipmentController : ControllerBase
         var result = await _sender.Send(new DeleteEquipmentCommand(id), cancellationToken);
 
         return result ? NoContent() : NotFound();
+    }
+
+    // GET: api/equipment/unmoderated
+    [HttpGet("unmoderated")]
+    [Authorize(Policy = "AdminOnly")]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(IEnumerable<EquipmentForModerationDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    public async Task<IActionResult> GetUnmoderated(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Admin {UserId} requested unmoderated equipment", User.GetUserId());
+
+        var equipment = await _sender.Send(new GetUnmoderatedEquipmentQuery(), cancellationToken);
+
+        return Ok(equipment);
     }
 }

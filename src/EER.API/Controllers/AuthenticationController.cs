@@ -15,7 +15,7 @@ namespace EER.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(Policy = "AnyRole")]
-public class AuthenticationController : ControllerBase
+public sealed class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly JwtSettings _jwtSettings;
