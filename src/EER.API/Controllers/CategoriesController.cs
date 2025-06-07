@@ -81,6 +81,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryDto category, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -108,7 +109,8 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(typeof(CategoryUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut()]
+    [HttpPut]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Update(UpdateCategoryDto updatedCategory, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -136,6 +138,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
