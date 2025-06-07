@@ -13,7 +13,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AnyRole")]
 public sealed class RentalsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -81,6 +81,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
+    [Authorize(Policy = "CustomerOnly")]
     public async Task<IActionResult> Create(CreateRentalDto rental, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -109,6 +110,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
+    [Authorize(Policy = "OwnerOrAdmin")]
     public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -137,6 +139,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
+    [Authorize("AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

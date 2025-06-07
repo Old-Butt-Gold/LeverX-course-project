@@ -6,9 +6,6 @@ public class CreateOfficeCommandValidator : AbstractValidator<CreateOfficeComman
 {
     public CreateOfficeCommandValidator()
     {
-        RuleFor(x => x.CreateOfficeDto.OwnerId)
-            .NotEmpty();
-
         RuleFor(x => x.CreateOfficeDto.Address)
             .NotEmpty()
             .MaximumLength(150);

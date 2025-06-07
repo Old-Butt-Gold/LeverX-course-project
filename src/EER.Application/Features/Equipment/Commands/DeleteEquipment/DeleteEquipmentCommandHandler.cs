@@ -22,10 +22,10 @@ internal sealed class DeleteEquipmentCommandHandler : IRequestHandler<DeleteEqui
 
         var equipment = await _repository.GetByIdAsync(dto.Id, cancellationToken: cancellationToken);
 
-        if (dto.UserRole != Role.Admin && equipment?.OwnerId != dto.Manipulator)
+        if (dto.UserRole != Role.Admin && equipment is not null && equipment.OwnerId != dto.Manipulator)
         {
             _logger.LogInformation("User with {userId} tried to delete equipment with id {equipmentId} of Owner {ownerId}",
-                dto.Manipulator, equipment!.Id, equipment.OwnerId);
+                dto.Manipulator, equipment.Id, equipment.OwnerId);
 
             throw new UnauthorizedAccessException("You have no access to update this equipment");
         }

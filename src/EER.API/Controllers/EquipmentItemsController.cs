@@ -13,7 +13,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AnyRole")]
 public sealed class EquipmentItemsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -81,6 +81,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Create(CreateEquipmentItemDto item, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -109,6 +110,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Update(UpdateEquipmentItemDto updatedItem, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -136,6 +138,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
