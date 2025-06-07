@@ -2,6 +2,7 @@
 using EER.Application.Extensions;
 using EER.Application.Features.Equipment.Commands.CreateEquipment;
 using EER.Application.Features.Equipment.Commands.DeleteEquipment;
+using EER.Application.Features.Equipment.Commands.ModerateEquipment;
 using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
@@ -37,6 +38,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<EquipmentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         _logger.LogInformation("User {UserId} requested all equipment", User.GetUserId());
@@ -59,6 +61,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         _logger.LogInformation("User {UserId} requested equipment ID: {EquipmentId}", User.GetUserId(), id);
@@ -83,6 +86,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Create(CreateEquipmentDto equipment, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -111,6 +115,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Update(UpdateEquipmentDto updatedEquipment, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -138,12 +143,17 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = "OwnerOrAdmin")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
+        var role = User.GetRole();
         _logger.LogInformation("User {UserId} deleting equipment ID: {EquipmentId}", userId, id);
+        var dto = new DeleteEquipmentRequestDto { Id = id, Manipulator = userId, UserRole = role };
 
-        var result = await _sender.Send(new DeleteEquipmentCommand(id), cancellationToken);
+        var command = new DeleteEquipmentCommand(dto);
+
+        var result = await _sender.Send(command, cancellationToken);
 
         return result ? NoContent() : NotFound();
     }
@@ -161,5 +171,27 @@ public sealed class EquipmentController : ControllerBase
         var equipment = await _sender.Send(new GetUnmoderatedEquipmentQuery(), cancellationToken);
 
         return Ok(equipment);
+    }
+
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [HttpPatch("{id:int}/moderate")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Moderate(int id, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        _logger.LogInformation("Admin {UserId} moderating equipment ID: {EquipmentId}", userId, id);
+
+        var result = await _sender.Send(new ModerateEquipmentCommand(id, userId), cancellationToken);
+
+        if (result)
+        {
+            _logger.LogInformation("Admin {UserId} moderated equipment ID: {EquipmentId} successfully", userId, id);
+            return NoContent();
+        }
+
+        _logger.LogWarning("Admin {UserId} failed to moderate equipment ID: {EquipmentId} (not found)", userId, id);
+        return NotFound();
     }
 }

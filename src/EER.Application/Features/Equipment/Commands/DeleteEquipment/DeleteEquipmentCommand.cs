@@ -2,4 +2,4 @@
 
 namespace EER.Application.Features.Equipment.Commands.DeleteEquipment;
 
-public record DeleteEquipmentCommand(int Id) : IRequest<bool>;
+public record DeleteEquipmentCommand(DeleteEquipmentRequestDto RequestDto) : IRequest<bool>;

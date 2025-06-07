@@ -110,6 +110,7 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                                    CategoryId = @CategoryId,
                                    Description = @Description,
                                    PricePerDay = @PricePerDay,
+                                   IsModerated = @IsModerated,
                                    UpdatedBy = @UpdatedBy,
                                    UpdatedAt = @UpdatedAt
                                OUTPUT
@@ -139,6 +140,7 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.CategoryId,
                 equipment.Description,
                 equipment.PricePerDay,
+                equipment.IsModerated,
                 equipment.UpdatedBy,
                 equipment.UpdatedAt,
             }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,

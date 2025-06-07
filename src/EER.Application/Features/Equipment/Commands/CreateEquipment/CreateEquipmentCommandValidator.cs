@@ -13,9 +13,6 @@ public class CreateEquipmentCommandValidator : AbstractValidator<CreateEquipment
         RuleFor(x => x.CreateEquipmentDto.CategoryId)
             .GreaterThan(0).WithMessage("Invalid category ID");
 
-        RuleFor(x => x.CreateEquipmentDto.OwnerId)
-            .NotEmpty();
-
         RuleFor(x => x.CreateEquipmentDto.Description)
             .NotEmpty()
             .MaximumLength(3000);

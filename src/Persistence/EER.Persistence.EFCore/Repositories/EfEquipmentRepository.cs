@@ -47,6 +47,7 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
         entity.PricePerDay = equipment.PricePerDay;
         entity.UpdatedBy = equipment.UpdatedBy;
         entity.UpdatedAt = equipment.UpdatedAt;
+        entity.IsModerated = equipment.IsModerated;
 
         await _context.SaveChangesAsync(cancellationToken);
 

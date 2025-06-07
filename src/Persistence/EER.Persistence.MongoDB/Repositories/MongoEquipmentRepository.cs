@@ -71,6 +71,7 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
             .Set(e => e.CategoryId, equipment.CategoryId)
             .Set(e => e.Description, equipment.Description)
             .Set(e => e.PricePerDay, equipment.PricePerDay)
+            .Set(e => e.IsModerated, equipment.IsModerated)
             .Set(e => e.UpdatedBy, equipment.UpdatedBy)
             .Set(e => e.UpdatedAt, equipment.UpdatedAt);
 

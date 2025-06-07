@@ -259,7 +259,7 @@ public static class ServiceExtensions
             }, tags: ["system", "memory"]);
     }
 
-    public static void ConfigureSerilog(this IServiceCollection services, IHostEnvironment hostEnvironment)
+    public static void ConfigureSerilog(this IServiceCollection services)
     {
         services.AddSerilog(config =>
         {
