@@ -98,6 +98,25 @@ internal sealed class MongoReviewRepository : IReviewRepository
             });
     }
 
+    public async Task<Review?> GetReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        var filter = Builders<EquipmentDocument>.Filter.And(
+            Builders<EquipmentDocument>.Filter.Eq(e => e.Id, equipmentId),
+            Builders<EquipmentDocument>.Filter.ElemMatch(e => e.Reviews, r => r.CustomerId == customerId)
+        );
+
+        var equipment = await _equipmentCollection
+            .Find(filter)
+            .FirstOrDefaultAsync(cancellationToken: ct);
+
+        var embedded = equipment?.Reviews
+            .First(r => r.CustomerId == customerId);
+
+        return embedded != null
+            ? MapFromEmbedded(embedded, equipmentId)
+            : null;
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
@@ -115,6 +134,40 @@ internal sealed class MongoReviewRepository : IReviewRepository
             : await _equipmentCollection.Find(filter, options).FirstOrDefaultAsync(ct);
 
         return result != null;
+    }
+
+    public async Task<bool> DeleteReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var filterDoc =
+            Builders<EquipmentDocument>.Filter.Eq(e => e.Id, equipmentId);
+
+        var equipment = await _equipmentCollection
+            .Find(filterDoc)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (equipment is null)
+            return false;
+
+        var remainingRatings = equipment.Reviews
+            .Where(r => r.CustomerId != customerId)
+            .Select(r => (decimal)r.Rating)
+            .ToList();
+
+        var newTotal = remainingRatings.Count;
+        var newAverage = newTotal > 0 ? remainingRatings.Average() : 0m;
+
+        var update = Builders<EquipmentDocument>.Update
+            .PullFilter(e => e.Reviews, r => r.CustomerId == customerId)
+            .Set(e => e.TotalReviews, newTotal)
+            .Set(e => e.AverageRating, newAverage);
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        var result = session != null
+            ? await _equipmentCollection.UpdateOneAsync(session, filterDoc, update, cancellationToken: cancellationToken)
+            : await _equipmentCollection.UpdateOneAsync(filterDoc, update, cancellationToken: cancellationToken);
+
+        return result.ModifiedCount > 0;
     }
 
     private ReviewEmbedded MapToEmbedded(Review review) => new()

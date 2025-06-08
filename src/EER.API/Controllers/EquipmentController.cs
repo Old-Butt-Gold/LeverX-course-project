@@ -8,6 +8,7 @@ using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
 using EER.Application.Features.Equipment.Queries.GetUnmoderatedEquipment;
 using EER.Application.Features.Reviews.Commands.CreateReview;
+using EER.Application.Features.Reviews.Commands.DeleteReview;
 using EER.Application.Features.Reviews.Queries.GetReviewsByEquipmentId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -225,5 +226,19 @@ public sealed class EquipmentController : ControllerBase
         var reviews = await _sender.Send(new GetReviewsByEquipmentIdQuery(equipmentId), cancellationToken);
 
         return Ok(reviews);
+    }
+
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpDelete("{equipmentId:int}/reviews")]
+    [Authorize(Policy = "CustomerOnly")]
+    public async Task<IActionResult> DeleteReview(int equipmentId, CancellationToken cancellationToken)
+    {
+        var customerId = User.GetUserId();
+
+        var command = new DeleteReviewCommand(equipmentId, customerId);
+        var result = await _sender.Send(command, cancellationToken);
+
+        return result ? NoContent() : NotFound();
     }
 }

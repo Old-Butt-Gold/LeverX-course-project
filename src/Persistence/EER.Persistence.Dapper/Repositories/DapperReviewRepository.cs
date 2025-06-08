@@ -95,6 +95,25 @@ public class DapperReviewRepository : IReviewRepository
         return reviews;
     }
 
+    public async Task<Review?> GetReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        const string sql = """
+                               SELECT *
+                               FROM [Critique].[Review]
+                               WHERE CustomerId = @CustomerId
+                               AND EquipmentId = @EquipmentId
+                           """;
+
+        return await _connection.QuerySingleOrDefaultAsync<Review>(
+            new CommandDefinition(
+                sql,
+                new { CustomerId = customerId, EquipmentId = equipmentId },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: ct
+            )
+        );
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         const string sql = """
@@ -114,5 +133,25 @@ public class DapperReviewRepository : IReviewRepository
         );
 
         return count > 0;
+    }
+
+    public async Task<bool> DeleteReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                           DELETE FROM [Critique].[Review]
+                           WHERE CustomerId  = @CustomerId
+                             AND EquipmentId = @EquipmentId
+                           """;
+
+        var affected = await _connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                new { CustomerId = customerId, EquipmentId = equipmentId },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
+
+        return affected > 0;
     }
 }

@@ -106,7 +106,7 @@ internal sealed class MongoUserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        var filter = Builders<UserDocument>.Filter.Regex(
+        var filter = Builders<UserDocument>.Filter.Eq(
             u => u.Email, email);
 
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;

@@ -33,11 +33,33 @@ public class EfReviewRepository : IReviewRepository
         return reviews;
     }
 
+    public async Task<Review?> GetReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        return await _context.Reviews
+            .Where(r => r.EquipmentId == equipmentId && r.CustomerId == customerId)
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         return await _context.Reviews
             .Where(x => x.EquipmentId == equipmentId && x.CustomerId == customerId)
             .AsNoTracking()
             .AnyAsync(cancellationToken: ct);
+    }
+
+    public async Task<bool> DeleteReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        // To find firstly in local memory
+        var review = await _context.Reviews
+            .FindAsync([customerId, equipmentId], cancellationToken);
+
+        if (review is null)
+            return false;
+
+        _context.Reviews.Remove(review);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await _context.SaveChangesAsync(cancellationToken) > 0;
     }
 }

@@ -25,8 +25,6 @@ internal sealed class UpdateRentalStatusCommandHandler
         if (existingRental is null)
             throw new KeyNotFoundException($"Rental with provided ID {dto.Id} is not found");
 
-        // TODO add to MongoDB update for items to be Available status, if updated status is Canceled or Completed
-
         var mappedRental = _mapper.Map(dto, existingRental);
         existingRental.UpdatedBy = command.Manipulator;
 
