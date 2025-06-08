@@ -177,16 +177,18 @@ internal sealed class DapperRentalRepository : IRentalRepository
 
         // TODO maybe ZDapperPlus with _connection.BulkInsert(items); ?
 
+        var projection = items.Select(item => new
+        {
+            item.RentalId,
+            item.EquipmentItemId,
+            item.ActualPrice,
+            item.CreatedBy,
+        });
+
         await _connection.ExecuteAsync(
             new CommandDefinition(
                 sql,
-                items.Select(item => new
-                {
-                    item.RentalId,
-                    item.EquipmentItemId,
-                    item.ActualPrice,
-                    item.CreatedBy,
-                }),
+                projection,
                 transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken
             )

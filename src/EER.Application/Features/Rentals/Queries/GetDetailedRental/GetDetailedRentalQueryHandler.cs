@@ -19,8 +19,6 @@ internal sealed class GetDetailedRentalQueryHandler
     {
         var rentalId = request.Id;
 
-        // TODO Check after insert
-
         var rental = await _rentalRepository.GetByIdWithItemsAsync(
             rentalId, cancellationToken: cancellationToken);
 

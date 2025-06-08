@@ -6,9 +6,6 @@ public class CreateRentalCommandValidator : AbstractValidator<CreateRentalComman
 {
     public CreateRentalCommandValidator()
     {
-        RuleFor(x => x.CreateRentalDto.CustomerId)
-            .NotEmpty().WithMessage("Customer ID is required");
-
         RuleFor(x => x.CreateRentalDto.EquipmentItemIds)
             .NotNull()
             .WithMessage("Equipment item list must be provided")

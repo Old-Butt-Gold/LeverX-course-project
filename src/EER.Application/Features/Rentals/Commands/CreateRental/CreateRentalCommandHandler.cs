@@ -44,6 +44,7 @@ internal sealed class CreateRentalCommandHandler
             var (totalPrice, rentalItems) = CalculateRentalPrice(equipmentItems, dto, manipulator);
 
             var rental = _mapper.Map<Rental>(dto);
+            rental.CustomerId = manipulator;
             rental.TotalPrice = totalPrice;
             rental.Status = RentalStatus.Pending;
             rental.CreatedBy = manipulator;
