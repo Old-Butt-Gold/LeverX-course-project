@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EER.Application.Features.Rentals.Queries.GetMyRentals;
 
-public class GetMyRentalsHandler : IRequestHandler<GetMyRentalsQuery, IEnumerable<MyRentalDto>>
+internal sealed class GetMyRentalsHandler : IRequestHandler<GetMyRentalsQuery, IEnumerable<MyRentalDto>>
 {
     private readonly IRentalRepository _repository;
     private readonly IMapper _mapper;
