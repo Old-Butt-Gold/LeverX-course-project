@@ -1,9 +1,9 @@
-﻿namespace EER.Application.Features.Reviews.CreateReview;
+﻿namespace EER.Application.Features.Reviews.Queries.GetReviewsByEquipmentId;
 
-public record ReviewCreatedDto
+public record ReviewWithUserDto
 {
     public Guid CustomerId { get; init; }
-    public int EquipmentId { get; init; }
+    public string CustomerFullName { get; init; } = null!;
     public byte Rating { get; init; }
     public string? Comment { get; init; }
     public DateTime CreatedAt { get; init; }

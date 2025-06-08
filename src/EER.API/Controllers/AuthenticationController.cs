@@ -175,8 +175,6 @@ public sealed class AuthenticationController : ControllerBase
             SameSite = SameSiteMode.Strict
         });
 
-        _logger.LogInformation("User logged out. UserId: {UserId}", User.GetUserId());
-
         return Ok(new { result.AccessToken });
     }
 

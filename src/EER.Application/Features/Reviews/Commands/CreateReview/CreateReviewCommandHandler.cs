@@ -3,7 +3,7 @@ using EER.Domain.DatabaseAbstractions;
 using EER.Domain.Entities;
 using MediatR;
 
-namespace EER.Application.Features.Reviews.CreateReview;
+namespace EER.Application.Features.Reviews.Commands.CreateReview;
 
 internal sealed class CreateReviewCommandHandler
     : IRequestHandler<CreateReviewCommand, ReviewCreatedDto>

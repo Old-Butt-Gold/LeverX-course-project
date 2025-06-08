@@ -22,6 +22,17 @@ public class EfReviewRepository : IReviewRepository
         return entry.Entity;
     }
 
+    public async Task<IEnumerable<Review>> GetReviewsByEquipmentIdAsync(int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        var reviews = await _context.Reviews
+            .AsNoTracking()
+            .Where(r => r.EquipmentId == equipmentId)
+            .Include(r => r.Customer)
+            .ToListAsync(ct);
+
+        return reviews;
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         return await _context.Reviews

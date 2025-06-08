@@ -75,6 +75,17 @@ internal sealed class EfUserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 
+    public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<Guid> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return [];
+
+        return await _context.Users
+            .AsNoTracking()
+            .Where(u => ids.Contains(u.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var entity = await _context.Users.FindAsync([id], cancellationToken);

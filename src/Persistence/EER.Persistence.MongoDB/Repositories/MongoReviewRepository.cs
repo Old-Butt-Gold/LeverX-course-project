@@ -12,9 +12,12 @@ internal sealed class MongoReviewRepository : IReviewRepository
 {
     private readonly IMongoCollection<EquipmentDocument> _equipmentCollection;
     private readonly DatabaseSettings _settings;
+    private readonly IUserRepository _userRepository;
 
-    public MongoReviewRepository(IMongoDatabase database, IOptions<DatabaseSettings> settings)
+    public MongoReviewRepository(IMongoDatabase database, IOptions<DatabaseSettings> settings,
+        IUserRepository userRepository)
     {
+        _userRepository = userRepository;
         _settings = settings.Value;
         _equipmentCollection = database.GetCollection<EquipmentDocument>(_settings.EquipmentCollection);
     }
@@ -64,6 +67,37 @@ internal sealed class MongoReviewRepository : IReviewRepository
         return review;
     }
 
+    public async Task<IEnumerable<Review>> GetReviewsByEquipmentIdAsync(int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        var filter = Builders<EquipmentDocument>.Filter.Eq(e => e.Id, equipmentId);
+        var equipment = await _equipmentCollection.Find(filter).FirstOrDefaultAsync(ct);
+
+        if (equipment is null)
+        {
+            throw new KeyNotFoundException($"Equipment with ID {equipmentId} not found");
+        }
+
+        var customerIds = equipment.Reviews
+            .Select(r => r.CustomerId)
+            .Distinct()
+            .ToList();
+
+        if (customerIds.Count == 0)
+            return [];
+
+        var users = await _userRepository.GetByIdsAsync(customerIds, transaction, ct);
+        var userById = users.ToDictionary(u => u.Id);
+
+        return equipment.Reviews
+            .Select(embedded =>
+            {
+                if (!userById.TryGetValue(embedded.CustomerId, out var user))
+                    throw new KeyNotFoundException($"User with ID {embedded.CustomerId} not found");
+
+                return MapFromEmbeddedWithUser(embedded, equipmentId, user);
+            });
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
@@ -103,6 +137,13 @@ internal sealed class MongoReviewRepository : IReviewRepository
         CreatedAt = embedded.CreatedAt,
         CreatedBy = embedded.CreatedBy,
         UpdatedAt = embedded.UpdatedAt,
-        UpdatedBy = embedded.UpdatedBy
+        UpdatedBy = embedded.UpdatedBy,
     };
+
+    private Review MapFromEmbeddedWithUser(ReviewEmbedded embedded, int equipmentId, User user)
+    {
+        var review = MapFromEmbedded(embedded, equipmentId);
+        review.Customer = user;
+        return review;
+    }
 }

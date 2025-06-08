@@ -1,7 +1,7 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using FluentValidation;
 
-namespace EER.Application.Features.Reviews.CreateReview;
+namespace EER.Application.Features.Reviews.Commands.CreateReview;
 
 public class CreateReviewCommandValidator : AbstractValidator<CreateReviewCommand>
 {

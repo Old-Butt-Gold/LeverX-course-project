@@ -7,7 +7,8 @@ using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
 using EER.Application.Features.Equipment.Queries.GetUnmoderatedEquipment;
-using EER.Application.Features.Reviews.CreateReview;
+using EER.Application.Features.Reviews.Commands.CreateReview;
+using EER.Application.Features.Reviews.Queries.GetReviewsByEquipmentId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -212,5 +213,17 @@ public sealed class EquipmentController : ControllerBase
 
         _logger.LogInformation("User {UserId} added review to equipment ID: {EquipmentId}", customerId, equipmentId);
         return Ok(result);
+    }
+
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(IEnumerable<ReviewWithUserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [HttpGet("{equipmentId:int}/reviews")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReviews(int equipmentId, CancellationToken cancellationToken)
+    {
+        var reviews = await _sender.Send(new GetReviewsByEquipmentIdQuery(equipmentId), cancellationToken);
+
+        return Ok(reviews);
     }
 }

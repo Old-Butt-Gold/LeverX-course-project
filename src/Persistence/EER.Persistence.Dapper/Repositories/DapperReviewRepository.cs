@@ -62,6 +62,39 @@ public class DapperReviewRepository : IReviewRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task<IEnumerable<Review>> GetReviewsByEquipmentIdAsync(int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
+    {
+        const string sql = """
+                           SELECT
+                               r.CustomerId,
+                               r.Rating,
+                               r.Comment,
+                               r.CreatedAt,
+                               u.Id,
+                               u.FullName
+                           FROM [Critique].[Review] r
+                           INNER JOIN [Identity].[User] u
+                               ON r.CustomerId = u.Id
+                           WHERE r.EquipmentId = @EquipmentId
+                           """;
+
+        var reviews = await _connection.QueryAsync<Review, User, Review>(
+            new CommandDefinition(
+                sql, new { EquipmentId = equipmentId },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: ct
+            ),
+            map: (review, user) =>
+            {
+                review.Customer = user;
+                return review;
+            },
+            splitOn: "Id"
+        );
+
+        return reviews;
+    }
+
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
         const string sql = """
