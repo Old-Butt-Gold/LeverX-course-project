@@ -9,6 +9,16 @@ public class CreateRentalCommandValidator : AbstractValidator<CreateRentalComman
         RuleFor(x => x.CreateRentalDto.CustomerId)
             .NotEmpty().WithMessage("Customer ID is required");
 
+        RuleFor(x => x.CreateRentalDto.EquipmentItemIds)
+            .NotNull()
+            .WithMessage("Equipment item list must be provided")
+            .NotEmpty()
+            .WithMessage("At least one equipment item ID must be specified");
+
+        RuleForEach(x => x.CreateRentalDto.EquipmentItemIds)
+            .GreaterThan(0)
+            .WithMessage("Each equipment item ID must be greater than zero");
+
         RuleFor(x => x.CreateRentalDto.OwnerId)
             .NotEmpty().WithMessage("Owner ID is required");
 

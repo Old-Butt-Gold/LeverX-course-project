@@ -13,15 +13,15 @@ namespace EER.Persistence.MongoDB.Repositories;
 internal sealed class MongoRentalRepository : IRentalRepository
 {
     private readonly IMongoCollection<RentalDocument> _rentalCollection;
-    private readonly IMongoCollection<EquipmentItemDocument> _equipmentItemCollection;
+    private readonly IEquipmentItemRepository _equipmentItemRepository;
     private readonly IdGenerator _idGenerator;
     private readonly DatabaseSettings _settings;
 
-    public MongoRentalRepository(IMongoDatabase database, IOptions<DatabaseSettings> settings, IdGenerator idGenerator)
+    public MongoRentalRepository(IMongoDatabase database, IOptions<DatabaseSettings> settings, IdGenerator idGenerator, IEquipmentItemRepository repository)
     {
         _settings = settings.Value;
         _rentalCollection = database.GetCollection<RentalDocument>(_settings.RentalCollection);
-        _equipmentItemCollection = database.GetCollection<EquipmentItemDocument>(_settings.EquipmentItemCollection);
+        _equipmentItemRepository = repository;
         _idGenerator = idGenerator;
     }
 
@@ -84,7 +84,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return docs.Select(MapToEntity);
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken ct = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, Guid manipulator, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var id = rentalToUpdate.Id;
 
@@ -109,7 +109,7 @@ internal sealed class MongoRentalRepository : IRentalRepository
         if (rentalToUpdate.Status is RentalStatus.Canceled or RentalStatus.Completed)
         {
             var itemIds = updatedRentalDoc.Items.Select(i => i.EquipmentItemId);
-            await UpdateStatusForItemsAsync(itemIds, ItemStatus.Available, transaction, ct);
+            await _equipmentItemRepository.UpdateStatusForItemsAsync(itemIds, ItemStatus.Available, manipulator, transaction, ct);
         }
 
         return MapToEntity(updatedRentalDoc);
@@ -126,6 +126,38 @@ internal sealed class MongoRentalRepository : IRentalRepository
             : await _rentalCollection.Find(filter).FirstOrDefaultAsync(cancellationToken);
 
         return document is not null ? MapToEntityWithRentalItems(document) : null;
+    }
+
+    public async Task AddRentalItemsAsync(IEnumerable<RentalItem> items, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var rentalIds = items.Select(i => i.RentalId).Distinct().ToList();
+        if (rentalIds.Count != 1)
+        {
+            throw new InvalidOperationException("All items must belong to the same rental");
+        }
+
+        var rentalId = rentalIds.Single();
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, rentalId);
+
+        var update = Builders<RentalDocument>.Update
+            .Set(r => r.Items, items.Select(item => new RentalItemEmbedded
+            {
+                EquipmentItemId = item.EquipmentItemId,
+                ActualPrice = item.ActualPrice,
+                CreatedAt = item.CreatedAt,
+                CreatedBy = item.CreatedBy
+            }).ToList());
+
+        if (session != null)
+        {
+            await _rentalCollection.UpdateOneAsync(session, filter, update, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await _rentalCollection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        }
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
@@ -194,30 +226,5 @@ internal sealed class MongoRentalRepository : IRentalRepository
         }).ToList();
 
         return rental;
-    }
-
-    private async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, ITransaction? transaction = null, CancellationToken cancellationToken = default)
-    {
-        var idsList = itemIds.ToList();
-        if (idsList.Count is 0) return;
-
-        var filter = Builders<EquipmentItemDocument>.Filter.In(i => i.Id, idsList);
-        var update = Builders<EquipmentItemDocument>.Update
-            .Set(i => i.Status, status);
-
-        var options = new UpdateOptions { IsUpsert = false };
-
-        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
-
-        if (session != null)
-        {
-            await _equipmentItemCollection.UpdateManyAsync(
-                session, filter, update, options, cancellationToken);
-        }
-        else
-        {
-            await _equipmentItemCollection.UpdateManyAsync(
-                filter, update, options, cancellationToken);
-        }
     }
 }

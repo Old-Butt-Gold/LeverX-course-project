@@ -1,6 +1,7 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
 using EER.Persistence.MongoDB.Documents.Equipment;
 using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Documents.Rental;
@@ -129,6 +130,29 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
 
             return item;
         });
+    }
+
+    public async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, Guid updatedBy, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var idsList = itemIds.ToList();
+        if (idsList.Count is 0) return;
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        var filter = Builders<EquipmentItemDocument>.Filter.In(i => i.Id, idsList);
+        var update = Builders<EquipmentItemDocument>.Update
+            .Set(i => i.Status, status)
+            .Set(i => i.UpdatedBy, updatedBy)
+            .Set(i => i.UpdatedAt, DateTime.UtcNow);
+
+        if (session != null)
+        {
+            await _collection.UpdateManyAsync(session, filter, update, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await _collection.UpdateManyAsync(filter, update, cancellationToken: cancellationToken);
+        }
     }
 
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken ct = default)

@@ -3,6 +3,7 @@ using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
 
 namespace EER.Persistence.Dapper.Repositories;
 
@@ -116,6 +117,34 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
                 return equipmentItem;
             },
             splitOn: "Id");
+    }
+
+    public async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, Guid updatedBy, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               UPDATE [Supplies].[EquipmentItem]
+                               SET
+                                   ItemStatus = @Status,
+                                   UpdatedBy = @UpdatedBy,
+                                   UpdatedAt = @UpdatedAt
+                               WHERE Id IN @Ids
+                           """;
+
+        var parameters = new
+        {
+            Ids = itemIds,
+            Status = status.ToString(),
+            UpdatedBy = updatedBy,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _connection.ExecuteAsync(
+            new CommandDefinition(
+                sql, parameters,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
     }
 
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

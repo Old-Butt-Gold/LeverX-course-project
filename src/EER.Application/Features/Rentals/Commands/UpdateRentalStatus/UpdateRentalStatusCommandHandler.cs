@@ -40,7 +40,7 @@ internal sealed class UpdateRentalStatusCommandHandler
         var mappedRental = _mapper.Map(dto, existingRental);
         existingRental.UpdatedBy = command.Manipulator;
 
-        var updatedRental = await _repository.UpdateStatusAsync(mappedRental, cancellationToken: cancellationToken);
+        var updatedRental = await _repository.UpdateStatusAsync(mappedRental, command.Manipulator, cancellationToken: cancellationToken);
 
         return _mapper.Map<RentalUpdatedDto>(updatedRental);
     }

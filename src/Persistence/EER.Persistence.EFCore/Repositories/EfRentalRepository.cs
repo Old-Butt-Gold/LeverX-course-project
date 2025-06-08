@@ -49,7 +49,7 @@ internal sealed class EfRentalRepository : IRentalRepository
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, Guid manipulator, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var id = rentalToUpdate.Id;
 
@@ -75,6 +75,12 @@ internal sealed class EfRentalRepository : IRentalRepository
             .AsNoTracking()
             .Include(r => r.RentalItems)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task AddRentalItemsAsync(IEnumerable<RentalItem> items, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        await _context.RentalItems.AddRangeAsync(items, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

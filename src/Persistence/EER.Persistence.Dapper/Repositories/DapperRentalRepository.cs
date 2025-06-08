@@ -90,7 +90,7 @@ internal sealed class DapperRentalRepository : IRentalRepository
         );
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, Guid manipulator, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
@@ -164,6 +164,33 @@ internal sealed class DapperRentalRepository : IRentalRepository
         var rentalItems = await multi.ReadAsync<RentalItem>();
         rental.RentalItems = rentalItems.ToList();
         return rental;
+    }
+
+    public async Task AddRentalItemsAsync(IEnumerable<RentalItem> items, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               INSERT INTO [Supplies].[RentalItem]
+                                   (RentalId, EquipmentItemId, ActualPrice, CreatedBy)
+                               VALUES
+                                   (@RentalId, @EquipmentItemId, @ActualPrice, @CreatedBy)
+                           """;
+
+        // TODO maybe ZDapperPlus with _connection.BulkInsert(items); ?
+
+        await _connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                items.Select(item => new
+                {
+                    item.RentalId,
+                    item.EquipmentItemId,
+                    item.ActualPrice,
+                    item.CreatedBy,
+                }),
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
