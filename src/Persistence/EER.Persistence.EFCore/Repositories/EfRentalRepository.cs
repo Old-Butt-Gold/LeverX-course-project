@@ -41,9 +41,9 @@ internal sealed class EfRentalRepository : IRentalRepository
         query = userRole switch
         {
             Role.Customer => query.Where(r => r.CustomerId == userId),
-            Role.Owner    => query.Where(r => r.OwnerId == userId),
-            Role.Admin    => query,
-            _             => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
+            Role.Owner => query.Where(r => r.OwnerId == userId),
+            Role.Admin => query,
+            _ => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
         };
 
         return await query.ToListAsync(cancellationToken);

@@ -65,9 +65,9 @@ internal sealed class MongoRentalRepository : IRentalRepository
         FilterDefinition<RentalDocument> filter = userRole switch
         {
             Role.Customer => Builders<RentalDocument>.Filter.Eq(d => d.CustomerId, userId),
-            Role.Owner    => Builders<RentalDocument>.Filter.Eq(d => d.OwnerId, userId),
-            Role.Admin    => Builders<RentalDocument>.Filter.Empty,
-            _             => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
+            Role.Owner => Builders<RentalDocument>.Filter.Eq(d => d.OwnerId, userId),
+            Role.Admin => Builders<RentalDocument>.Filter.Empty,
+            _ => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
         };
 
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
