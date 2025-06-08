@@ -54,6 +54,15 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         return entity;
     }
 
+    public async Task<IEnumerable<EquipmentItem>> GetByIdsWithEquipmentAsync(IEnumerable<long> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        return await _context.EquipmentItems
+            .AsNoTracking()
+            .Include(ei => ei.Equipment)
+            .Where(ei => ids.Contains(ei.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         var existing = await _context.EquipmentItems.FindAsync([id], cancellationToken);

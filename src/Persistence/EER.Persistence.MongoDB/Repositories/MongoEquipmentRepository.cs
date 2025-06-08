@@ -139,7 +139,6 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         return result.DeletedCount > 0;
     }
 
-    // TODO arrays
     private static EquipmentDocument MapToDocument(Equipment entity) => new()
     {
         Id = entity.Id,
@@ -159,7 +158,7 @@ internal sealed class MongoEquipmentRepository : IEquipmentRepository
         UpdatedBy = entity.UpdatedBy
     };
 
-    private static Equipment MapToEntity(EquipmentDocument doc) => new()
+    public static Equipment MapToEntity(EquipmentDocument doc) => new()
     {
         Id = doc.Id,
         CategoryId = doc.CategoryId,

@@ -4,6 +4,8 @@ using EER.Application.Features.Rentals.Commands.CreateRental;
 using EER.Application.Features.Rentals.Commands.DeleteRental;
 using EER.Application.Features.Rentals.Commands.UpdateRentalStatus;
 using EER.Application.Features.Rentals.Queries.GetAllRentals;
+using EER.Application.Features.Rentals.Queries.GetDetailedRental;
+using EER.Application.Features.Rentals.Queries.GetMyRentals;
 using EER.Application.Features.Rentals.Queries.GetRentalById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -110,7 +112,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
-    [Authorize(Policy = "OwnerOrAdmin")]
+    [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -147,5 +149,42 @@ public sealed class RentalsController : ControllerBase
 
         var result = await _sender.Send(new DeleteRentalCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
+    }
+
+    // GET: api/rentals/my
+    [HttpGet("my")]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(IEnumerable<RentalDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [Authorize("CustomerOrOwner")]
+    public async Task<IActionResult> GetMyRentals(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        var userRole = User.GetRole();
+
+        _logger.LogInformation("User {UserId} with role {Role} requested their rentals", userId, userRole.ToString());
+
+        var rentals = await _sender.Send(new GetMyRentalsQuery(userId, userRole), cancellationToken);
+
+        return Ok(rentals);
+    }
+
+    // GET: api/rentals/my/{id:int}
+    [HttpGet("my/{id:int}")]
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(DetailedRentalDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [Authorize("CustomerOrOwner")]
+    public async Task<IActionResult> GetDetailedRental(int id, CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} requested detailed rental ID: {RentalId}", userId, id);
+
+        var rentalDetails = await _sender.Send(new GetDetailedRentalQuery(id, userId), cancellationToken);
+
+        return rentalDetails is null
+            ? NotFound()
+            : Ok(rentalDetails);
     }
 }

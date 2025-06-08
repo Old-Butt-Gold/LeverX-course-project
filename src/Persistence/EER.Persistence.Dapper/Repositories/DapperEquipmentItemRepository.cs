@@ -95,6 +95,29 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task<IEnumerable<EquipmentItem>> GetByIdsWithEquipmentAsync(IEnumerable<long> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                                   SELECT
+                                       ei.*, e.*
+                                   FROM [Supplies].[EquipmentItem] ei
+                                   INNER JOIN [Supplies].[Equipment] e ON ei.EquipmentId = e.Id
+                                   WHERE ei.Id IN @ids
+                           """;
+
+        return await _connection.QueryAsync<EquipmentItem, Equipment, EquipmentItem>(
+            new CommandDefinition(sql, new { ids },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken),
+            (equipmentItem, equipment) =>
+            {
+                equipmentItem.Equipment = equipment;
+
+                return equipmentItem;
+            },
+            splitOn: "Id");
+    }
+
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Supplies].[EquipmentItem] WHERE Id = @Id";

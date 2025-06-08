@@ -109,7 +109,6 @@ internal sealed class MongoOfficeRepository : IOfficeRepository
         return result.DeletedCount > 0;
     }
 
-    // TODO arrays
     private static OfficeDocument MapToDocument(Office entity) => new()
     {
         Id = entity.Id,

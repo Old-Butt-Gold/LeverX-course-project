@@ -21,7 +21,7 @@ internal sealed class CreateRentalCommandHandler
     {
         // TODO work with equipmentItems ids and array, set their ItemState as Active and etc.
         // TODO and check that their current state isn't InUse, UnderMaintenance, Retired
-        // Total Price will be send as
+
         var rental = _mapper.Map<Rental>(command.CreateRentalDto);
         rental.CreatedBy = command.Manipulator;
         rental.UpdatedBy = command.Manipulator;

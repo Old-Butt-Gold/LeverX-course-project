@@ -1,7 +1,9 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Persistence.MongoDB.Documents.Equipment;
 using EER.Persistence.MongoDB.Documents.EquipmentItem;
+using EER.Persistence.MongoDB.Documents.Rental;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -11,6 +13,8 @@ namespace EER.Persistence.MongoDB.Repositories;
 internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
 {
     private readonly IMongoCollection<EquipmentItemDocument> _collection;
+    private readonly IMongoCollection<EquipmentDocument> _equipmentCollection;
+
     private readonly IdGenerator _idGenerator;
     private readonly DatabaseSettings _settings;
 
@@ -18,6 +22,7 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
     {
         _settings = settings.Value;
         _collection = database.GetCollection<EquipmentItemDocument>(_settings.EquipmentItemCollection);
+        _equipmentCollection = database.GetCollection<EquipmentDocument>(_settings.EquipmentCollection);
         _idGenerator = idGenerator;
     }
 
@@ -89,6 +94,41 @@ internal sealed class MongoEquipmentItemRepository : IEquipmentItemRepository
         }
 
         return MapToEntity(document);
+    }
+
+    public async Task<IEnumerable<EquipmentItem>> GetByIdsWithEquipmentAsync(IEnumerable<long> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        var filter = Builders<EquipmentItemDocument>.Filter.In(i => i.Id, ids);
+
+        var documents = session != null
+            ? await _collection.Find(session, filter).ToListAsync(cancellationToken)
+            : await _collection.Find(filter).ToListAsync(cancellationToken);
+
+        var equipmentIds = documents
+            .Select(d => d.EquipmentId)
+            .Distinct();
+
+        var equipmentFilter = Builders<EquipmentDocument>.Filter.In(e => e.Id, equipmentIds);
+
+        var equipmentDocuments = session != null
+            ? await _equipmentCollection.Find(session, equipmentFilter).ToListAsync(cancellationToken)
+            : await _equipmentCollection.Find(equipmentFilter).ToListAsync(cancellationToken);
+
+        var equipmentDict = equipmentDocuments.ToDictionary(e => e.Id);
+
+        return documents.Select(doc =>
+        {
+            var item = MapToEntity(doc);
+
+            if (equipmentDict.TryGetValue(doc.EquipmentId, out var equipmentDocument))
+            {
+                item.Equipment = MongoEquipmentRepository.MapToEntity(equipmentDocument);
+            }
+
+            return item;
+        });
     }
 
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken ct = default)

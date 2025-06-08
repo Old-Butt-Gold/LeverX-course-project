@@ -59,6 +59,31 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return MapToEntity(document);
     }
 
+    public async Task<IEnumerable<Rental>> GetByUserIdAsync(Guid userId, Role userRole, ITransaction? transaction = null,
+        CancellationToken cancellationToken = default)
+    {
+        FilterDefinition<RentalDocument> filter = userRole switch
+        {
+            Role.Customer => Builders<RentalDocument>.Filter.Eq(d => d.CustomerId, userId),
+            Role.Owner    => Builders<RentalDocument>.Filter.Eq(d => d.OwnerId, userId),
+            Role.Admin    => Builders<RentalDocument>.Filter.Empty,
+            _             => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
+        };
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        List<RentalDocument> docs =
+            session != null
+            ? await _rentalCollection
+                .Find(session, filter)
+                .ToListAsync(cancellationToken)
+            : await _rentalCollection
+                .Find(filter)
+                .ToListAsync(cancellationToken);
+
+        return docs.Select(MapToEntity);
+    }
+
     public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var id = rentalToUpdate.Id;
@@ -90,6 +115,19 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return MapToEntity(updatedRentalDoc);
     }
 
+    public async Task<Rental?> GetByIdWithItemsAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, id);
+
+        var document = session != null
+            ? await _rentalCollection.Find(session, filter).FirstOrDefaultAsync(cancellationToken)
+            : await _rentalCollection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+
+        return document is not null ? MapToEntityWithRentalItems(document) : null;
+    }
+
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
         var filter = Builders<RentalDocument>.Filter.Eq(r => r.Id, id);
@@ -111,7 +149,6 @@ internal sealed class MongoRentalRepository : IRentalRepository
         return result.DeletedCount > 0;
     }
 
-    // TODO arrays
     private static RentalDocument MapToDocument(Rental entity) => new()
     {
         Id = entity.Id,
@@ -142,6 +179,22 @@ internal sealed class MongoRentalRepository : IRentalRepository
         UpdatedAt = doc.UpdatedAt,
         UpdatedBy = doc.UpdatedBy
     };
+
+    private static Rental MapToEntityWithRentalItems(RentalDocument doc)
+    {
+        var rental = MapToEntity(doc);
+
+        rental.RentalItems = doc.Items.Select(i => new RentalItem
+        {
+            RentalId = doc.Id,
+            EquipmentItemId = i.EquipmentItemId,
+            ActualPrice = i.ActualPrice,
+            CreatedAt = i.CreatedAt,
+            CreatedBy = i.CreatedBy
+        }).ToList();
+
+        return rental;
+    }
 
     private async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
