@@ -35,9 +35,9 @@ public class EfReviewRepository : IReviewRepository
 
     public async Task<Review?> GetReviewAsync(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        return await _context.Reviews
-            .Where(r => r.EquipmentId == equipmentId && r.CustomerId == customerId)
-            .FirstOrDefaultAsync(ct);
+        var review = await _context.Reviews.FindAsync([customerId, equipmentId], cancellationToken: ct);
+
+        return review;
     }
 
     public async Task<bool> IsExistsReview(Guid customerId, int equipmentId, ITransaction? transaction = null, CancellationToken ct = default)

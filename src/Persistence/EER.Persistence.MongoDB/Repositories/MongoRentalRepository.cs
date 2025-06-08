@@ -1,6 +1,8 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
+using EER.Persistence.MongoDB.Documents.EquipmentItem;
 using EER.Persistence.MongoDB.Documents.Rental;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
@@ -10,26 +12,28 @@ namespace EER.Persistence.MongoDB.Repositories;
 
 internal sealed class MongoRentalRepository : IRentalRepository
 {
-    private readonly IMongoCollection<RentalDocument> _collection;
+    private readonly IMongoCollection<RentalDocument> _rentalCollection;
+    private readonly IMongoCollection<EquipmentItemDocument> _equipmentItemCollection;
     private readonly IdGenerator _idGenerator;
     private readonly DatabaseSettings _settings;
 
     public MongoRentalRepository(IMongoDatabase database, IOptions<DatabaseSettings> settings, IdGenerator idGenerator)
     {
         _settings = settings.Value;
-        _collection = database.GetCollection<RentalDocument>(_settings.RentalCollection);
+        _rentalCollection = database.GetCollection<RentalDocument>(_settings.RentalCollection);
+        _equipmentItemCollection = database.GetCollection<EquipmentItemDocument>(_settings.EquipmentItemCollection);
         _idGenerator = idGenerator;
     }
 
     public async Task<IEnumerable<Rental>> GetAllAsync(ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var documents = await _collection.Find("{}").ToListAsync(ct);
+        var documents = await _rentalCollection.Find("{}").ToListAsync(ct);
         return documents.Select(MapToEntity);
     }
 
     public async Task<Rental?> GetByIdAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
     {
-        var document = await _collection.Find(r => r.Id == id).FirstOrDefaultAsync(ct);
+        var document = await _rentalCollection.Find(r => r.Id == id).FirstOrDefaultAsync(ct);
         return document is not null ? MapToEntity(document) : null;
     }
 
@@ -45,11 +49,11 @@ internal sealed class MongoRentalRepository : IRentalRepository
 
         if (session != null)
         {
-            await _collection.InsertOneAsync(session, document, options, ct);
+            await _rentalCollection.InsertOneAsync(session, document, options, ct);
         }
         else
         {
-            await _collection.InsertOneAsync(document, options, ct);
+            await _rentalCollection.InsertOneAsync(document, options, ct);
         }
 
         return MapToEntity(document);
@@ -66,27 +70,24 @@ internal sealed class MongoRentalRepository : IRentalRepository
             .Set(r => r.UpdatedBy, rentalToUpdate.UpdatedBy)
             .Set(r => r.UpdatedAt, rentalToUpdate.UpdatedAt);
 
-        // TODO Handle changing EquipmentItems ItemState in Available after RentalStatus: [Canceled, Completed]
-
         var options = new FindOneAndUpdateOptions<RentalDocument>
         {
             ReturnDocument = ReturnDocument.After
         };
 
-        RentalDocument document;
-
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
 
-        if (session != null)
+        RentalDocument updatedRentalDoc = session != null
+            ? await _rentalCollection.FindOneAndUpdateAsync(session, filter, update, options, ct)
+            : await _rentalCollection.FindOneAndUpdateAsync(filter, update, options, ct);
+
+        if (rentalToUpdate.Status is RentalStatus.Canceled or RentalStatus.Completed)
         {
-            document = await _collection.FindOneAndUpdateAsync(session, filter, update, options, ct);
-        }
-        else
-        {
-            document = await _collection.FindOneAndUpdateAsync(filter, update, options, ct);
+            var itemIds = updatedRentalDoc.Items.Select(i => i.EquipmentItemId);
+            await UpdateStatusForItemsAsync(itemIds, ItemStatus.Available, transaction, ct);
         }
 
-        return MapToEntity(document);
+        return MapToEntity(updatedRentalDoc);
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken ct = default)
@@ -100,11 +101,11 @@ internal sealed class MongoRentalRepository : IRentalRepository
 
         if (session != null)
         {
-            result = await _collection.DeleteOneAsync(session, filter, options, ct);
+            result = await _rentalCollection.DeleteOneAsync(session, filter, options, ct);
         }
         else
         {
-            result = await _collection.DeleteOneAsync(filter, ct);
+            result = await _rentalCollection.DeleteOneAsync(filter, ct);
         }
 
         return result.DeletedCount > 0;
@@ -142,4 +143,28 @@ internal sealed class MongoRentalRepository : IRentalRepository
         UpdatedBy = doc.UpdatedBy
     };
 
+    private async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var idsList = itemIds.ToList();
+        if (idsList.Count is 0) return;
+
+        var filter = Builders<EquipmentItemDocument>.Filter.In(i => i.Id, idsList);
+        var update = Builders<EquipmentItemDocument>.Update
+            .Set(i => i.Status, status);
+
+        var options = new UpdateOptions { IsUpsert = false };
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+
+        if (session != null)
+        {
+            await _equipmentItemCollection.UpdateManyAsync(
+                session, filter, update, options, cancellationToken);
+        }
+        else
+        {
+            await _equipmentItemCollection.UpdateManyAsync(
+                filter, update, options, cancellationToken);
+        }
+    }
 }
