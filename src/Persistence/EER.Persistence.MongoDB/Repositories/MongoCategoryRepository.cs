@@ -1,11 +1,9 @@
-﻿using System.Text.RegularExpressions;
-using EER.Domain.DatabaseAbstractions;
+﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
 using EER.Persistence.MongoDB.Documents.Category;
 using EER.Persistence.MongoDB.Settings;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace EER.Persistence.MongoDB.Repositories;

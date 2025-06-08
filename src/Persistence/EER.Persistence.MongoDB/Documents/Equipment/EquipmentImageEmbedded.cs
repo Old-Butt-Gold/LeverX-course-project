@@ -1,4 +1,4 @@
-﻿namespace EER.Persistence.MongoDB.Documents.EquipmentItem;
+﻿namespace EER.Persistence.MongoDB.Documents.Equipment;
 
 public class EquipmentImageEmbedded
 {
