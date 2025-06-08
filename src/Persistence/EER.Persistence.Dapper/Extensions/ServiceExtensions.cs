@@ -22,6 +22,7 @@ public static class ServiceExtensions
         serviceCollection.AddScoped<IRentalRepository, DapperRentalRepository>();
         serviceCollection.AddScoped<IUserRepository, DapperUserRepository>();
         serviceCollection.AddScoped<IRefreshTokenRepository, DapperRefreshTokenRepository>();
+        serviceCollection.AddScoped<IReviewRepository, DapperReviewRepository>();
 
         serviceCollection.AddScoped<ITransactionManager, DapperTransactionManager>();
     }

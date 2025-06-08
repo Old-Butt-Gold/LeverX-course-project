@@ -7,6 +7,7 @@ using EER.Application.Features.Equipment.Commands.UpdateEquipment;
 using EER.Application.Features.Equipment.Queries.GetAllEquipment;
 using EER.Application.Features.Equipment.Queries.GetEquipmentById;
 using EER.Application.Features.Equipment.Queries.GetUnmoderatedEquipment;
+using EER.Application.Features.Reviews.CreateReview;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,6 @@ public sealed class EquipmentController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("User {UserId} requested all equipment", User.GetUserId());
         var equipment = await _sender.Send(new GetAllEquipmentQuery(), cancellationToken);
         return Ok(equipment);
     }
@@ -64,7 +64,6 @@ public sealed class EquipmentController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("User {UserId} requested equipment ID: {EquipmentId}", User.GetUserId(), id);
         var item = await _sender.Send(new GetEquipmentByIdQuery(id), cancellationToken);
 
         return item is not null ? Ok(item) : NotFound();
@@ -173,6 +172,7 @@ public sealed class EquipmentController : ControllerBase
         return Ok(equipment);
     }
 
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
@@ -193,5 +193,24 @@ public sealed class EquipmentController : ControllerBase
 
         _logger.LogWarning("Admin {UserId} failed to moderate equipment ID: {EquipmentId} (not found)", userId, id);
         return NotFound();
+    }
+
+    [HttpPost("{equipmentId:int}/reviews")]
+    [Authorize(Policy = "CustomerOnly")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(ReviewCreatedDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateReview(int equipmentId, [FromBody] CreateReviewDto reviewDto, CancellationToken cancellationToken)
+    {
+        var customerId = User.GetUserId();
+        _logger.LogInformation("User {UserId} adding review to equipment ID: {EquipmentId}", customerId, equipmentId);
+
+        var command = new CreateReviewCommand(reviewDto, equipmentId, customerId);
+        var result = await _sender.Send(command, cancellationToken);
+
+        _logger.LogInformation("User {UserId} added review to equipment ID: {EquipmentId}", customerId, equipmentId);
+        return Ok(result);
     }
 }

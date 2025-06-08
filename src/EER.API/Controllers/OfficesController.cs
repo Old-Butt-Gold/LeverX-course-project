@@ -36,7 +36,7 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<OfficeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Policy = "AnyRole")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         _logger.LogInformation("User {UserId} requested all offices", User.GetUserId());
@@ -62,7 +62,6 @@ public sealed class OfficesController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("User {UserId} requested office ID: {OfficeId}", User.GetUserId(), id);
         var office = await _sender.Send(new GetOfficeByIdQuery(id), cancellationToken);
         return office is not null ? Ok(office) : NotFound();
     }
