@@ -8,6 +8,7 @@ using EER.Application.Extensions;
 using EER.Application.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 namespace EER.API.Controllers;

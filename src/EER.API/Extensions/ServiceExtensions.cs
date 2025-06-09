@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using EER.API.CustomAttributes;
 using EER.API.Filters;
 using EER.API.SwaggerSchemaFilters;
@@ -279,6 +281,54 @@ public static class ServiceExtensions
                 restrictedToMinimumLevel: LogEventLevel.Information, fileSizeLimitBytes: 10 * 1024 * 1024,
                 rollOnFileSizeLimit: true,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} | {Level:u} | [{SourceContext}] | {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}");
+        });
+    }
+
+    public static void ConfigureRateLimiter(this IServiceCollection services)
+    {
+        services.AddRateLimiter(limiterOptions =>
+        {
+            limiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            limiterOptions.AddPolicy("per_ip", context =>
+            {
+                var ip = context.Connection.RemoteIpAddress?.ToString();
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ip ?? "unknown-ip",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(3),
+                    });
+            });
+
+            limiterOptions.AddPolicy("per_user", context =>
+            {
+                var userId = context.User.FindFirst(ClaimTypes.Sid)?.Value;
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    var ip = context.Connection.RemoteIpAddress?.ToString();
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: userId ?? "unknown-ip",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            AutoReplenishment = true,
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromSeconds(3),
+                        });
+                }
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: userId,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromSeconds(3)
+                    });
+            });
         });
     }
 }
