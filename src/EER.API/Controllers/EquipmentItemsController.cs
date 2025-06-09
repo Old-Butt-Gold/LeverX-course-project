@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.EquipmentItems.Commands.CreateEquipmentItem;
 using EER.Application.Features.EquipmentItems.Commands.DeleteEquipmentItem;
@@ -8,12 +9,14 @@ using EER.Application.Features.EquipmentItems.Queries.GetEquipmentItemById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AnyRole")]
+[Authorize(Policy = AuthRoleConstants.AnyRole)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class EquipmentItemsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -81,7 +84,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Create(CreateEquipmentItemDto item, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -110,7 +113,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Update(UpdateEquipmentItemDto updatedItem, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -138,7 +141,7 @@ public sealed class EquipmentItemsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:long}")]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

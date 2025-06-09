@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using EER.API.Constants;
 using EER.API.CustomAttributes;
 using EER.API.Filters;
 using EER.API.SwaggerSchemaFilters;
@@ -149,32 +150,32 @@ public static class ServiceExtensions
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         services.AddAuthorizationBuilder()
-            .AddPolicy("AnyRole", policy =>
+            .AddPolicy(AuthRoleConstants.AnyRole, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Admin.ToString(), Role.Customer.ToString(), Role.Owner.ToString());
             })
-            .AddPolicy("AdminOnly", policy =>
+            .AddPolicy(AuthRoleConstants.AdminOnly, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Admin.ToString());
             })
-            .AddPolicy("OwnerOnly", policy =>
+            .AddPolicy(AuthRoleConstants.OwnerOnly, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Owner.ToString());
             })
-            .AddPolicy("OwnerOrAdmin", policy =>
+            .AddPolicy(AuthRoleConstants.OwnerOrAdmin, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Admin.ToString(), Role.Owner.ToString());
             })
-            .AddPolicy("CustomerOrOwner", policy =>
+            .AddPolicy(AuthRoleConstants.CustomerOrOwner, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Customer.ToString(), Role.Owner.ToString());
             })
-            .AddPolicy("CustomerOnly", policy =>
+            .AddPolicy(AuthRoleConstants.CustomerOnly, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireRole(Role.Customer.ToString());
@@ -290,7 +291,7 @@ public static class ServiceExtensions
         {
             limiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            limiterOptions.AddPolicy("per_ip", context =>
+            limiterOptions.AddPolicy(RateLimiterConstants.PerIp, context =>
             {
                 var ip = context.Connection.RemoteIpAddress?.ToString();
                 return RateLimitPartition.GetFixedWindowLimiter(
@@ -303,7 +304,7 @@ public static class ServiceExtensions
                     });
             });
 
-            limiterOptions.AddPolicy("per_user", context =>
+            limiterOptions.AddPolicy(RateLimiterConstants.PerUser, context =>
             {
                 var userId = context.User.FindFirst(ClaimTypes.Sid)?.Value;
 
@@ -311,7 +312,7 @@ public static class ServiceExtensions
                 {
                     var ip = context.Connection.RemoteIpAddress?.ToString();
                     return RateLimitPartition.GetFixedWindowLimiter(
-                        partitionKey: userId ?? "unknown-ip",
+                        partitionKey: ip ?? "unknown-ip",
                         factory: _ => new FixedWindowRateLimiterOptions
                         {
                             AutoReplenishment = true,

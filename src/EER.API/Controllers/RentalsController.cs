@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.Rentals.Commands.CreateRental;
 using EER.Application.Features.Rentals.Commands.DeleteRental;
@@ -10,12 +11,14 @@ using EER.Application.Features.Rentals.Queries.GetRentalById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AnyRole")]
+[Authorize(Policy = AuthRoleConstants.AnyRole)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class RentalsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -83,7 +86,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    [Authorize(Policy = "CustomerOnly")]
+    [Authorize(Policy = AuthRoleConstants.CustomerOnly)]
     public async Task<IActionResult> Create(CreateRentalDto rental, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -112,7 +115,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Update([FromBody] UpdateRentalDto rentalDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -141,7 +144,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthRoleConstants.AdminOnly)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -156,7 +159,7 @@ public sealed class RentalsController : ControllerBase
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(IEnumerable<RentalDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [Authorize("CustomerOrOwner")]
+    [Authorize(Policy = AuthRoleConstants.CustomerOrOwner)]
     public async Task<IActionResult> GetMyRentals(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -175,7 +178,7 @@ public sealed class RentalsController : ControllerBase
     [ProducesResponseType(typeof(DetailedRentalDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [Authorize("CustomerOrOwner")]
+    [Authorize(Policy = AuthRoleConstants.CustomerOrOwner)]
     public async Task<IActionResult> GetDetailedRental(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Abstractions.Security;
 using EER.Application.Dto.Security.Login;
 using EER.Application.Dto.Security.RefreshToken;
@@ -15,7 +16,8 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AnyRole")]
+[Authorize(Policy = AuthRoleConstants.AnyRole)]
+[EnableRateLimiting(RateLimiterConstants.PerIp)]
 public sealed class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
@@ -195,6 +197,7 @@ public sealed class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost("logout")]
+    [EnableRateLimiting(RateLimiterConstants.PerUser)]
     public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
         if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
@@ -226,6 +229,7 @@ public sealed class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost("logout-all")]
+    [EnableRateLimiting(RateLimiterConstants.PerUser)]
     public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
