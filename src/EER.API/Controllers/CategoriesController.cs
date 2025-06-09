@@ -13,7 +13,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AdminOnly")]
 public sealed class CategoriesController : ControllerBase
 {
     private readonly ISender _sender;
@@ -36,9 +36,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("User {UserId} requested all categories", User.GetUserId());
         var categories = await _sender.Send(new GetAllCategoriesQuery(), cancellationToken);
         return Ok(categories);
     }
@@ -58,9 +58,9 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("User {UserId} requested category ID: {CategoryId}", User.GetUserId(), id);
         var category = await _sender.Send(new GetCategoryByIdQuery(id), cancellationToken);
         return category is not null ? Ok(category) : NotFound();
     }
@@ -108,7 +108,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(typeof(CategoryUpdatedDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [HttpPut()]
+    [HttpPut]
     public async Task<IActionResult> Update(UpdateCategoryDto updatedCategory, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

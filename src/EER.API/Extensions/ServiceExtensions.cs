@@ -259,7 +259,7 @@ public static class ServiceExtensions
             }, tags: ["system", "memory"]);
     }
 
-    public static void ConfigureSerilog(this IServiceCollection services, IHostEnvironment hostEnvironment)
+    public static void ConfigureSerilog(this IServiceCollection services)
     {
         services.AddSerilog(config =>
         {
@@ -269,7 +269,6 @@ public static class ServiceExtensions
                 .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware", LogEventLevel.Fatal)
                 .Enrich.FromLogContext();
 
             config.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine} {Properties:j}{NewLine}{Exception}",

@@ -1,6 +1,7 @@
 ﻿using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EER.Persistence.EFCore.Repositories;
@@ -52,6 +53,29 @@ internal sealed class EfEquipmentItemRepository : IEquipmentItemRepository
         await _context.SaveChangesAsync(cancellationToken);
 
         return entity;
+    }
+
+    public async Task<IEnumerable<EquipmentItem>> GetByIdsWithEquipmentAsync(IEnumerable<long> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        return await _context.EquipmentItems
+            .AsNoTracking()
+            .Include(ei => ei.Equipment)
+            .Where(ei => ids.Contains(ei.Id))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, Guid updatedBy, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        var ids = itemIds.ToList();
+        var now = DateTime.UtcNow;
+
+        await _context.EquipmentItems
+            .Where(ei => ids.Contains(ei.Id))
+            .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(ei => ei.ItemStatus, status)
+                    .SetProperty(ei => ei.UpdatedBy, updatedBy)
+                    .SetProperty(ei => ei.UpdatedAt, now),
+                cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

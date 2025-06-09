@@ -15,7 +15,7 @@ namespace EER.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(Policy = "AnyRole")]
-public class AuthenticationController : ControllerBase
+public sealed class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly JwtSettings _jwtSettings;
@@ -78,7 +78,8 @@ public class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost("register-admin")]
-    [Authorize(Policy = "AdminOnly")]
+    [AllowAnonymous]
+    // [Authorize(Policy = "AdminOnly")] TODO return, after some admins are created
     public async Task<IActionResult> RegisterAdmin(RegisterAdminDto adminDto, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Registration admin with email: {Email}", adminDto.Email);
@@ -173,8 +174,6 @@ public class AuthenticationController : ControllerBase
             Expires = DateTime.UtcNow.AddSeconds(_jwtSettings.RefreshExpirySeconds),
             SameSite = SameSiteMode.Strict
         });
-
-        _logger.LogInformation("User logged out. UserId: {UserId}", User.GetUserId());
 
         return Ok(new { result.AccessToken });
     }

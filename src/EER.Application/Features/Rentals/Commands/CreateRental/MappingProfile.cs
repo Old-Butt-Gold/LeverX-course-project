@@ -10,6 +10,7 @@ public class MappingProfile : Profile
     {
         CreateMap<CreateRentalDto, Rental>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CustomerId, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => RentalStatus.Pending))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())

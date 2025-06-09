@@ -10,6 +10,7 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(_ => 0m))
             .ForMember(dest => dest.TotalReviews, opt => opt.MapFrom(_ => 0))
+            .ForMember(dest => dest.OwnerId, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())

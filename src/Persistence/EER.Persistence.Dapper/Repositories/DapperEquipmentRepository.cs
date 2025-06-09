@@ -110,6 +110,7 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                                    CategoryId = @CategoryId,
                                    Description = @Description,
                                    PricePerDay = @PricePerDay,
+                                   IsModerated = @IsModerated,
                                    UpdatedBy = @UpdatedBy,
                                    UpdatedAt = @UpdatedAt
                                OUTPUT
@@ -139,9 +140,20 @@ internal sealed class DapperEquipmentRepository : IEquipmentRepository
                 equipment.CategoryId,
                 equipment.Description,
                 equipment.PricePerDay,
+                equipment.IsModerated,
                 equipment.UpdatedBy,
                 equipment.UpdatedAt,
             }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<IEnumerable<Equipment>> GetUnmoderatedAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = "SELECT * FROM [Supplies].[Equipment] WHERE IsModerated = 0";
+
+        return await _connection.QueryAsync<Equipment>(
+            new CommandDefinition(sql,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken));
     }
 

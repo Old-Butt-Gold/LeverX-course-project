@@ -3,6 +3,7 @@ using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
 
 namespace EER.Persistence.Dapper.Repositories;
 
@@ -62,7 +63,34 @@ internal sealed class DapperRentalRepository : IRentalRepository
                 cancellationToken: cancellationToken));
     }
 
-    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Rental>> GetByUserIdAsync(Guid userId, Role userRole, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+
+        var whereClause = userRole switch
+        {
+            Role.Customer => "WHERE CustomerId = @UserId",
+            Role.Owner => "WHERE OwnerId = @UserId",
+            Role.Admin => "",
+            _ => throw new ArgumentOutOfRangeException(nameof(userRole), $"Unsupported role: {userRole}")
+        };
+
+        const string baseSql = """
+                                   SELECT *
+                                   FROM [Supplies].[Rental]
+                               """;
+
+        var sql = $"{baseSql} {whereClause} ORDER BY CreatedAt DESC";
+
+        return await _connection.QueryAsync<Rental>(
+            new CommandDefinition(
+                sql, new { UserId = userId },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
+    }
+
+    public async Task<Rental> UpdateStatusAsync(Rental rentalToUpdate, Guid manipulator, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = """
                                DECLARE @UpdatedTable TABLE (
@@ -111,6 +139,60 @@ internal sealed class DapperRentalRepository : IRentalRepository
                 rentalToUpdate.UpdatedBy,
             }, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken));
+    }
+
+    public async Task<Rental?> GetByIdWithItemsAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                                   SELECT *
+                                   FROM [Supplies].[Rental]
+                                   WHERE Id = @id;
+
+                                   SELECT *
+                                   FROM [Supplies].[RentalItem]
+                                   WHERE RentalId = @id;
+                           """;
+
+        await using var multi = await _connection.QueryMultipleAsync(
+            new CommandDefinition(sql, new { id },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken));
+
+        var rental = await multi.ReadFirstOrDefaultAsync<Rental>();
+        if (rental is null) return null;
+
+        var rentalItems = await multi.ReadAsync<RentalItem>();
+        rental.RentalItems = rentalItems.ToList();
+        return rental;
+    }
+
+    public async Task AddRentalItemsAsync(IEnumerable<RentalItem> items, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               INSERT INTO [Supplies].[RentalItem]
+                                   (RentalId, EquipmentItemId, ActualPrice, CreatedBy)
+                               VALUES
+                                   (@RentalId, @EquipmentItemId, @ActualPrice, @CreatedBy)
+                           """;
+
+        // TODO maybe ZDapperPlus with _connection.BulkInsert(items); ?
+
+        var projection = items.Select(item => new
+        {
+            item.RentalId,
+            item.EquipmentItemId,
+            item.ActualPrice,
+            item.CreatedBy,
+        });
+
+        await _connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                projection,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

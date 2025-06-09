@@ -10,4 +10,6 @@ public interface IUserRepository : IRepository<User, Guid>
     Task<bool> IsEmailExistsAsync(string email, Guid? excludeUserId = null, ITransaction? transaction = null, CancellationToken cancellationToken = default);
 
     Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<Guid> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default);
 }

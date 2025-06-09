@@ -22,10 +22,10 @@ internal sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCateg
         if (category is null)
             throw new KeyNotFoundException($"Category with ID {command.UpdateCategoryDto.Id} not found");
 
-        _mapper.Map(command.UpdateCategoryDto, category);
+        var mappedCategory = _mapper.Map(command.UpdateCategoryDto, category);
         category.UpdatedBy = command.Manipulator;
 
-        var updatedCategory = await _repository.UpdateAsync(category, cancellationToken: cancellationToken);
+        var updatedCategory = await _repository.UpdateAsync(mappedCategory, cancellationToken: cancellationToken);
 
         return _mapper.Map<CategoryUpdatedDto>(updatedCategory);
     }

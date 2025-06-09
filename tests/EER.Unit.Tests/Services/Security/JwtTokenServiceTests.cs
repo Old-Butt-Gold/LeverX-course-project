@@ -1,12 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using EER.Application.Services.Security;
 using EER.Application.Settings;
 using EER.Domain.Entities;
 using EER.Domain.Enums;
+using FluentAssertions;
 using Microsoft.Extensions.Options;
 
-namespace EER.Unit.Tests.Services;
+namespace EER.Unit.Tests.Services.Security;
 
 public class JwtTokenServiceTests
 {
@@ -31,7 +31,7 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ShouldIncludeCorrectClaims()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var token = service.GenerateAccessToken(_user);
@@ -39,18 +39,18 @@ public class JwtTokenServiceTests
         var jwtToken = handler.ReadJwtToken(token);
 
         // Assert
-        Assert.Equal(_user.Id.ToString(), jwtToken.Claims.First(c => c.Type == ClaimTypes.Sid).Value);
-        Assert.Equal(_user.Email, jwtToken.Claims.First(c => c.Type == ClaimTypes.Email).Value);
-        Assert.Equal(_user.UserRole.ToString(), jwtToken.Claims.First(c => c.Type == ClaimTypes.Role).Value);
-        Assert.Equal(_jwtSettings.Issuer, jwtToken.Issuer);
-        Assert.Contains(_jwtSettings.Audience, jwtToken.Audiences);
+        jwtToken.Claims.First(c => c.Type == ClaimTypes.Sid).Value.Should().Be(_user.Id.ToString());
+        jwtToken.Claims.First(c => c.Type == ClaimTypes.Email).Value.Should().Be(_user.Email);
+        jwtToken.Claims.First(c => c.Type == ClaimTypes.Role).Value.Should().Be(_user.UserRole.ToString());
+        jwtToken.Issuer.Should().Be(_jwtSettings.Issuer);
+        jwtToken.Audiences.Should().Contain(_jwtSettings.Audience);
     }
 
     [Fact]
     public void GenerateAccessToken_ShouldHaveCorrectExpiration()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var token = service.GenerateAccessToken(_user);
@@ -59,25 +59,25 @@ public class JwtTokenServiceTests
 
         // Assert
         var expectedExpiry = DateTime.UtcNow.AddSeconds(_jwtSettings.ExpirySeconds);
-        Assert.True(jwtToken.ValidTo >= expectedExpiry.AddSeconds(-1.5) &&
-                    jwtToken.ValidTo <= expectedExpiry.AddSeconds(1.5));
+        jwtToken.ValidTo.Should().BeCloseTo(expectedExpiry, TimeSpan.FromSeconds(1.5));
     }
 
     [Fact]
     public void GenerateRefreshToken_ShouldReturnValidEntity()
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
 
         // Act
         var refreshToken = service.GenerateRefreshToken(_user);
 
         // Assert
-        Assert.Equal(_user.Id, refreshToken.UserId);
-        Assert.False(string.IsNullOrWhiteSpace(refreshToken.Token));
-        Assert.True(refreshToken.ExpiresAt > DateTime.UtcNow.AddMinutes(59.95));
-        Assert.True(refreshToken.ExpiresAt < DateTime.UtcNow.AddMinutes(60.05));
-        Assert.Null(refreshToken.RevokedAt);
+        refreshToken.UserId.Should().Be(_user.Id);
+        refreshToken.Token.Should().NotBeNullOrWhiteSpace();
+
+        var expectedExpiry = DateTime.UtcNow.AddSeconds(_jwtSettings.RefreshExpirySeconds);
+        refreshToken.ExpiresAt.Should().BeCloseTo(expectedExpiry, TimeSpan.FromMilliseconds(50));
+        refreshToken.RevokedAt.Should().BeNull();
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class JwtTokenServiceTests
             ExpirySeconds = -10
         };
 
-        var service = new JwtTokenService(Options.Create(jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(jwtSettings));
 
         var expiredToken = service.GenerateAccessToken(_user);
 
@@ -100,8 +100,8 @@ public class JwtTokenServiceTests
         var principal = service.GetPrincipalFromExpiredToken(expiredToken);
 
         // Assert
-        Assert.Equal(_user.Id.ToString(), principal?.FindFirst(ClaimTypes.Sid)?.Value);
-        Assert.Equal(_user.Email, principal?.FindFirst(ClaimTypes.Email)?.Value);
+        principal?.FindFirst(ClaimTypes.Sid)?.Value.Should().Be(_user.Id.ToString());
+        principal?.FindFirst(ClaimTypes.Email)?.Value.Should().Be(_user.Email);
     }
 
     [Theory]
@@ -111,7 +111,7 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ShouldContainCorrectRole(Role role)
     {
         // Arrange
-        var service = new JwtTokenService(Options.Create(_jwtSettings));
+        var service = new Application.Services.Security.JwtTokenService(Options.Create(_jwtSettings));
         _user.UserRole = role;
 
         // Act
@@ -119,6 +119,6 @@ public class JwtTokenServiceTests
 
         // Assert
         var claims = new JwtSecurityToken(token).Claims;
-        Assert.Equal(role.ToString(), claims.First(c => c.Type == ClaimTypes.Role).Value);
+        claims.First(c => c.Type == ClaimTypes.Role).Value.Should().Be(role.ToString());
     }
 }

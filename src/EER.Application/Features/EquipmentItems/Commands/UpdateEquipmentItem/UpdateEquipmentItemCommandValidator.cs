@@ -14,7 +14,6 @@ public class UpdateEquipmentItemCommandValidator : AbstractValidator<UpdateEquip
             .MaximumLength(100);
 
         RuleFor(x => x.UpdateEquipmentItemDto.ItemStatus)
-            .NotEmpty()
             .IsInEnum();
 
         RuleFor(x => x.UpdateEquipmentItemDto.OfficeId)

@@ -114,6 +114,30 @@ internal sealed class DapperUserRepository : IUserRepository
         );
     }
 
+    public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<Guid> ids, ITransaction? transaction = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return [];
+
+        const string sql = """
+                           SELECT *
+                           FROM [Identity].[User]
+                           WHERE Id IN @Ids
+                           """;
+
+        var users = await _connection.QueryAsync<User>(
+            new CommandDefinition(
+                sql,
+                new { Ids = ids },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
+
+        return users.AsList();
+    }
+
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
         const string sql = "DELETE FROM [Identity].[User] WHERE Id = @Id";

@@ -14,7 +14,6 @@ public class CreateEquipmentItemCommandValidator : AbstractValidator<CreateEquip
             .MaximumLength(100).WithMessage("Serial number cannot exceed 100 characters");
 
         RuleFor(x => x.CreateEquipmentItemDto.ItemStatus)
-            .NotEmpty()
             .IsInEnum();
 
         RuleFor(x => x.CreateEquipmentItemDto.OfficeId)

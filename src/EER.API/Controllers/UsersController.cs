@@ -12,7 +12,7 @@ namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = "AnyRole")]
 public sealed class UsersController : ControllerBase
 {
     private readonly ISender _sender;
@@ -83,7 +83,11 @@ public sealed class UsersController : ControllerBase
     public async Task<IActionResult> Update(UpdateUserDto updatedUser, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        _logger.LogInformation("User {UserId} updating user ID: {TargetUserId}", userId, updatedUser.Id);
+
+        if (userId != updatedUser.Id)
+            return Unauthorized();
+
+        _logger.LogInformation("User {UserId} updating his information", userId);
 
         var user = await _sender.Send(new UpdateUserCommand(updatedUser), cancellationToken);
 
@@ -105,6 +109,7 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -112,5 +117,28 @@ public sealed class UsersController : ControllerBase
 
         var result = await _sender.Send(new DeleteUserCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
+    }
+
+    // GET: api/users/me
+    /// <summary>
+    /// Gets information about user from JWT token
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>User profile information</returns>
+    /// <response code="200">Returns the requested user information.</response>
+    /// <response code="404">If the user with the specified ID is not found.</response>
+    /// <response code="406">The requested content type is not supported.</response>
+    [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
+    [ProducesResponseType(typeof(UserDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [HttpGet("me")]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        _logger.LogInformation("User {UserId} gets his profile information", userId);
+
+        var user = await _sender.Send(new GetUserByIdQuery(userId), cancellationToken);
+        return user is not null ? Ok(user) : NotFound();
     }
 }

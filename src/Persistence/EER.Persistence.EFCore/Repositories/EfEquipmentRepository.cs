@@ -47,10 +47,19 @@ internal sealed class EfEquipmentRepository : IEquipmentRepository
         entity.PricePerDay = equipment.PricePerDay;
         entity.UpdatedBy = equipment.UpdatedBy;
         entity.UpdatedAt = equipment.UpdatedAt;
+        entity.IsModerated = equipment.IsModerated;
 
         await _context.SaveChangesAsync(cancellationToken);
 
         return entity;
+    }
+
+    public async Task<IEnumerable<Equipment>> GetUnmoderatedAsync(ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        return await _context.Equipment
+            .AsNoTracking()
+            .Where(x => x.IsModerated)
+            .ToListAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<bool> DeleteAsync(int id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

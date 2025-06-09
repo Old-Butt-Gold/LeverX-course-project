@@ -3,6 +3,7 @@ using Dapper;
 using EER.Domain.DatabaseAbstractions;
 using EER.Domain.DatabaseAbstractions.Transaction;
 using EER.Domain.Entities;
+using EER.Domain.Enums;
 
 namespace EER.Persistence.Dapper.Repositories;
 
@@ -93,6 +94,57 @@ internal sealed class DapperEquipmentItemRepository : IEquipmentItemRepository
         return await _connection.QuerySingleAsync<EquipmentItem>(
             new CommandDefinition(sql, parameters, transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
                 cancellationToken: cancellationToken));
+    }
+
+    public async Task<IEnumerable<EquipmentItem>> GetByIdsWithEquipmentAsync(IEnumerable<long> ids, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                                   SELECT
+                                       ei.*, e.*
+                                   FROM [Supplies].[EquipmentItem] ei
+                                   INNER JOIN [Supplies].[Equipment] e ON ei.EquipmentId = e.Id
+                                   WHERE ei.Id IN @ids
+                           """;
+
+        return await _connection.QueryAsync<EquipmentItem, Equipment, EquipmentItem>(
+            new CommandDefinition(sql, new { ids },
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken),
+            (equipmentItem, equipment) =>
+            {
+                equipmentItem.Equipment = equipment;
+
+                return equipmentItem;
+            },
+            splitOn: "Id");
+    }
+
+    public async Task UpdateStatusForItemsAsync(IEnumerable<long> itemIds, ItemStatus status, Guid updatedBy, ITransaction? transaction = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+                               UPDATE [Supplies].[EquipmentItem]
+                               SET
+                                   ItemStatus = @Status,
+                                   UpdatedBy = @UpdatedBy,
+                                   UpdatedAt = @UpdatedAt
+                               WHERE Id IN @Ids
+                           """;
+
+        var parameters = new
+        {
+            Ids = itemIds,
+            Status = status.ToString(),
+            UpdatedBy = updatedBy,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        await _connection.ExecuteAsync(
+            new CommandDefinition(
+                sql, parameters,
+                transaction: (transaction as DapperTransactionManager.DapperTransaction)?.Transaction,
+                cancellationToken: cancellationToken
+            )
+        );
     }
 
     public async Task<bool> DeleteAsync(long id, ITransaction? transaction = null, CancellationToken cancellationToken = default)

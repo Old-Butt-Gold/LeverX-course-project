@@ -106,7 +106,7 @@ internal sealed class MongoUserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email, ITransaction? transaction = null, CancellationToken cancellationToken = default)
     {
-        var filter = Builders<UserDocument>.Filter.Regex(
+        var filter = Builders<UserDocument>.Filter.Eq(
             u => u.Email, email);
 
         var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
@@ -129,6 +129,32 @@ internal sealed class MongoUserRepository : IUserRepository
         return document is not null
             ? MapToEntity(document)
             : null;
+    }
+
+    public async Task<IEnumerable<User>> GetByIdsAsync(IEnumerable<Guid> ids, ITransaction? transaction = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ids.Any())
+            return [];
+
+        var filter = Builders<UserDocument>.Filter.In(d => d.Id, ids);
+
+        var session = (transaction as MongoTransactionManager.MongoTransaction)?.Session;
+        List<UserDocument> docs;
+        if (session != null)
+        {
+            docs = await _collection
+                .Find(session, filter)
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            docs = await _collection
+                .Find(filter)
+                .ToListAsync(cancellationToken);
+        }
+
+        return docs.Select(MapToEntity).ToList();
     }
 
     public async Task<bool> DeleteAsync(Guid id, ITransaction? transaction = null, CancellationToken cancellationToken = default)
