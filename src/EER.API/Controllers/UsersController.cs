@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.Users.Commands.DeleteUser;
 using EER.Application.Features.Users.Commands.UpdateUser;
@@ -7,12 +8,14 @@ using EER.Application.Features.Users.Queries.GetUserById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AnyRole")]
+[Authorize(Policy = AuthRoleConstants.AnyRole)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class UsersController : ControllerBase
 {
     private readonly ISender _sender;
@@ -109,7 +112,7 @@ public sealed class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:guid}")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthRoleConstants.AdminOnly)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();

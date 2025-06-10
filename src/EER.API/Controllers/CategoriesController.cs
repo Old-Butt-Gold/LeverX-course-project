@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.Categories.Commands.CreateCategory;
 using EER.Application.Features.Categories.Commands.DeleteCategory;
@@ -8,12 +9,14 @@ using EER.Application.Features.Categories.Queries.GetCategoryById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "AdminOnly")]
+[Authorize(Policy = AuthRoleConstants.AdminOnly)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class CategoriesController : ControllerBase
 {
     private readonly ISender _sender;
@@ -37,6 +40,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var categories = await _sender.Send(new GetAllCategoriesQuery(), cancellationToken);
@@ -59,6 +63,7 @@ public sealed class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var category = await _sender.Send(new GetCategoryByIdQuery(id), cancellationToken);

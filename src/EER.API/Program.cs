@@ -5,6 +5,7 @@ using EER.Persistence.Dapper.Extensions;
 using EER.Persistence.EFCore.Extensions;
 using EER.Persistence.Migrations.Extensions;
 using EER.Persistence.MongoDB.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureJwt(builder.Configuration);
 builder.Services.ConfigureHealthChecks(builder.Configuration);
+builder.Services.ConfigureRateLimiter();
 
 // Application
 builder.Services.ConfigureMediatR();
@@ -44,12 +46,21 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// for correct ip definition
+app.UseForwardedHeaders(new ForwardedHeadersOptions()
+{
+    ForwardedHeaders = ForwardedHeaders.All
+});
+
 app.UseCors("CorsGlobalPolicy");
 
 app.UseHealthChecks();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

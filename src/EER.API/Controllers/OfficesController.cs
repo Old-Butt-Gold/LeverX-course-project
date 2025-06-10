@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.Offices.Commands.CreateOffice;
 using EER.Application.Features.Offices.Commands.DeleteOffice;
@@ -8,12 +9,14 @@ using EER.Application.Features.Offices.Queries.GetOfficeById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Policy = "OwnerOnly")]
+[Authorize(Policy = AuthRoleConstants.OwnerOnly)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class OfficesController : ControllerBase
 {
     private readonly ISender _sender;
@@ -36,7 +39,7 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<OfficeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
-    [Authorize(Policy = "AnyRole")]
+    [Authorize(Policy = AuthRoleConstants.AnyRole)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         _logger.LogInformation("User {UserId} requested all offices", User.GetUserId());
@@ -60,6 +63,7 @@ public sealed class OfficesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var office = await _sender.Send(new GetOfficeByIdQuery(id), cancellationToken);

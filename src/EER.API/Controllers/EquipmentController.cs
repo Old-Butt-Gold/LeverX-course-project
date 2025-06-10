@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using EER.API.Constants;
 using EER.Application.Extensions;
 using EER.Application.Features.Equipment.Commands.CreateEquipment;
 using EER.Application.Features.Equipment.Commands.DeleteEquipment;
@@ -13,12 +14,14 @@ using EER.Application.Features.Reviews.Queries.GetReviewsByEquipmentId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EER.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = AuthRoleConstants.AnyRole)]
+[EnableRateLimiting(RateLimiterConstants.PerUser)]
 public sealed class EquipmentController : ControllerBase
 {
     private readonly ISender _sender;
@@ -42,6 +45,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var equipment = await _sender.Send(new GetAllEquipmentQuery(), cancellationToken);
@@ -64,6 +68,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{id:int}")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         var item = await _sender.Send(new GetEquipmentByIdQuery(id), cancellationToken);
@@ -87,7 +92,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPost]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Create(CreateEquipmentDto equipment, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -116,7 +121,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPut]
-    [Authorize(Policy = "OwnerOnly")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOnly)]
     public async Task<IActionResult> Update(UpdateEquipmentDto updatedEquipment, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -144,7 +149,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "OwnerOrAdmin")]
+    [Authorize(Policy = AuthRoleConstants.OwnerOrAdmin)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -161,7 +166,7 @@ public sealed class EquipmentController : ControllerBase
 
     // GET: api/equipment/unmoderated
     [HttpGet("unmoderated")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthRoleConstants.AdminOnly)]
     [Produces(MediaTypeNames.Application.Json, MediaTypeNames.Application.Xml)]
     [ProducesResponseType(typeof(IEnumerable<EquipmentForModerationDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
@@ -179,7 +184,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpPatch("{id:int}/moderate")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthRoleConstants.AdminOnly)]
     public async Task<IActionResult> Moderate(int id, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
@@ -197,13 +202,13 @@ public sealed class EquipmentController : ControllerBase
         return NotFound();
     }
 
-    [HttpPost("{equipmentId:int}/reviews")]
-    [Authorize(Policy = "CustomerOnly")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
     [ProducesResponseType(typeof(ReviewCreatedDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [HttpPost("{equipmentId:int}/reviews")]
+    [Authorize(Policy = AuthRoleConstants.CustomerOnly)]
     public async Task<IActionResult> CreateReview(int equipmentId, [FromBody] CreateReviewDto reviewDto, CancellationToken cancellationToken)
     {
         var customerId = User.GetUserId();
@@ -221,6 +226,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
     [HttpGet("{equipmentId:int}/reviews")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimiterConstants.PerIp)]
     public async Task<IActionResult> GetReviews(int equipmentId, CancellationToken cancellationToken)
     {
         var reviews = await _sender.Send(new GetReviewsByEquipmentIdQuery(equipmentId), cancellationToken);
@@ -231,7 +237,7 @@ public sealed class EquipmentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [HttpDelete("{equipmentId:int}/reviews")]
-    [Authorize(Policy = "CustomerOnly")]
+    [Authorize(Policy = AuthRoleConstants.CustomerOnly)]
     public async Task<IActionResult> DeleteReview(int equipmentId, CancellationToken cancellationToken)
     {
         var customerId = User.GetUserId();
